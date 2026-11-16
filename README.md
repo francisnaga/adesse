@@ -28,8 +28,8 @@
 
 - **Rotating Cryptographic QR & PIN Codes:** Dynamic session codes rotate every 15 seconds using Web Crypto ECDSA signatures, preventing photo-sharing or attendance fraud.
 - **Offline-First Guarantee:** Zero network? No problem. Scans are saved securely in browser/app storage and batched to the cloud when connectivity returns.
-- **Google & Apple One-Click Sign-In:** Seamless, professional identity verification tied to student matric numbers and lecturer faculty profiles via Supabase Auth.
-- **PIN & Passphrase Fallback:** Students without Google/Apple accounts can use matric + 6-digit PIN; lecturers can use encrypted passphrases with client-side key wrapping.
+- **Google & Apple One-Click Sign-In (OAuth-Only):** Verified identity for both students and lecturers via Supabase Auth. Prevents account spoofing and eliminates fragile local passwords.
+- **Post-OAuth Onboarding & Multi-Device Roaming:** First-time login guides students to set matriculation number, department, level, and backup PIN; lecturers set title, name, and institution. Logging in with Google/Apple on any device automatically restores identity and state.
 - **Real-Time Live Attendance Counter:** Live counter increments as students scan in the hall, with manual matric entry and full-screen presentation mode.
 - **Class List Verification & Carry-Over Review:** Lecturers can paste official rosters. Unlisted students are held for lecturer review rather than rejected.
 - **Dual Platform (Android & iOS):** Installable as a Progressive Web App (PWA) with native touch response, safe area padding, and camera scanner, or packagable directly into native Android (`.apk`/`.aab`) and iOS applications via Capacitor.
@@ -70,11 +70,12 @@ When deploying to [Vercel](https://vercel.com), configure the following environm
 
 The database runs on Supabase with Row Level Security enabled across all collections:
 
-- `public.students`: Student profiles, matric numbers, departments, levels, and OAuth account links.
-- `public.lecturers`: Faculty profiles and encrypted cryptographic key wrappers.
-- `public.sessions`: Attendance sessions with derived keys and timetable metadata.
-- `public.scans`: Scanned attendance events with window tokens and device verification signatures.
-- `public.lecstate`: Cross-device state synchronizer for lecturer multi-phone roaming.
+- `public.students`: Student profiles, university, matric number, department, study level, email, and OAuth provider (secured by user_id RLS).
+- `public.lecturers`: Faculty profiles, institutional affiliation, public ECDSA verification keys, and OAuth links.
+- `public.lecturer_keys`: Private ECDSA signing JWK keys stored under authenticated user_id RLS for seamless multi-device roaming.
+- `public.sessions`: Attendance sessions with course code, title, and start/end timestamps.
+- `public.scans`: Scanned attendance events with window tokens, status, and verification signatures.
+- `public.lecstate`: Cross-device state synchronizer for lecturer courses, active sessions, and attendance rosters.
 
 ---
 

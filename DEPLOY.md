@@ -46,7 +46,7 @@ When importing your project at [vercel.com/new](https://vercel.com/new) (or unde
 1. Go to [vercel.com/new](https://vercel.com/new).
 2. Select your GitHub repository: **`francisnaga/adesse`**.
 3. Build Command: `npm run build` (detected automatically).
-4. Output Directory: `.` (root).
+4. Output Directory: `public` (configured in `vercel.json`).
 5. Click **Deploy**.
 6. Every time you push to `main` on GitHub, Vercel will rebuild and deploy the latest version automatically.
 
