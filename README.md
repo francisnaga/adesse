@@ -1,11 +1,20 @@
-# Adesse
+<p align="center">
+  <img src="icon-192.png" alt="Adesse Logo" width="100" height="100" style="border-radius: 22px;">
+</p>
 
-> Attendance without the paper. Scan class QR codes even when the network drops.
+<h1 align="center">Adesse</h1>
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-francisnaga%2Fadesse-blue?logo=github)](https://github.com/francisnaga/adesse)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ECF8E?logo=supabase)](https://supabase.com)
-[![PWA](https://img.shields.io/badge/PWA-iOS%20%26%20Android-black?logo=pwa)](https://web.dev/progressive-web-apps/)
+<p align="center">
+  <strong>Attendance without the paper.</strong><br>
+  Scan class QR codes even when the network drops.
+</p>
+
+<p align="center">
+  <a href="https://github.com/francisnaga/adesse"><img src="https://img.shields.io/badge/GitHub-francisnaga%2Fadesse-blue?logo=github" alt="GitHub Repo"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ECF8E?logo=supabase" alt="Supabase"></a>
+  <a href="https://web.dev/progressive-web-apps/"><img src="https://img.shields.io/badge/PWA-iOS%20%26%20Android-black?logo=pwa" alt="PWA"></a>
+</p>
 
 ---
 
@@ -24,7 +33,7 @@
 - **Real-Time Live Attendance Counter:** Live counter increments as students scan in the hall, with manual matric entry and full-screen presentation mode.
 - **Class List Verification & Carry-Over Review:** Lecturers can paste official rosters. Unlisted students are held for lecturer review rather than rejected.
 - **Dual Platform (Android & iOS):** Installable as a Progressive Web App (PWA) with native touch response, safe area padding, and camera scanner, or packagable directly into native Android (`.apk`/`.aab`) and iOS applications via Capacitor.
-- **Automated Vercel Deployment:** Pre-configured `vercel.json` with hardened HTTP security headers and PWA caching rules.
+- **Automated Vercel Deployment:** Pre-configured `vercel.json` with hardened HTTP security headers, PWA caching rules, and automatic environment variable injection.
 
 ---
 
@@ -39,6 +48,21 @@
 | **Scanning** | Native BarcodeDetector API with jsQR fallback |
 | **Hosting** | Vercel / GitHub Pages / Cloudflare Pages |
 | **Native Packaging** | Capacitor / Android Studio / Apple Xcode |
+
+---
+
+## Vercel Environment Variables
+
+When deploying to [Vercel](https://vercel.com), configure the following environment variables under **Project Settings > Environment Variables**:
+
+| Variable Name | Description | Default / Example Value |
+|---|---|---|
+| `SUPABASE_URL` | Your Supabase Project REST URL | `https://xbgolunipyuhyparskmu.supabase.co` |
+| `SUPABASE_ANON_KEY` | Public anonymous API key from Supabase API settings | `eyJhbGciOi...` |
+| `SUPPORT_EMAIL` | Contact email displayed for account recovery & privacy requests | `efobifrancis53@gmail.com` |
+| `APP_NAME` | Display name of the application | `Adesse` |
+
+> **How it works on Vercel:** Vercel automatically runs `npm run build` (`node build-config.js`) during deployment, generating the production `config.js` directly from your environment variables. If no environment variables are set, the project safely defaults to the pre-configured project credentials.
 
 ---
 
@@ -68,24 +92,14 @@ The database runs on Supabase with Row Level Security enabled across all collect
    ```
    Open `http://localhost:3000` in your desktop or mobile browser.
 
-3. **Configuration:**
-   Ensure `config.js` points to your Supabase instance:
-   ```javascript
-   window.ADESSE_CONFIG = {
-     supabaseUrl: 'https://xbgolunipyuhyparskmu.supabase.co',
-     supabaseAnonKey: 'YOUR_ANON_KEY',
-     supportEmail: 'efobifrancis53@gmail.com',
-     appName: 'Adesse'
-   };
-   ```
-
 ---
 
 ## Deployment to Vercel
 
 1. Push your repository to GitHub (`francisnaga/adesse`).
 2. Visit [Vercel](https://vercel.com/new) and import the repository.
-3. Deploy! Vercel will use the included `vercel.json` automatically.
+3. In **Environment Variables**, enter `SUPABASE_URL` and `SUPABASE_ANON_KEY` (optional, defaults are already bundled).
+4. Click **Deploy**. Vercel will build and deploy the app automatically on every commit.
 
 Detailed instructions for Google Cloud Console and Apple Developer configuration are available in [DEPLOY.md](DEPLOY.md).
 

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Adesse - Attendance without the paper. Modern offline-first attendance verification system with Supabase, Google and Apple Auth.",
   "scripts": {
+    "build": "node build-config.js",
     "start": "npx serve .",
     "deploy:vercel": "npx vercel --prod"
   },

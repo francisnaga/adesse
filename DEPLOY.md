@@ -22,7 +22,37 @@ Your `config.js` is automatically configured with:
 
 ---
 
-## 2. Authentication: The Part You Play
+## 2. Vercel Deployment & Environment Variables
+
+Adesse includes a pre-configured `vercel.json` and a build script (`build-config.js`) that automatically compiles `config.js` from your Vercel Environment Variables upon each deployment.
+
+### Setting Up Environment Variables in Vercel:
+When importing your project at [vercel.com/new](https://vercel.com/new) (or under **Project Settings > Environment Variables**), add:
+
+1. **`SUPABASE_URL`**:
+   ```
+   https://xbgolunipyuhyparskmu.supabase.co
+   ```
+2. **`SUPABASE_ANON_KEY`**:
+   ```
+   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhiZ29sdW5pcHl1aHlwYXJza211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MjI1NzYsImV4cCI6MjExMDM5ODU3Nn0.1jrk7apaQw-ds4FNgZZhmvaKgQZoK69HIi1c6WTTz8o
+   ```
+3. **`SUPPORT_EMAIL`**:
+   ```
+   efobifrancis53@gmail.com
+   ```
+
+### Deploy Steps:
+1. Go to [vercel.com/new](https://vercel.com/new).
+2. Select your GitHub repository: **`francisnaga/adesse`**.
+3. Build Command: `npm run build` (detected automatically).
+4. Output Directory: `.` (root).
+5. Click **Deploy**.
+6. Every time you push to `main` on GitHub, Vercel will rebuild and deploy the latest version automatically.
+
+---
+
+## 3. Authentication: Google & Apple Sign-In
 
 To activate Google & Apple one-click sign-in in your Supabase Dashboard:
 
@@ -40,7 +70,7 @@ To activate Google & Apple one-click sign-in in your Supabase Dashboard:
    - Paste **Client ID** and **Client Secret**.
    - Click **Save**.
 
-### B. Apple Sign-In Setup (Optional for Web / Required for App Store)
+### B. Apple Sign-In Setup
 1. In your [Apple Developer Account](https://developer.apple.com/account/resources/identifiers/list/serviceId), create a **Services ID**.
 2. Configure **Sign In with Apple**:
    - Domains: your Vercel deployment domain (e.g. `adesse.vercel.app`).
@@ -55,25 +85,11 @@ To activate Google & Apple one-click sign-in in your Supabase Dashboard:
 
 ---
 
-## 3. Vercel Deployment
-
-Adesse includes a pre-configured `vercel.json` optimized for PWA caching and security headers.
-
-### Deploying via Vercel Web Dashboard:
-1. Go to [vercel.com/new](https://vercel.com/new).
-2. Select your GitHub repository: **`francisnaga/adesse`**.
-3. Framework Preset: **Other**.
-4. Root Directory: `./`.
-5. Click **Deploy**.
-6. Every time you push to the `main` branch on GitHub, Vercel will automatically redeploy the latest version.
-
----
-
 ## 4. Mobile Apps (iPhone & Android)
 
 Adesse is engineered to work across all platforms:
 
-### Option 1: Instant PWA (No App Store approval needed)
+### Option 1: Instant PWA (Zero App Store friction)
 - **iPhone / iOS Safari:** Open your deployed URL, tap the **Share** button, and tap **"Add to Home Screen"**. It launches full-screen with native safe-area insets, app icon, and standalone offline caching.
 - **Android Chrome:** Open the URL, tap the browser menu (or the install banner), and tap **"Install App"**.
 
