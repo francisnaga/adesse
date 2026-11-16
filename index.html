@@ -243,14 +243,15 @@ textarea.mono{font:13px/1.5 var(--font-mono); min-height:140px}
 .link{min-height:44px}
 .ferr .link{min-height:44px; margin:-6px 0}
 details.card:not([open]){gap:0}
-.oauth-stack{display:grid; gap:10px}
-.oauth-btn{background:var(--background); border:1px solid var(--border); font-weight:500; min-height:48px; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer; color:var(--foreground); transition:background .15s}
+.oauth-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:2px 0 6px}
+.oauth-btn{background:var(--background); border:1px solid var(--border); font-weight:500; min-height:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; color:var(--foreground); transition:background .15s, transform .1s; font-size:14px; box-shadow:var(--shadow)}
 .oauth-btn:hover{background:var(--accent)}
+.oauth-btn:active{transform:scale(.98)}
 .oauth-icon{width:18px; height:18px; flex:none}
-.divider{display:flex; align-items:center; text-align:center; color:var(--muted-foreground); font-size:12px; margin:4px 0}
+.divider{display:flex; align-items:center; text-align:center; color:var(--muted-foreground); font-size:12px; margin:6px 0 2px}
 .divider::before, .divider::after{content:''; flex:1; border-bottom:1px solid var(--border)}
-.divider:not(:empty)::before{margin-right:12px}
-.divider:not(:empty)::after{margin-left:12px}
+.divider:not(:empty)::before{margin-right:10px}
+.divider:not(:empty)::after{margin-left:10px}
 </style>
 
 <div class="app">
@@ -280,17 +281,17 @@ details.card:not([open]){gap:0}
   <!-- STUDENT SETUP / RESTORE -->
   <section id="v-sreg" class="screen" hidden>
     <div><h1 id="sregH">Quick setup</h1><p id="sregP" class="muted">One time only. After this, just scan.</p></div>
-    <div class="oauth-stack" id="sOauthWrap">
+    <div class="oauth-grid" id="sOauthWrap">
       <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="google" data-role="student">
         <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.94H1.27v3.15C3.25 21.36 7.32 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.26c-.25-.72-.38-1.49-.38-2.26s.13-1.54.38-2.26V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.25 2.64 1.27 6.59l4.01 3.15c.95-2.84 3.6-4.99 6.72-4.99z"/></svg>
-        <span>Continue with Google</span>
+        <span>Google</span>
       </button>
       <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="apple" data-role="student">
         <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.84c.66-.82 1.11-1.96.99-3.1-.96.04-2.13.64-2.81 1.45-.6.7-.1.13-1.87 1.03-3.04 1.07-.02 2.13-.6 2.79-1.39z"/></svg>
-        <span>Continue with Apple</span>
+        <span>Apple</span>
       </button>
     </div>
-    <div class="divider" id="sDivider"><span>or setup with matric number</span></div>
+    <div class="divider" id="sDivider"><span>or with matric number</span></div>
     <form id="sregForm" class="card" autocomplete="off" novalidate>
       <div class="steps" id="sregSteps" aria-hidden="true"><i class="on"></i><i></i></div>
       <div id="sSummary" class="summary" hidden><span id="sSummaryTxt"></span><button class="link" type="button" data-act="sregEdit">Edit</button></div>
@@ -366,17 +367,17 @@ details.card:not([open]){gap:0}
   <!-- LECTURER SETUP -->
   <section id="v-lreg" class="screen" hidden>
     <div><h1 id="lregH">Lecturer setup</h1><p id="lregP" class="muted">One time. Your account follows you to any phone.</p></div>
-    <div class="oauth-stack" id="lOauthWrap">
+    <div class="oauth-grid" id="lOauthWrap">
       <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="google" data-role="lecturer">
         <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.94H1.27v3.15C3.25 21.36 7.32 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.26c-.25-.72-.38-1.49-.38-2.26s.13-1.54.38-2.26V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.25 2.64 1.27 6.59l4.01 3.15c.95-2.84 3.6-4.99 6.72-4.99z"/></svg>
-        <span>Continue with Google</span>
+        <span>Google</span>
       </button>
       <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="apple" data-role="lecturer">
         <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.84c.66-.82 1.11-1.96.99-3.1-.96.04-2.13.64-2.81 1.45-.6.7-.1.13-1.87 1.03-3.04 1.07-.02 2.13-.6 2.79-1.39z"/></svg>
-        <span>Continue with Apple</span>
+        <span>Apple</span>
       </button>
     </div>
-    <div class="divider" id="lDivider"><span>or setup with email & passphrase</span></div>
+    <div class="divider" id="lDivider"><span>or with email & passphrase</span></div>
     <form id="lregForm" class="card" autocomplete="off" novalidate>
       <div class="field"><label for="lUni">University</label><select id="lUni"><option value="nmu">Nigeria Maritime University</option><option value="other">Another university</option></select></div>
       <div class="field" id="lUniOtherWrap" hidden><label for="lUniOther">University name</label><input id="lUniOther" autocomplete="off"></div>
@@ -2263,6 +2264,9 @@ function applySreg(){
   $('#sregGo').textContent = rs ? 'Restore' : (sregStep === 1 ? 'Continue' : 'Start');
   $('#sregMode').textContent = rs ? 'New here? Set up instead' : 'Already registered? Restore';
   $('#forgotPin').hidden = !rs;
+  const sOw = $('#sOauthWrap'), sDiv = $('#sDivider');
+  if (sOw) sOw.hidden = rs || sregStep !== 1;
+  if (sDiv) sDiv.hidden = rs || sregStep !== 1;
 }
 function setSregMode(m){ sregMode = m; sregStep = 1; applySreg(); }
 function renderSreg(){
@@ -2546,6 +2550,9 @@ function setLregMode(m){
   $('#lregGo').textContent = rs ? 'Sign in' : 'Create account';
   $('#lregMode').textContent = rs ? 'New here? Create an account' : 'Already have an account? Sign in';
   clearErrs($('#lregForm'));
+  const lOw = $('#lOauthWrap'), lDiv = $('#lDivider');
+  if (lOw) lOw.hidden = rs;
+  if (lDiv) lDiv.hidden = rs;
 }
 function renderLreg(){ setLregMode(lregM); }
 async function signInLecturer(uni, email, pass){
@@ -2902,17 +2909,27 @@ async function handleOAuth(provider, role){
   cfg.oauthRole = role;
   saveCfg();
   const redirectTo = window.location.origin + window.location.pathname;
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: provider,
-    options: {
-      redirectTo: redirectTo,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent'
+  try {
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: provider,
+      options: {
+        redirectTo: redirectTo,
+        skipBrowserRedirect: false,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'select_account consent'
+        }
       }
+    });
+    if (error) {
+      return toast(error.message || ('Could not initiate ' + provider + ' sign in.'));
     }
-  });
-  if (error) toast(error.message || ('Could not initiate ' + provider + ' sign in.'));
+    if (data && data.url) {
+      window.location.assign(data.url);
+    }
+  } catch (err) {
+    toast('Authentication error: ' + (err.message || err));
+  }
 }
 
 async function checkOAuthRedirect(){
