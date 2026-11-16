@@ -189,7 +189,22 @@ button.course:active{transform:scale(.99)}
 .scanner .b{padding:16px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); display:grid; gap:8px; justify-items:center}
 .scanner .link{color:#fff; text-decoration-color:rgba(255,255,255,.35)}
 .vwrap{position:relative; min-height:0}
-.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(22px + env(safe-area-inset-bottom,0px)); max-width:min(92vw,420px); background:var(--foreground); color:var(--background); padding:11px 16px; border-radius:10px; font-size:14px; z-index:60; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.toast{
+  position:fixed; left:50%; transform:translateX(-50%) translateY(0);
+  bottom:calc(28px + env(safe-area-inset-bottom, 0px));
+  max-width:min(90vw, 420px); min-width:240px;
+  background:#1C1C1E; color:#F5F5F0;
+  border:1px solid rgba(255,255,255,0.14);
+  box-shadow:0 16px 36px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.2);
+  padding:12px 22px; border-radius:999px;
+  font:500 13.5px/1.35 var(--font-body);
+  z-index:99999; text-align:center;
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  letter-spacing:-.01em; pointer-events:none;
+}
+:root:not([data-theme="dark"]) .toast{
+  background:#18181B; color:#FFFFFF; border:1px solid rgba(0,0,0,0.08);
+}
 .toast:not([hidden]){animation:toast .25s var(--ease) both}
 @keyframes toast{from{opacity:0; transform:translate(-50%,10px)}to{opacity:1; transform:translate(-50%,0)}}
 .pinbox{display:grid; gap:10px; margin-top:6px}
@@ -290,8 +305,27 @@ details.card:not([open]){gap:0}
 .auth-actions{display:flex; flex-direction:column; gap:12px; width:100%}
 .auth-fine{text-align:center; margin-top:4px}
 
-/* Claude-inspired silky progressive onboarding */
-.onboard-progress-wrap{display:flex; align-items:center; gap:12px; min-height:28px; margin-bottom:20px}
+/* Claude-inspired silky progressive onboarding (centered card layout) */
+.onboard-screen{
+  min-height:calc(100dvh - max(48px, env(safe-area-inset-top, 48px)) - max(32px, env(safe-area-inset-bottom, 32px)));
+  display:flex!important; flex-direction:column!important; justify-content:space-between!important;
+  padding:4px 0 12px;
+}
+.onboard-progress-wrap{display:flex; align-items:center; gap:12px; min-height:32px; margin-bottom:0; flex:none}
+.onboard-card{
+  margin:auto 0!important; width:100%;
+  padding:28px 22px!important; border-radius:20px!important;
+  background:var(--card); border:1px solid var(--border);
+  box-shadow:0 8px 32px rgba(0,0,0,0.22);
+}
+button:active:not(:disabled), .btn:active:not(:disabled), .oauth-btn:active:not(:disabled), .onboard-back-btn:active, .iconbtn:active{
+  transform:scale(.975)!important;
+  transition:transform .08s cubic-bezier(0.16, 1, 0.3, 1)!important;
+}
+input:not([type="checkbox"]):not([type="radio"]), select{
+  border-radius:12px!important;
+  transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
 .onboard-back-btn{display:inline-flex; align-items:center; gap:5px; background:transparent; border:none; color:var(--muted-foreground); font:500 13px/1 var(--font-body); padding:6px 10px; margin-left:-10px; border-radius:var(--radius); cursor:pointer; transition:color .15s ease, background-color .15s ease}
 .onboard-back-btn:hover{color:var(--foreground); background:var(--muted)}
 .onboard-progress-bar{flex:1; height:3px; background:var(--muted); border-radius:999px; overflow:hidden}
@@ -370,7 +404,7 @@ details.card:not([open]){gap:0}
   </section>
 
   <!-- STUDENT ONBOARDING (post-OAuth: Claude-style progressive flow) -->
-  <section id="v-sonboard" class="screen" hidden>
+  <section id="v-sonboard" class="screen onboard-screen" hidden>
     <div class="onboard-progress-wrap">
       <button type="button" class="onboard-back-btn" id="soBackBtn" hidden aria-label="Go to previous step">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -382,7 +416,7 @@ details.card:not([open]){gap:0}
       <span class="onboard-step-pill" id="soStepPill">1 of 4</span>
     </div>
 
-    <form id="sonboardForm" class="card" autocomplete="off" novalidate style="padding:24px 20px">
+    <form id="sonboardForm" class="card onboard-card" autocomplete="off" novalidate>
       <!-- Step 1: University -->
       <div class="onboard-step active" id="soStep1" data-step="1">
         <h2 class="onboard-heading">Where do you study?</h2>
@@ -540,7 +574,7 @@ details.card:not([open]){gap:0}
   </section>
 
   <!-- LECTURER ONBOARDING (post-OAuth: Claude-style 2-step flow) -->
-  <section id="v-lonboard" class="screen" hidden>
+  <section id="v-lonboard" class="screen onboard-screen" hidden>
     <div class="onboard-progress-wrap">
       <button type="button" class="onboard-back-btn" id="loBackBtn" hidden aria-label="Go to previous step">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -552,7 +586,7 @@ details.card:not([open]){gap:0}
       <span class="onboard-step-pill" id="loStepPill">1 of 2</span>
     </div>
 
-    <form id="lonboardForm" class="card" autocomplete="off" novalidate style="padding:24px 20px">
+    <form id="lonboardForm" class="card onboard-card" autocomplete="off" novalidate>
       <!-- Step 1: Institution -->
       <div class="onboard-step active" id="loStep1" data-step="1">
         <h2 class="onboard-heading">Where do you teach?</h2>
@@ -2342,7 +2376,25 @@ const slug = s => String(s).replace(/[^A-Za-z0-9_-]+/g, '-').slice(0, 120);
 function load(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 let toastT;
-function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3800); }
+function toast(msg){
+  const t = $('#toast');
+  if (!t) return;
+  let text = msg;
+  if (typeof text === 'object') text = text.message || JSON.stringify(text);
+  if (typeof text === 'string') {
+    text = text.replace(/^Supabase rpc [^:]+:\s*/, '');
+    try {
+      if (text.startsWith('{')) {
+        const p = JSON.parse(text);
+        text = p.message || text;
+      }
+    } catch(e) {}
+  }
+  t.textContent = text;
+  t.hidden = false;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => { t.hidden = true; }, 3800);
+}
 function setNote(el, kind, html){ el.className = 'note' + (kind ? ' ' + kind : ''); el.innerHTML = html ? ic(kind === 'bad' ? I.alert : I.info, 16) + '<span>' + html + '</span>' : ''; }
 
 /* ---------- errors under the field that caused them ---------- */
