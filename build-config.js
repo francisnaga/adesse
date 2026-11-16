@@ -15,6 +15,7 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY ||
 
 const supportEmail = process.env.SUPPORT_EMAIL || 'efobifrancis53@gmail.com';
 const appName = process.env.APP_NAME || 'Adesse';
+const googleClientId = process.env.GOOGLE_CLIENT_ID || '483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com';
 
 const configContent = `// Auto-generated configuration for Adesse
 // Generated at build time from environment variables
@@ -22,7 +23,8 @@ window.ADESSE_CONFIG = {
   supabaseUrl: ${JSON.stringify(supabaseUrl)},
   supabaseAnonKey: ${JSON.stringify(supabaseAnonKey)},
   supportEmail: ${JSON.stringify(supportEmail)},
-  appName: ${JSON.stringify(appName)}
+  appName: ${JSON.stringify(appName)},
+  googleClientId: ${JSON.stringify(googleClientId)}
 };
 `;
 

@@ -12,6 +12,7 @@ public class MainActivity extends BridgeActivity {
         try {
             WebView webView = getBridge().getWebView();
             if (webView != null) {
+                webView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
                 WebSettings settings = webView.getSettings();
                 String ua = settings.getUserAgentString();
                 if (ua != null) {

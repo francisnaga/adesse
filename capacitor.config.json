@@ -14,5 +14,10 @@
   },
   "android": {
     "allowMixedContent": true
+  },
+  "plugins": {
+    "GoogleSignIn": {
+      "clientId": "483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com"
+    }
   }
 }

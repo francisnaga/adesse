@@ -7,47 +7,58 @@
 /* Design system: shadcn/ui "neutral" tokens. Black and white, one border colour, one radius, no accent hue.
    Colour is reserved for meaning: red = below your minimum, a small green dot = online. Light and dark are first-class. */
 :root{
-  --background:#ffffff; --foreground:#0f172a; --card:#ffffff;
-  --primary:#2563eb; --primary-foreground:#ffffff; --primary-hover:#1d4ed8;
-  --secondary:#f1f5f9; --muted:#f8fafc; --muted-foreground:#64748b; --accent:#eff6ff; --accent-foreground:#1e40af;
-  --destructive:#e7000b; --destructive-solid:#dc2626; --destructive-soft:rgba(231,0,11,.08); --destructive-line:rgba(231,0,11,.28);
-  --border:#e2e8f0; --input:#e2e8f0; --ring:rgba(37,99,235,.25);
-  --ok:#16a34a; --radius:10px; --shadow:0 1px 3px rgba(15,23,42,.06);
-  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --background:#F3F4F7; --foreground:#111112; --card:#ffffff;
+  --surface-variant:#EAECEF;
+  --primary:#0060FF; --primary-foreground:#ffffff; --primary-hover:#0050D6;
+  --secondary:#EAECEF; --muted:#EAECEF; --muted-foreground:#5A5A62; --accent:rgba(0,96,255,.08); --accent-foreground:#0060FF;
+  --destructive:#EF4444; --destructive-solid:#DC2626; --destructive-soft:rgba(239,68,68,.08); --destructive-line:rgba(239,68,68,.25);
+  --border:#D5D9E2; --border-subtle:#E4E7EE; --input:#D5D9E2; --ring:rgba(0,96,255,.25);
+  --ok:#22C55E; --radius:12px; --shadow:0 1px 3px rgba(17,17,18,.05), 0 1px 2px rgba(17,17,18,.03);
+  --font-body:'Inter',system-ui,-apple-system,'SF Pro Text','Segoe UI',Roboto,sans-serif;
   --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  --ease:cubic-bezier(.2,.7,.2,1);
+  --ease:cubic-bezier(.16,1,.3,1);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --background:#0b0f19; --foreground:#f8fafc; --card:#111827;
-    --primary:#3b82f6; --primary-foreground:#ffffff; --primary-hover:#60a5fa;
-    --secondary:#1e293b; --muted:#1e293b; --muted-foreground:#94a3b8; --accent:rgba(59,130,246,.15); --accent-foreground:#93c5fd;
-    --destructive:#ff6467; --destructive-solid:#b91c1c; --destructive-soft:rgba(255,100,103,.12); --destructive-line:rgba(255,100,103,.32);
-    --border:rgba(255,255,255,.1); --input:rgba(255,255,255,.15); --ring:rgba(59,130,246,.35);
-    --ok:#4ade80; --shadow:none; color-scheme:dark;
+    --background:#141413; --foreground:#F5F5F0; --card:#1F1F1E;
+    --surface-variant:#282826;
+    --primary:#5AA8FF; --primary-foreground:#001A3D; --primary-hover:#7AB8FF;
+    --secondary:#282826; --muted:#282826; --muted-foreground:#9C9B94; --accent:rgba(90,168,255,.14); --accent-foreground:#5AA8FF;
+    --destructive:#F87171; --destructive-solid:#DC2626; --destructive-soft:rgba(248,113,113,.12); --destructive-line:rgba(248,113,113,.3);
+    --border:#333330; --border-subtle:#262624; --input:#333330; --ring:rgba(90,168,255,.35);
+    --ok:#4ADE80; --shadow:none; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --background:#0b0f19; --foreground:#f8fafc; --card:#111827;
-  --primary:#3b82f6; --primary-foreground:#ffffff; --primary-hover:#60a5fa;
-  --secondary:#1e293b; --muted:#1e293b; --muted-foreground:#94a3b8; --accent:rgba(59,130,246,.15); --accent-foreground:#93c5fd;
-  --destructive:#ff6467; --destructive-solid:#b91c1c; --destructive-soft:rgba(255,100,103,.12); --destructive-line:rgba(255,100,103,.32);
-  --border:rgba(255,255,255,.1); --input:rgba(255,255,255,.15); --ring:rgba(59,130,246,.35);
-  --ok:#4ade80; --shadow:none; color-scheme:dark;
+  --background:#141413; --foreground:#F5F5F0; --card:#1F1F1E;
+  --surface-variant:#282826;
+  --primary:#5AA8FF; --primary-foreground:#001A3D; --primary-hover:#7AB8FF;
+  --secondary:#282826; --muted:#282826; --muted-foreground:#9C9B94; --accent:rgba(90,168,255,.14); --accent-foreground:#5AA8FF;
+  --destructive:#F87171; --destructive-solid:#DC2626; --destructive-soft:rgba(248,113,113,.12); --destructive-line:rgba(248,113,113,.3);
+  --border:#333330; --border-subtle:#262624; --input:#333330; --ring:rgba(90,168,255,.35);
+  --ok:#4ADE80; --shadow:none; color-scheme:dark;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{margin:0}
+html,body{
+  margin:0; padding:0; width:100%; height:100%;
+  overscroll-behavior:none; overscroll-behavior-y:none;
+  -webkit-overflow-scrolling:touch; touch-action:pan-y pinch-zoom;
+  -webkit-tap-highlight-color:transparent; -webkit-touch-callout:none; user-select:none;
+}
+input,textarea,select{user-select:text; -webkit-user-select:text}
 body{
   background:var(--background); color:var(--foreground); font:15px/1.5 var(--font-body);
-  padding-left:max(16px, env(safe-area-inset-left, 0px));
-  padding-right:max(16px, env(safe-area-inset-right, 0px));
-  padding-block:12px 56px; -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased;
+  padding-left:max(16px, env(safe-area-inset-left, 16px));
+  padding-right:max(16px, env(safe-area-inset-right, 16px));
+  padding-top:max(48px, env(safe-area-inset-top, 48px));
+  padding-bottom:max(32px, env(safe-area-inset-bottom, 32px));
+  -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased;
 }
-.app{max-width:480px; margin:0 auto; display:grid; gap:20px; align-content:start}
+.app{max-width:480px; margin:0 auto; display:grid; gap:20px; align-content:start; min-height:100%}
 .screen{display:grid; gap:20px; align-content:start; min-width:0}
-.screen[id^="v-"]:not([hidden]){animation:enter .24s var(--ease) both}
-@keyframes enter{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+.screen[id^="v-"]:not([hidden]){animation:enter .22s var(--ease) both}
+@keyframes enter{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 @keyframes pop{from{opacity:0; transform:translateY(8px) scale(.97)}to{opacity:1; transform:none}}
 @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
@@ -253,13 +264,31 @@ details.card:not([open]){gap:0}
 .divider:not(:empty)::before{margin-right:10px}
 .divider:not(:empty)::after{margin-left:10px}
 .oauth-btn.lg{height:auto; min-height:52px; font-size:15px; gap:12px; padding:0 20px}
-.oauth-btn{position:relative; transition:background-color .15s ease, border-color .15s ease, opacity .15s ease, transform .1s ease}
+.oauth-btn{
+  position:relative; overflow:hidden; max-height:60px;
+  transition:opacity .35s cubic-bezier(.16,1,.3,1), transform .35s cubic-bezier(.16,1,.3,1), max-height .35s cubic-bezier(.16,1,.3,1), padding .35s cubic-bezier(.16,1,.3,1), margin .35s cubic-bezier(.16,1,.3,1), background-color .15s ease, border-color .15s ease;
+}
 .oauth-btn:active:not(:disabled){transform:scale(.985)}
 .oauth-btn.loading{background:var(--muted); opacity:.85; cursor:wait}
+.oauth-btn.faded-out{
+  opacity:0!important; max-height:0!important; margin-top:0!important; margin-bottom:0!important; padding-top:0!important; padding-bottom:0!important;
+  transform:scale(.94) translateY(-6px)!important; pointer-events:none!important; border-width:0!important;
+}
 .oauth-spinner{width:18px; height:18px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:oauthSpin .65s linear infinite; flex-shrink:0; display:inline-block}
 @keyframes oauthSpin{to{transform:rotate(360deg)}}
-.oauth-loading-bar{position:fixed; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, #2563eb, #60a5fa, #2563eb); background-size:200% 100%; animation:oauthShimmer 1.5s infinite linear; z-index:99999}
+.oauth-loading-bar{position:fixed; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, #0060FF, #5AA8FF, #0060FF); background-size:200% 100%; animation:oauthShimmer 1.5s infinite linear; z-index:99999}
 @keyframes oauthShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Ergonomic centered Auth Screen (Thumb-zone placement) */
+.auth-screen{min-height:calc(100dvh - 120px); display:flex; flex-direction:column; justify-content:center; gap:26px; padding:12px 0}
+.auth-hero{text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px}
+.auth-brand-pill{width:56px; height:56px; border-radius:16px; background:var(--card); border:1px solid var(--border); display:grid; place-items:center; margin-bottom:10px; box-shadow:var(--shadow)}
+.auth-brand-pill .logo{font-size:0}
+.auth-brand-pill .lm{width:32px; height:32px}
+.auth-hero h1{font:600 28px/1.2 var(--font-body); letter-spacing:-.035em; margin:0}
+.auth-hero p.sub{max-width:32ch; margin:0 auto; font-size:14.5px; line-height:1.45}
+.auth-actions{display:flex; flex-direction:column; gap:12px; width:100%}
+.auth-fine{text-align:center; margin-top:4px}
 
 /* Claude-inspired silky progressive onboarding */
 .onboard-progress-wrap{display:flex; align-items:center; gap:12px; min-height:28px; margin-bottom:20px}
@@ -275,6 +304,25 @@ details.card:not([open]){gap:0}
 .onboard-sub{font:400 14px/1.45 var(--font-body); color:var(--muted-foreground); margin:0 0 22px 0}
 .device-lock-pill{display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--muted); border:1px solid var(--border); border-radius:var(--radius); font:400 12px/1.4 var(--font-body); color:var(--muted-foreground)}
 .device-lock-pill svg{flex-shrink:0; color:var(--foreground)}
+
+/* Inkto-inspired Grouped Settings Screen */
+.settings-screen{gap:22px}
+.settings-header{display:grid; gap:4px}
+.settings-group{display:flex; flex-direction:column; gap:6px}
+.settings-section-title{font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-foreground); padding:0 4px}
+.settings-card{padding:0!important; overflow:hidden; border-radius:14px; background:var(--card); border:1px solid var(--border); box-shadow:var(--shadow)}
+.settings-item{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; gap:12px}
+.card-divider{height:1px; background:var(--border-subtle); margin:0}
+.settings-action-row{display:flex; align-items:center; justify-content:space-between; width:100%; padding:14px 16px; background:transparent; border:none; color:var(--foreground); font:500 15px/1.4 var(--font-body); text-align:left; cursor:pointer; transition:background .15s ease}
+.settings-action-row:hover, .settings-action-row:active{background:var(--surface-variant)}
+.settings-action-row.text-danger{color:var(--destructive)}
+.settings-action-row .sub{font-size:13px; color:var(--muted-foreground)}
+.status-chip{display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:999px; font-size:11px; font-weight:600; letter-spacing:.02em}
+.locked-chip{background:var(--accent); color:var(--primary); border:1px solid var(--border)}
+.threshold-badge{display:inline-flex; align-items:center; gap:4px; background:var(--surface-variant); border:1px solid var(--border); border-radius:8px; padding:4px 10px; font-weight:600}
+.stepper-input{width:36px; background:transparent; border:none; font-weight:600; font-size:15px; color:var(--foreground); text-align:right; padding:0; outline:none; -moz-appearance:textfield}
+.stepper-input::-webkit-outer-spin-button, .stepper-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
+.chevron-right{color:var(--muted-foreground); font-size:18px; font-weight:400}
 </style>
 
 <div class="app">
@@ -283,7 +331,7 @@ details.card:not([open]){gap:0}
     <div class="r">
       <span id="net" class="net" data-s="on">Online</span>
       <button id="themeBtn" class="iconbtn" type="button" data-act="themeToggle" aria-label="Switch light or dark mode"></button>
-      <button id="gear" class="iconbtn" type="button" data-act="settings" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.4"/><circle cx="8" cy="17" r="2.4"/></svg></button>
+      <button id="gear" class="iconbtn" type="button" data-act="settings" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
   </header>
 
@@ -302,9 +350,15 @@ details.card:not([open]){gap:0}
   </section>
 
   <!-- STUDENT SIGN IN (OAuth only) -->
-  <section id="v-sreg" class="screen" hidden>
-    <div><h1>Welcome to Adesse</h1><p class="muted">Sign in to track your attendance. It works even when the network does not.</p></div>
-    <div style="display:grid;gap:12px;margin:4px 0">
+  <section id="v-sreg" class="screen auth-screen" hidden>
+    <div class="auth-hero">
+      <div class="auth-brand-pill">
+        <span class="logo" data-brand></span>
+      </div>
+      <h1>Student sign in</h1>
+      <p class="sub">Attendance records stay locked to your device and sync seamlessly even without internet.</p>
+    </div>
+    <div class="auth-actions">
       <button class="btn oauth-btn lg" type="button" data-act="oauth" data-provider="google" data-role="student">
         <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.94H1.27v3.15C3.25 21.36 7.32 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.26c-.25-.72-.38-1.49-.38-2.26s.13-1.54.38-2.26V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.25 2.64 1.27 6.59l4.01 3.15c.95-2.84 3.6-4.99 6.72-4.99z"/></svg>
         <span>Continue with Google</span>
@@ -314,7 +368,7 @@ details.card:not([open]){gap:0}
         <span>Continue with Apple</span>
       </button>
     </div>
-    <p class="fine" style="text-align:center">By continuing you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+    <p class="fine auth-fine">By continuing you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
   </section>
 
   <!-- STUDENT ONBOARDING (post-OAuth: Claude-style progressive flow) -->
@@ -466,9 +520,15 @@ details.card:not([open]){gap:0}
   </section>
 
   <!-- LECTURER SIGN IN (OAuth only) -->
-  <section id="v-lreg" class="screen" hidden>
-    <div><h1 id="lregH">Lecturer sign in</h1><p id="lregP" class="muted">Your courses follow you to any phone.</p></div>
-    <div style="display:grid;gap:12px;margin:4px 0">
+  <section id="v-lreg" class="screen auth-screen" hidden>
+    <div class="auth-hero">
+      <div class="auth-brand-pill">
+        <span class="logo" data-brand></span>
+      </div>
+      <h1 id="lregH">Lecturer sign in</h1>
+      <p id="lregP" class="sub">Your courses, attendance lists, and offline crypto signing keys follow you securely.</p>
+    </div>
+    <div class="auth-actions">
       <button class="btn oauth-btn lg" type="button" data-act="oauth" data-provider="google" data-role="lecturer">
         <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.94H1.27v3.15C3.25 21.36 7.32 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.26c-.25-.72-.38-1.49-.38-2.26s.13-1.54.38-2.26V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.25 2.64 1.27 6.59l4.01 3.15c.95-2.84 3.6-4.99 6.72-4.99z"/></svg>
         <span>Continue with Google</span>
@@ -478,7 +538,7 @@ details.card:not([open]){gap:0}
         <span>Continue with Apple</span>
       </button>
     </div>
-    <p class="fine" style="text-align:center">By continuing you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+    <p class="fine auth-fine">By continuing you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
   </section>
 
   <!-- LECTURER ONBOARDING (post-OAuth: Claude-style 2-step flow) -->
@@ -615,38 +675,113 @@ details.card:not([open]){gap:0}
   </section>
 
   <!-- SETTINGS -->
-  <section id="v-set" class="screen" hidden>
-    <h1>Settings</h1>
-    <div class="card">
-      <span class="lbl">Appearance</span>
-      <div class="seg" id="themeSeg" role="group" aria-label="Theme">
-        <button type="button" data-act="theme" data-v="system">System</button>
-        <button type="button" data-act="theme" data-v="light">Light</button>
-        <button type="button" data-act="theme" data-v="dark">Dark</button>
+  <section id="v-set" class="screen settings-screen" hidden>
+    <div class="settings-header">
+      <h1>Settings</h1>
+      <p class="sub">Preferences, sync status and security</p>
+    </div>
+
+    <!-- Account & Device Security -->
+    <div class="settings-group" id="setAccountGroup">
+      <span class="settings-section-title">Account &amp; Security</span>
+      <div class="settings-card">
+        <div class="settings-item">
+          <div>
+            <b id="setUserTitle">Student Account</b>
+            <p class="sub" id="setUserSub">Connecting…</p>
+          </div>
+          <span class="status-chip locked-chip" id="setLockChip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Locked
+          </span>
+        </div>
+        <div class="card-divider"></div>
+        <button id="roleSwap" class="settings-action-row" type="button" data-act="swap">
+          <span>Switch role</span>
+          <span class="chevron-right">›</span>
+        </button>
       </div>
     </div>
-    <div class="card" id="setAlerts">
-      <span class="lbl">Alerts</span>
-      <label class="switchrow"><span><b>Alerts on this phone</b><span class="fine" id="setAlertHelp">Tells you when you miss a class or fall below your minimum.</span></span><span class="switch"><input type="checkbox" id="setAlert"><i></i></span></label>
+
+    <!-- Preferences -->
+    <div class="settings-group">
+      <span class="settings-section-title">Preferences</span>
+      <div class="settings-card">
+        <div class="settings-item">
+          <div>
+            <b>Theme</b>
+            <p class="sub">Adaptive system or high-contrast OLED</p>
+          </div>
+          <div class="seg" id="themeSeg" role="group" aria-label="Theme">
+            <button type="button" data-act="theme" data-v="system">System</button>
+            <button type="button" data-act="theme" data-v="light">Light</button>
+            <button type="button" data-act="theme" data-v="dark">Dark</button>
+          </div>
+        </div>
+        <div class="card-divider" id="setAlertsDiv"></div>
+        <div class="settings-item" id="setAlerts">
+          <label class="switchrow" style="width:100%">
+            <span>
+              <b>Attendance alerts</b>
+              <span class="sub" id="setAlertHelp">Notify when missing a class or dropping below minimum</span>
+            </span>
+            <span class="switch"><input type="checkbox" id="setAlert"><i></i></span>
+          </label>
+        </div>
+        <div class="card-divider"></div>
+        <div class="settings-item" style="gap:14px">
+          <div>
+            <b id="setCutLbl">My minimum attendance</b>
+            <p class="sub" id="setCutHelp">Warning threshold for all courses</p>
+          </div>
+          <div class="threshold-badge"><input id="setCut" type="number" inputmode="numeric" min="1" max="100" class="stepper-input"><span>%</span></div>
+        </div>
+      </div>
     </div>
-    <div class="card">
-      <div class="field"><label id="setCutLbl" for="setCut">My minimum attendance (%)</label><input id="setCut" type="number" inputmode="numeric" min="1" max="100"></div>
-      <p class="fine" id="setCutHelp">You can set a different minimum for each class on its page.</p>
+
+    <!-- Data & Sync -->
+    <div class="settings-group" id="setData">
+      <span class="settings-section-title">Data &amp; Cloud Sync</span>
+      <div class="settings-card">
+        <div class="settings-item">
+          <div>
+            <b>Sync Status</b>
+            <p class="sub" id="dataState">All records synchronized.</p>
+          </div>
+          <button class="btn sm primary" type="button" data-act="sync" id="dataSend" style="flex-shrink:0">Send scans</button>
+        </div>
+        <div class="card-divider"></div>
+        <button class="settings-action-row" type="button" data-act="clearPhone" id="dataClear">
+          <div>
+            <div>Clear data on this phone</div>
+            <span class="sub">Leaves safe copies on the cloud</span>
+          </div>
+          <span class="chevron-right">›</span>
+        </button>
+      </div>
     </div>
-    <div class="card" id="setData">
-      <span class="lbl">Your data</span>
-      <p class="sub" id="dataState"></p>
-      <button class="btn" type="button" data-act="sync" id="dataSend">Send unsent scans now</button>
-      <button class="btn" type="button" data-act="clearPhone">Clear data on this phone</button>
-      <button class="btn danger" type="button" data-act="deleteAcct">Delete my account</button>
+
+    <!-- Danger Zone -->
+    <div class="settings-group" id="setDanger">
+      <span class="settings-section-title">Danger Zone</span>
+      <div class="settings-card">
+        <button class="settings-action-row text-danger" type="button" data-act="deleteAcct" id="btnDeleteStu">
+          <div>
+            <b>Delete my account</b>
+            <div class="sub">Permanently delete profile and attendance history</div>
+          </div>
+          <span class="chevron-right">›</span>
+        </button>
+        <button class="settings-action-row text-danger" type="button" data-act="lecDelete" id="btnDeleteLec" hidden>
+          <div>
+            <b>Delete my account</b>
+            <div class="sub">Permanently delete lecturer profile and signing keys</div>
+          </div>
+          <span class="chevron-right">›</span>
+        </button>
+      </div>
     </div>
-    <div class="card" id="setLecData">
-      <span class="lbl">Your account</span>
-      <p class="sub" id="lecAcct"></p>
-      <button class="btn" type="button" data-act="lecErase">Sign out of this phone</button>
-      <button class="btn danger" type="button" data-act="lecDelete">Delete my account</button>
-    </div>
-    <div class="card"><button id="roleSwap" class="btn" type="button" data-act="swap"></button></div>
+
     <details class="card" id="dev">
       <summary>Developer options</summary>
       <div class="in">
@@ -663,7 +798,7 @@ details.card:not([open]){gap:0}
         <button class="btn danger" type="button" data-act="eraseAll">Erase everything on this phone</button>
       </div>
     </details>
-    <p class="fine"><span data-app></span> · <a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="delete-account.html" target="_blank" rel="noopener">Delete account</a></p>
+    <p class="fine" style="text-align:center"><span data-app></span> · <a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="delete-account.html" target="_blank" rel="noopener">Delete account</a></p>
   </section>
 </div>
 
@@ -2367,6 +2502,7 @@ function dialog(o){
 
 /* ---------- navigation ---------- */
 function go(v, p){
+  if (v !== view) prev = { view, param };
   view = v; param = p == null ? null : p;
   const tt = $('#toast'); if (tt) tt.hidden = true;
   if (v !== 'sreg' && v !== 'lreg' && v !== 'welcome' && v !== 'set') cfg.last = v;
@@ -2376,6 +2512,7 @@ function go(v, p){
 }
 function back(){
   if (view === 'set') return go(prev.view && prev.view !== 'set' && prev.view !== 'welcome' ? prev.view : roleHome(), prev.param);
+  if (view === 'sdetail') return go('shome');
   if (view === 'sonboard') {
     if (soStep > 1) return updateSoStep(soStep - 1);
     return go('sreg');
@@ -2395,7 +2532,7 @@ function roleHome(){
 }
 function render(){
   document.querySelectorAll('.screen[id^="v-"]').forEach(s => { s.hidden = s.id !== 'v-' + view; });
-  $('#bar').hidden = view === 'welcome';
+  $('#bar').hidden = view === 'welcome' || view === 'sonboard' || view === 'lonboard';
   const isRoot = view === 'shome' || view === 'lhome' || view === 'llive' || view === 'sdone';
   $('#barL').innerHTML = isRoot ? '<span class="logo">' + LOGO_HTML + '</span>' : '<button class="iconbtn" type="button" data-act="back" aria-label="Back">' + ic(I.left, 18) + '</button>';
   $('#gear').hidden = view === 'sreg' || view === 'lreg' || view === 'sonboard' || view === 'lonboard';
@@ -2943,23 +3080,49 @@ async function saveCSV(){
 /* ---------- settings ---------- */
 function renderSet(){
   const st = cfg.role === 'student', lc = cfg.role === 'lecturer';
-  $('#roleSwap').textContent = lc ? 'Use ' + APP + ' as a student instead' : 'Use ' + APP + ' as a lecturer instead';
-  if (lc && lec) $('#lecAcct').textContent = (lec.email || lec.name || 'Your account') + ' · ' + (lec.auth_provider || 'Google') + ' account' + (lec.acctSent ? ' · synced.' : ' · connecting…');
-  $('#setAlerts').hidden = !st; $('#setData').hidden = !(st && stu); $('#setLecData').hidden = !(lc && lec);
-  $('#setCutLbl').textContent = st ? 'My minimum attendance (%)' : 'Flag students below (%)';
-  $('#setCutHelp').textContent = st ? 'You can set a different minimum for each class on its page.' : 'Used for the "below" count and the red tags on your course pages.';
-  $('#setCut').value = cfg.cutoff; $('#setOff').checked = !!cfg.fakeOffline;
+  $('#roleSwap').innerHTML = '<span>' + (lc ? 'Use ' + APP + ' as a student instead' : 'Use ' + APP + ' as a lecturer instead') + '</span><span class="chevron-right">›</span>';
+  
+  if (st) {
+    $('#setUserTitle').textContent = (stu && stu.name) ? stu.name : 'Student Account';
+    $('#setUserSub').textContent = (stu && stu.matric) ? (stu.matric + (stu.email ? ' · ' + stu.email : '') + ' · NMU') : 'Device locked to student attendance';
+    $('#setLockChip').hidden = !(stu && stu.matric);
+    $('#btnDeleteStu').hidden = !stu;
+    $('#btnDeleteLec').hidden = true;
+    $('#setData').hidden = !(st && stu);
+    $('#setAlerts').hidden = false;
+    if ($('#setAlertsDiv')) $('#setAlertsDiv').hidden = false;
+  } else {
+    $('#setUserTitle').textContent = (lec && lec.name) ? lec.name : 'Lecturer Account';
+    $('#setUserSub').textContent = (lec && lec.email) ? (lec.email + ' · Faculty') : 'Authorized lecturer profile';
+    $('#setLockChip').hidden = true;
+    $('#btnDeleteStu').hidden = true;
+    $('#btnDeleteLec').hidden = !lec;
+    $('#setData').hidden = true;
+    $('#setAlerts').hidden = true;
+    if ($('#setAlertsDiv')) $('#setAlertsDiv').hidden = true;
+  }
+
+  $('#setCutLbl').textContent = st ? 'My minimum attendance' : 'Flag students below';
+  $('#setCutHelp').textContent = st ? 'Warning threshold across all courses' : 'Used for the "below" count and red tags on your course pages.';
+  $('#setCut').value = cfg.cutoff;
+  $('#setOff').checked = !!cfg.fakeOffline;
   $('#setAlert').checked = !!cfg.alerts && ('Notification' in window) && Notification.permission === 'granted';
-  $('#setAlertHelp').textContent = 'Shows when you open the app. Alerts while the app is closed come with the Android app.';
+  $('#setAlertHelp').textContent = 'Shows when you open the app. Alerts while closed come with native notifications.';
+  
   if (stu) {
     const pend = stu.scans.filter(s => !s.synced).length;
-    $('#dataState').textContent = pend ? pend + (pend === 1 ? ' scan is' : ' scans are') + ' only on this phone. Send ' + (pend === 1 ? 'it' : 'them') + ' before clearing anything.' : (cfg.cloud === 'demo' ? 'Demo mode: nothing leaves this phone.' : 'All your scans are sent and safe on the server.');
+    $('#dataState').textContent = pend ? pend + (pend === 1 ? ' scan is' : ' scans are') + ' only on this phone. Send ' + (pend === 1 ? 'it' : 'them') + ' to back up.' : (cfg.cloud === 'demo' ? 'Demo mode: data remains on device.' : 'All attendance scans are synced and backed up.');
     $('#dataSend').hidden = !pend;
   }
-  $('#setDemo').checked = cfg.cloud !== 'supabase'; $('#setFb').checked = cfg.cloud === 'supabase'; $('#fbF').hidden = cfg.cloud !== 'supabase';
-  $('#fbP').value = cfg.sbUrl || CONF.supabaseUrl || ''; $('#fbK').value = cfg.sbKey || CONF.supabaseAnonKey || '';
+  
+  $('#setDemo').checked = cfg.cloud !== 'supabase';
+  $('#setFb').checked = cfg.cloud === 'supabase';
+  $('#fbF').hidden = cfg.cloud !== 'supabase';
+  $('#fbP').value = cfg.sbUrl || CONF.supabaseUrl || '';
+  $('#fbK').value = cfg.sbKey || CONF.supabaseAnonKey || '';
   $('#sampleWrap').hidden = cfg.role !== 'lecturer' || !lec;
-  const has = lec && lec.courses.some(c => c.sample); $('#sampleWrap button').textContent = has ? 'Remove example course' : 'Load example course';
+  const has = lec && lec.courses.some(c => c.sample);
+  $('#sampleWrap button').textContent = has ? 'Remove example course' : 'Load example course';
   applyTheme();
 }
 
@@ -3154,7 +3317,12 @@ $('#sonboardForm').addEventListener('submit', async e => {
       updateSoStep(2);
       return fieldErr('soMatric', 'This matric number is already registered by another account.');
     }
-    toast('Could not save your profile. Check your connection and try again.');
+    if (msg.includes('not_signed_in')) {
+      toast('Your sign-in session expired. Please sign in again.');
+      return go('sreg');
+    }
+    console.error('Save student profile error:', e);
+    toast('Could not save your profile. ' + (e.message ? e.message.replace(/^Supabase rpc [^:]+:\s*/, '') : 'Check your connection and try again.'));
   }
 });
 /* Lecturer onboarding form (post-OAuth) */
@@ -3219,11 +3387,20 @@ async function handleOAuth(provider, role){
   saveCfg();
 
   const clickedBtn = document.querySelector('[data-act="oauth"][data-provider="' + provider + '"][data-role="' + role + '"]');
-  const allBtns = document.querySelectorAll('[data-act="oauth"]');
-  allBtns.forEach(b => {
-    b.disabled = true;
-    b.classList.add('loading');
+  const parentGroup = clickedBtn ? clickedBtn.closest('.auth-actions') : null;
+  const siblingBtns = parentGroup ? parentGroup.querySelectorAll('.oauth-btn') : document.querySelectorAll('.oauth-btn');
+
+  // Claude-style sibling button collapse and fade-out
+  siblingBtns.forEach(b => {
+    if (b !== clickedBtn) {
+      b.classList.add('faded-out');
+    }
   });
+
+  if (clickedBtn) {
+    clickedBtn.disabled = true;
+    clickedBtn.classList.add('loading');
+  }
 
   let origHtml = '';
   const provTitle = provider === 'google' ? 'Google' : 'Apple';
@@ -3242,15 +3419,56 @@ async function handleOAuth(provider, role){
   bar.hidden = false;
 
   const resetLoading = () => {
-    allBtns.forEach(b => {
+    siblingBtns.forEach(b => {
       b.disabled = false;
-      b.classList.remove('loading');
+      b.classList.remove('loading', 'faded-out');
     });
     if (clickedBtn && origHtml) clickedBtn.innerHTML = origHtml;
     if (bar) bar.hidden = true;
   };
 
   const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  const googlePlugin = window.Capacitor?.Plugins?.GoogleSignIn;
+  const webClientId = (window.ADESSE_CONFIG && window.ADESSE_CONFIG.googleClientId) || '483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com';
+
+  // 1. Native Android Google Sign-In with Credential Manager account chooser bottom sheet
+  if (provider === 'google' && isNative && googlePlugin) {
+    try {
+      await googlePlugin.initialize({ clientId: webClientId }).catch(() => {});
+      const result = await googlePlugin.signIn();
+      if (result && result.idToken) {
+        if (clickedBtn) {
+          clickedBtn.innerHTML = '<span class="oauth-spinner" aria-hidden="true"></span><span>Authenticating…</span>';
+        }
+        const { data, error } = await supabaseClient.auth.signInWithIdToken({
+          provider: 'google',
+          token: result.idToken
+        });
+        if (error) {
+          resetLoading();
+          return toast(error.message || 'Google authentication failed.');
+        }
+        if (data && data.user) {
+          await handleAuthSession(data.user);
+          if (bar) bar.hidden = true;
+          return;
+        }
+      }
+      resetLoading();
+    } catch (err) {
+      resetLoading();
+      const msg = (err && (err.message || err.toString()) || '').toLowerCase();
+      // If user dismissed the bottom sheet or cancelled, gracefully restore state
+      if (msg.includes('cancel') || msg.includes('16') || msg.includes('canceled') || msg.includes('dismiss')) {
+        return;
+      }
+      console.warn('Native Google Sign-In error:', err);
+      toast('Google sign-in error: ' + (err.message || err));
+    }
+    return;
+  }
+
+  // 2. Standard Web OAuth fallback (for browser testing / desktop)
   const redirectTo = isNative ? 'https://localhost/' : (window.location.origin + window.location.pathname);
 
   try {
@@ -3418,6 +3636,32 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && vi
 /* ---------- start ---------- */
 (async function init(){
   applyTheme(); closeStale();
+
+  // Native Android hardware/gesture back button handling
+  if (window.Capacitor?.Plugins?.App) {
+    try {
+      window.Capacitor.Plugins.App.addListener('backButton', () => {
+        if (cam.stream || !$('#scanner').hidden) {
+          scanStop();
+          return;
+        }
+        if (view === 'welcome' || view === 'shome' || view === 'lhome') {
+          window.Capacitor.Plugins.App.exitApp();
+        } else {
+          back();
+        }
+      });
+    } catch(e) {
+      console.warn('App backButton listener error:', e);
+    }
+  }
+
+  // Pre-initialize native Google Sign-In
+  if (window.Capacitor?.Plugins?.GoogleSignIn) {
+    const webClientId = (window.ADESSE_CONFIG && window.ADESSE_CONFIG.googleClientId) || '483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com';
+    window.Capacitor.Plugins.GoogleSignIn.initialize({ clientId: webClientId }).catch(() => {});
+  }
+
   if (lec && window.crypto && crypto.subtle) { try { priv = await importPriv(lec.jwk); } catch (e) { priv = null; } }
   if (!('BarcodeDetector' in window)) setTimeout(ensureJsQR, 2500);
   try { if ('serviceWorker' in navigator && /^https:|^http:\/\/localhost/.test(location.href)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
