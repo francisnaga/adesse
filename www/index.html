@@ -3673,7 +3673,17 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && vi
 
   if (lec && window.crypto && crypto.subtle) { try { priv = await importPriv(lec.jwk); } catch (e) { priv = null; } }
   if (!('BarcodeDetector' in window)) setTimeout(ensureJsQR, 2500);
-  try { if ('serviceWorker' in navigator && /^https:|^http:\/\/localhost/.test(location.href)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+  const isNativeApp = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  if (isNativeApp) {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => { for (const r of regs) r.unregister(); }).catch(() => {});
+    }
+    if ('caches' in window) {
+      caches.keys().then(keys => { for (const k of keys) caches.delete(k); }).catch(() => {});
+    }
+  } else {
+    try { if ('serviceWorker' in navigator && /^https:|^http:\/\/localhost/.test(location.href)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+  }
   const oauthHandled = await checkOAuthRedirect();
   if (!oauthHandled) {
     go(roleHome());
