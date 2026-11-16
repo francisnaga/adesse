@@ -4,7 +4,13 @@
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "allowNavigation": [
+      "*.supabase.co",
+      "accounts.google.com",
+      "*.google.com",
+      "appleid.apple.com"
+    ]
   },
   "android": {
     "allowMixedContent": true
