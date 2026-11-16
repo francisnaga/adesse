@@ -329,8 +329,6 @@ details.card:not([open]){gap:0}
   <header id="bar" class="bar" hidden>
     <div id="barL"></div>
     <div class="r">
-      <span id="net" class="net" data-s="on">Online</span>
-      <button id="themeBtn" class="iconbtn" type="button" data-act="themeToggle" aria-label="Switch light or dark mode"></button>
       <button id="gear" class="iconbtn" type="button" data-act="settings" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
   </header>
@@ -717,6 +715,14 @@ details.card:not([open]){gap:0}
             <button type="button" data-act="theme" data-v="light">Light</button>
             <button type="button" data-act="theme" data-v="dark">Dark</button>
           </div>
+        </div>
+                <div class="card-divider"></div>
+        <div class="settings-item" id="setNetRow">
+          <div>
+            <b>Network</b>
+            <p class="sub" id="net">Checking…</p>
+          </div>
+          <span id="netDot" style="width:9px;height:9px;border-radius:50%;background:var(--muted-foreground);flex-shrink:0;transition:background .4s ease"></span>
         </div>
         <div class="card-divider" id="setAlertsDiv"></div>
         <div class="settings-item" id="setAlerts">
@@ -2543,8 +2549,11 @@ function render(){
   ({ sreg:renderSreg, shome:renderShome, sdetail:renderSdetail, sdone:renderSdone, sonboard:renderSonboard, lreg:renderLreg, lonboard:renderLonboard, lhome:renderLhome, lcnew:renderLcnew, llive:renderLive, lcourse:renderCourse, set:renderSet }[view] || (() => {}))();
 }
 function renderNet(){
-  const on = isOnline(), el = $('#net');
-  el.dataset.s = on ? 'on' : 'off'; el.textContent = on ? 'Online' : 'Offline';
+  const on = isOnline();
+  const el = $('#net');
+  if (el) el.textContent = on ? 'Connected' : 'No internet';
+  const dot = $('#netDot');
+  if (dot) dot.style.background = on ? '#22c55e' : 'var(--muted-foreground)';
 }
 function setSyncing(on){ const b = $('#sSync'); if (!b) return; b.classList.toggle('spin', on); b.innerHTML = on ? ic(I.refresh, 14) + ' Refreshing' : 'Refresh'; }
 
@@ -3173,7 +3182,7 @@ document.addEventListener('click', async e => {
   if (a === 'home') return go(roleHome());
   if (a === 'swap') { cfg.role = cfg.role === 'lecturer' ? 'student' : 'lecturer'; saveCfg(); return go(roleHome()); }
   if (a === 'theme') { cfg.theme = b.dataset.v; saveCfg(); return applyTheme(); }
-  if (a === 'themeToggle') { cfg.theme = effTheme() === 'dark' ? 'light' : 'dark'; saveCfg(); return applyTheme(); }
+  // themeToggle removed (button moved out of header)
   if (a === 'lv') { chosen[b.dataset.g] = b.dataset.v; clearErr($('#' + b.dataset.g)); levelChips(b.dataset.g, b.dataset.g === 'cLevel'); return; }
   if (a === 'forgot') return forgotPin();
   if (a === 'reveal') { const i = $('#' + b.dataset.for), on = i.type === 'password'; i.type = on ? 'text' : 'password'; b.textContent = on ? 'Hide' : 'Show'; b.setAttribute('aria-pressed', String(on)); return; }
