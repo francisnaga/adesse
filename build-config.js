@@ -1,5 +1,7 @@
 // Build script to generate config.js from Vercel / CI Environment Variables
+// and prepare the web bundle for Capacitor Android & iOS builds
 const fs = require('fs');
+const path = require('path');
 
 const supabaseUrl = process.env.SUPABASE_URL || 
                     process.env.NEXT_PUBLIC_SUPABASE_URL || 
@@ -25,4 +27,32 @@ window.ADESSE_CONFIG = {
 `;
 
 fs.writeFileSync('config.js', configContent);
-console.log('✓ Successfully generated config.js for Vercel/production environment.');
+console.log('✓ Successfully generated root config.js');
+
+// Ensure www folder exists for Capacitor builds
+const wwwDir = path.join(__dirname, 'www');
+if (!fs.existsSync(wwwDir)) {
+  fs.mkdirSync(wwwDir, { recursive: true });
+}
+
+// Files to copy to www
+const filesToCopy = [
+  'index.html',
+  'config.js',
+  'manifest.webmanifest',
+  'sw.js',
+  'privacy.html',
+  'delete-account.html',
+  'icon-192.png',
+  'icon-512.png',
+  'apple-touch-icon.png',
+  'favicon.png',
+  'icon.svg'
+];
+
+for (const file of filesToCopy) {
+  if (fs.existsSync(file)) {
+    fs.copyFileSync(file, path.join(wwwDir, file));
+  }
+}
+console.log('✓ Successfully synced web assets to www/ for Capacitor');

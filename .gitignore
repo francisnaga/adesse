@@ -17,6 +17,13 @@ dist/
 build/
 out/
 *.log
+*.apk
+*.aab
+.gradle/
+android/build/
+android/app/build/
+android/.gradle/
+android/capacitor-cordova-android-plugins/build/
 
 # IDE and Editor files
 .vscode/
