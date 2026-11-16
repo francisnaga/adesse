@@ -7,32 +7,32 @@
 /* Design system: shadcn/ui "neutral" tokens. Black and white, one border colour, one radius, no accent hue.
    Colour is reserved for meaning: red = below your minimum, a small green dot = online. Light and dark are first-class. */
 :root{
-  --background:#ffffff; --foreground:#0a0a0a; --card:#ffffff;
-  --primary:#171717; --primary-foreground:#fafafa;
-  --secondary:#f5f5f5; --muted:#f5f5f5; --muted-foreground:#6b6b6b; --accent:#f5f5f5;
+  --background:#ffffff; --foreground:#0f172a; --card:#ffffff;
+  --primary:#2563eb; --primary-foreground:#ffffff; --primary-hover:#1d4ed8;
+  --secondary:#f1f5f9; --muted:#f8fafc; --muted-foreground:#64748b; --accent:#eff6ff; --accent-foreground:#1e40af;
   --destructive:#e7000b; --destructive-solid:#dc2626; --destructive-soft:rgba(231,0,11,.08); --destructive-line:rgba(231,0,11,.28);
-  --border:#e5e5e5; --input:#e5e5e5; --ring:rgba(115,115,115,.35);
-  --ok:#16a34a; --radius:10px; --shadow:0 1px 2px rgba(0,0,0,.05);
+  --border:#e2e8f0; --input:#e2e8f0; --ring:rgba(37,99,235,.25);
+  --ok:#16a34a; --radius:10px; --shadow:0 1px 3px rgba(15,23,42,.06);
   --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --ease:cubic-bezier(.2,.7,.2,1);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --background:#0a0a0a; --foreground:#fafafa; --card:#171717;
-    --primary:#e5e5e5; --primary-foreground:#171717;
-    --secondary:#262626; --muted:#262626; --muted-foreground:#a1a1a1; --accent:#262626;
+    --background:#0b0f19; --foreground:#f8fafc; --card:#111827;
+    --primary:#3b82f6; --primary-foreground:#ffffff; --primary-hover:#60a5fa;
+    --secondary:#1e293b; --muted:#1e293b; --muted-foreground:#94a3b8; --accent:rgba(59,130,246,.15); --accent-foreground:#93c5fd;
     --destructive:#ff6467; --destructive-solid:#b91c1c; --destructive-soft:rgba(255,100,103,.12); --destructive-line:rgba(255,100,103,.32);
-    --border:rgba(255,255,255,.1); --input:rgba(255,255,255,.15); --ring:rgba(163,163,163,.4);
+    --border:rgba(255,255,255,.1); --input:rgba(255,255,255,.15); --ring:rgba(59,130,246,.35);
     --ok:#4ade80; --shadow:none; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --background:#0a0a0a; --foreground:#fafafa; --card:#171717;
-  --primary:#e5e5e5; --primary-foreground:#171717;
-  --secondary:#262626; --muted:#262626; --muted-foreground:#a1a1a1; --accent:#262626;
+  --background:#0b0f19; --foreground:#f8fafc; --card:#111827;
+  --primary:#3b82f6; --primary-foreground:#ffffff; --primary-hover:#60a5fa;
+  --secondary:#1e293b; --muted:#1e293b; --muted-foreground:#94a3b8; --accent:rgba(59,130,246,.15); --accent-foreground:#93c5fd;
   --destructive:#ff6467; --destructive-solid:#b91c1c; --destructive-soft:rgba(255,100,103,.12); --destructive-line:rgba(255,100,103,.32);
-  --border:rgba(255,255,255,.1); --input:rgba(255,255,255,.15); --ring:rgba(163,163,163,.4);
+  --border:rgba(255,255,255,.1); --input:rgba(255,255,255,.15); --ring:rgba(59,130,246,.35);
   --ok:#4ade80; --shadow:none; color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -253,6 +253,13 @@ details.card:not([open]){gap:0}
 .divider:not(:empty)::before{margin-right:10px}
 .divider:not(:empty)::after{margin-left:10px}
 .oauth-btn.lg{height:auto; min-height:52px; font-size:15px; gap:12px; padding:0 20px}
+.oauth-btn{position:relative; transition:background-color .15s ease, border-color .15s ease, opacity .15s ease, transform .1s ease}
+.oauth-btn:active:not(:disabled){transform:scale(.985)}
+.oauth-btn.loading{background:var(--muted); opacity:.85; cursor:wait}
+.oauth-spinner{width:18px; height:18px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:oauthSpin .65s linear infinite; flex-shrink:0; display:inline-block}
+@keyframes oauthSpin{to{transform:rotate(360deg)}}
+.oauth-loading-bar{position:fixed; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, #2563eb, #60a5fa, #2563eb); background-size:200% 100%; animation:oauthShimmer 1.5s infinite linear; z-index:99999}
+@keyframes oauthShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* Claude-inspired silky progressive onboarding */
 .onboard-progress-wrap{display:flex; align-items:center; gap:12px; min-height:28px; margin-bottom:20px}
@@ -3210,8 +3217,42 @@ async function handleOAuth(provider, role){
   }
   cfg.oauthRole = role;
   saveCfg();
+
+  const clickedBtn = document.querySelector('[data-act="oauth"][data-provider="' + provider + '"][data-role="' + role + '"]');
+  const allBtns = document.querySelectorAll('[data-act="oauth"]');
+  allBtns.forEach(b => {
+    b.disabled = true;
+    b.classList.add('loading');
+  });
+
+  let origHtml = '';
+  const provTitle = provider === 'google' ? 'Google' : 'Apple';
+  if (clickedBtn) {
+    origHtml = clickedBtn.innerHTML;
+    clickedBtn.innerHTML = '<span class="oauth-spinner" aria-hidden="true"></span><span>Connecting to ' + provTitle + '…</span>';
+  }
+
+  let bar = document.getElementById('topLoadBar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'topLoadBar';
+    bar.className = 'oauth-loading-bar';
+    document.body.appendChild(bar);
+  }
+  bar.hidden = false;
+
+  const resetLoading = () => {
+    allBtns.forEach(b => {
+      b.disabled = false;
+      b.classList.remove('loading');
+    });
+    if (clickedBtn && origHtml) clickedBtn.innerHTML = origHtml;
+    if (bar) bar.hidden = true;
+  };
+
   const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
   const redirectTo = isNative ? 'https://localhost/' : (window.location.origin + window.location.pathname);
+
   try {
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: provider,
@@ -3224,13 +3265,22 @@ async function handleOAuth(provider, role){
         }
       }
     });
+
     if (error) {
-      return toast(error.message || ('Could not initiate ' + provider + ' sign in.'));
+      resetLoading();
+      return toast(error.message || ('Could not initiate ' + provTitle + ' sign in.'));
     }
+
     if (data && data.url) {
+      if (clickedBtn) {
+        clickedBtn.innerHTML = '<span class="oauth-spinner" aria-hidden="true"></span><span>Redirecting…</span>';
+      }
       window.location.assign(data.url);
+    } else {
+      resetLoading();
     }
   } catch (err) {
+    resetLoading();
     toast('Authentication error: ' + (err.message || err));
   }
 }
