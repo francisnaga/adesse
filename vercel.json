@@ -1,6 +1,7 @@
 {
   "version": 2,
   "name": "adesse",
+  "outputDirectory": "public",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
@@ -20,7 +21,7 @@
       ]
     },
     {
-      "source": "/(icon-192.png|icon-512.png|icon.svg)",
+      "source": "/(icon-192.png|icon-512.png|icon.svg|apple-touch-icon.png|favicon.png)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]

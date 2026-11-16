@@ -2858,6 +2858,11 @@ $('#sregForm').addEventListener('submit', async e => {
   }
   const old = stu || {};
   stu = freshStu({ uni, name, matric, dept, level, did:old.did || rid(3), pinHash:hash, scans:old.scans || [], keys:old.keys || {}, sessions:old.sessions || {} });
+  if (window._oauthData) {
+    stu.email = window._oauthData.email;
+    stu.user_id = window._oauthData.userId;
+    stu.auth_provider = window._oauthData.provider;
+  }
   $('#sPin').value = ''; sregStep = 1; saveStu(); go('shome'); sync(false);
 });
 $('#lregForm').addEventListener('submit', async e => {
@@ -2874,6 +2879,10 @@ $('#lregForm').addEventListener('submit', async e => {
   }
   const k = await genKeys(), wrap = await wrapKey(k.jwk, pass);
   lec = { name, uni, email, lid:await fingerprint(k.pub), pub:k.pub, jwk:k.jwk, wrap, acctSent:false, courses:[], sessions:[], manual:[], cloudScans:[], roster:[], accepted:{} };
+  if (window._oauthData) {
+    lec.user_id = window._oauthData.userId;
+    lec.auth_provider = window._oauthData.provider;
+  }
   priv = await importPriv(k.jwk); $('#lPass').value = ''; saveLec(); go('lhome'); lecSync(false);
 });
 $('#cnewForm').addEventListener('submit', e => {
@@ -2908,7 +2917,8 @@ async function handleOAuth(provider, role){
   }
   cfg.oauthRole = role;
   saveCfg();
-  const redirectTo = window.location.origin + window.location.pathname;
+  const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+  const redirectTo = isNative ? 'https://localhost/' : (window.location.origin + window.location.pathname);
   try {
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: provider,
@@ -2933,16 +2943,18 @@ async function handleOAuth(provider, role){
 }
 
 async function checkOAuthRedirect(){
-  if (!supabaseClient) return;
+  if (!supabaseClient) return false;
   try {
     const { data: { session }, error } = await supabaseClient.auth.getSession();
     if (error) console.warn('Supabase auth session error:', error);
     if (session && session.user) {
       await handleAuthSession(session.user);
+      return true;
     }
   } catch (e) {
     console.warn('OAuth check error:', e);
   }
+  return false;
 }
 
 async function handleAuthSession(user){
@@ -3038,8 +3050,11 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && vi
   if (lec && window.crypto && crypto.subtle) { try { priv = await importPriv(lec.jwk); } catch (e) { priv = null; } }
   if (!('BarcodeDetector' in window)) setTimeout(ensureJsQR, 2500);
   try { if ('serviceWorker' in navigator && /^https:|^http:\/\/localhost/.test(location.href)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
-  await checkOAuthRedirect();
-  go(roleHome()); sync(false);
+  const oauthHandled = await checkOAuthRedirect();
+  if (!oauthHandled) {
+    go(roleHome());
+  }
+  sync(false);
 })();
 })();
 </script>

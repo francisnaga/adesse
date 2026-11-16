@@ -1,5 +1,5 @@
 // Build script to generate config.js from Vercel / CI Environment Variables
-// and prepare the web bundle for Capacitor Android & iOS builds
+// and prepare the web bundle for Capacitor Android, iOS, and Vercel public deployments
 const fs = require('fs');
 const path = require('path');
 
@@ -26,22 +26,18 @@ window.ADESSE_CONFIG = {
 };
 `;
 
-fs.writeFileSync('config.js', configContent);
+// Write to root
+fs.writeFileSync(path.join(__dirname, 'config.js'), configContent);
 console.log('✓ Successfully generated root config.js');
 
-// Ensure www folder exists for Capacitor builds
-const wwwDir = path.join(__dirname, 'www');
-if (!fs.existsSync(wwwDir)) {
-  fs.mkdirSync(wwwDir, { recursive: true });
-}
-
-// Files to copy to www
+// Files to copy to target directories
 const filesToCopy = [
   'index.html',
   'config.js',
   'manifest.webmanifest',
   'sw.js',
   'privacy.html',
+  'terms.html',
   'delete-account.html',
   'icon-192.png',
   'icon-512.png',
@@ -50,9 +46,20 @@ const filesToCopy = [
   'icon.svg'
 ];
 
-for (const file of filesToCopy) {
-  if (fs.existsSync(file)) {
-    fs.copyFileSync(file, path.join(wwwDir, file));
+function syncDirectory(targetDirName) {
+  const targetDir = path.join(__dirname, targetDirName);
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
   }
+  for (const file of filesToCopy) {
+    const src = path.join(__dirname, file);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(targetDir, file));
+    }
+  }
+  console.log(`✓ Successfully synced web assets to ${targetDirName}/`);
 }
-console.log('✓ Successfully synced web assets to www/ for Capacitor');
+
+// Sync to www (Capacitor) and public (Vercel)
+syncDirectory('www');
+syncDirectory('public');

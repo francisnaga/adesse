@@ -1,13 +1,16 @@
-const CACHE_NAME = 'adesse-v1';
+const CACHE_NAME = 'adesse-v2';
 const ASSETS = [
   './',
   './index.html',
   './config.js',
   './privacy.html',
+  './terms.html',
   './delete-account.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
+  './apple-touch-icon.png',
+  './favicon.png',
   './icon.svg',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap'
 ];
