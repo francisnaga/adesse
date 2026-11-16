@@ -253,6 +253,21 @@ details.card:not([open]){gap:0}
 .divider:not(:empty)::before{margin-right:10px}
 .divider:not(:empty)::after{margin-left:10px}
 .oauth-btn.lg{height:auto; min-height:52px; font-size:15px; gap:12px; padding:0 20px}
+
+/* Claude-inspired silky progressive onboarding */
+.onboard-progress-wrap{display:flex; align-items:center; gap:12px; min-height:28px; margin-bottom:20px}
+.onboard-back-btn{display:inline-flex; align-items:center; gap:5px; background:transparent; border:none; color:var(--muted-foreground); font:500 13px/1 var(--font-body); padding:6px 10px; margin-left:-10px; border-radius:var(--radius); cursor:pointer; transition:color .15s ease, background-color .15s ease}
+.onboard-back-btn:hover{color:var(--foreground); background:var(--muted)}
+.onboard-progress-bar{flex:1; height:3px; background:var(--muted); border-radius:999px; overflow:hidden}
+.onboard-progress-fill{height:100%; background:var(--foreground); border-radius:999px; transition:width .35s cubic-bezier(0.16, 1, 0.3, 1)}
+.onboard-step-pill{font:500 12px/1 var(--font-body); color:var(--muted-foreground); font-variant-numeric:tabular-nums; letter-spacing:.02em}
+.onboard-step{display:none; opacity:0}
+.onboard-step.active{display:block; opacity:1; animation:claudeStepIn .32s cubic-bezier(0.16, 1, 0.3, 1) forwards}
+@keyframes claudeStepIn{from{opacity:0; transform:translateY(12px) scale(.99)}to{opacity:1; transform:translateY(0) scale(1)}}
+.onboard-heading{font:600 23px/1.25 var(--font-body); letter-spacing:-.03em; margin:0 0 8px 0; color:var(--foreground)}
+.onboard-sub{font:400 14px/1.45 var(--font-body); color:var(--muted-foreground); margin:0 0 22px 0}
+.device-lock-pill{display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--muted); border:1px solid var(--border); border-radius:var(--radius); font:400 12px/1.4 var(--font-body); color:var(--muted-foreground)}
+.device-lock-pill svg{flex-shrink:0; color:var(--foreground)}
 </style>
 
 <div class="app">
@@ -295,17 +310,94 @@ details.card:not([open]){gap:0}
     <p class="fine" style="text-align:center">By continuing you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
   </section>
 
-  <!-- STUDENT ONBOARDING (post-OAuth) -->
+  <!-- STUDENT ONBOARDING (post-OAuth: Claude-style progressive flow) -->
   <section id="v-sonboard" class="screen" hidden>
-    <div><h1>Finish setup</h1><p class="muted">Just your student details and you're in.</p></div>
-    <form id="sonboardForm" class="card" autocomplete="off" novalidate>
-      <div class="field"><label for="soUni">University</label><select id="soUni"><option value="nmu">Nigeria Maritime University</option><option value="other">Another university</option></select></div>
-      <div class="field" id="soUniOtherWrap" hidden><label for="soUniOther">University name</label><input id="soUniOther" autocomplete="off" enterkeyhint="next"></div>
-      <div class="field"><label for="soName">Full name</label><input id="soName" autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="As on your student ID"></div>
-      <div class="field"><label for="soMatric">Matric number</label><input id="soMatric" autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="e.g. 2021/1234"></div>
-      <div class="field"><label for="soDeptSel">Department</label><div id="soDeptWrap"></div></div>
-      <div class="field"><span class="fl" id="soLevelLbl">Level</span><div id="soLevel" class="chips" role="group" aria-labelledby="soLevelLbl"></div></div>
-      <button class="btn primary lg" type="submit" id="sonboardGo">Start using Adesse</button>
+    <div class="onboard-progress-wrap">
+      <button type="button" class="onboard-back-btn" id="soBackBtn" hidden aria-label="Go to previous step">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Back</span>
+      </button>
+      <div class="onboard-progress-bar" aria-hidden="true">
+        <div class="onboard-progress-fill" id="soProgressFill" style="width:25%"></div>
+      </div>
+      <span class="onboard-step-pill" id="soStepPill">1 of 4</span>
+    </div>
+
+    <form id="sonboardForm" class="card" autocomplete="off" novalidate style="padding:24px 20px">
+      <!-- Step 1: University -->
+      <div class="onboard-step active" id="soStep1" data-step="1">
+        <h2 class="onboard-heading">Where do you study?</h2>
+        <p class="onboard-sub">Select your university to connect with your official department attendance rosters.</p>
+        <div class="field" style="margin-bottom:14px">
+          <label for="soUni">University</label>
+          <select id="soUni">
+            <option value="nmu">Nigeria Maritime University</option>
+            <option value="other">Another university</option>
+          </select>
+        </div>
+        <div class="field" id="soUniOtherWrap" hidden style="margin-bottom:14px">
+          <label for="soUniOther">University name</label>
+          <input id="soUniOther" autocomplete="off" placeholder="Enter full university name">
+        </div>
+        <div style="margin-top:26px">
+          <button class="btn primary lg" type="button" data-act="soNext" data-step="1">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Matric & Device Lock -->
+      <div class="onboard-step" id="soStep2" data-step="2">
+        <h2 class="onboard-heading">What's your matric number?</h2>
+        <p class="onboard-sub">Your student identity will be permanently locked to this device so no one else can attend class for you.</p>
+        <div class="field" style="margin-bottom:8px">
+          <label for="soMatric">Matriculation number</label>
+          <input id="soMatric" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="e.g. 2021/1234" style="font-family:var(--font-mono); font-size:1.15rem; letter-spacing:.05em; font-weight:600; text-align:center">
+        </div>
+        <div class="device-lock-pill">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span><b>Device Lock:</b> This phone is tied to this matric number. No one else can use this device to sign in.</span>
+        </div>
+        <div style="margin-top:26px">
+          <button class="btn primary lg" type="button" data-act="soNext" data-step="2">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Academic Details -->
+      <div class="onboard-step" id="soStep3" data-step="3">
+        <h2 class="onboard-heading">Your academic profile</h2>
+        <p class="onboard-sub">Verify your official student details as they appear on your school ID card.</p>
+        <div class="field" style="margin-bottom:14px">
+          <label for="soName">Full name</label>
+          <input id="soName" autocomplete="name" autocapitalize="words" placeholder="First and last name">
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <label for="soDeptSel">Department</label>
+          <div id="soDeptWrap"></div>
+        </div>
+        <div class="field" style="margin-bottom:14px">
+          <span class="fl" id="soLevelLbl">Study level</span>
+          <div id="soLevel" class="chips" role="group" aria-labelledby="soLevelLbl"></div>
+        </div>
+        <div style="margin-top:26px">
+          <button class="btn primary lg" type="button" data-act="soNext" data-step="3">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 4: 6-digit Backup PIN -->
+      <div class="onboard-step" id="soStep4" data-step="4">
+        <h2 class="onboard-heading">Create a 6-digit backup PIN</h2>
+        <p class="onboard-sub">If poor lighting or projector glare ever prevents camera scanning, you can enter the live class code plus this secret PIN.</p>
+        <div class="field" style="margin-bottom:8px">
+          <label for="soPin">6-digit PIN</label>
+          <div style="position:relative">
+            <input id="soPin" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" placeholder="••••••" style="font-family:var(--font-mono); font-size:1.25rem; letter-spacing:.3em; text-align:center; padding-right:50px">
+            <button type="button" id="soPinToggle" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--muted-foreground); cursor:pointer; padding:6px 10px; font-size:12px; font-weight:500">Show</button>
+          </div>
+        </div>
+        <p class="fine" style="margin-top:6px">Pick 6 numbers you won't forget during class.</p>
+        <div style="margin-top:26px">
+          <button class="btn primary lg" type="submit" id="sonboardGo">Complete setup</button>
+        </div>
+      </div>
     </form>
   </section>
 
@@ -382,14 +474,56 @@ details.card:not([open]){gap:0}
     <p class="fine" style="text-align:center">By continuing you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
   </section>
 
-  <!-- LECTURER ONBOARDING (post-OAuth) -->
+  <!-- LECTURER ONBOARDING (post-OAuth: Claude-style 2-step flow) -->
   <section id="v-lonboard" class="screen" hidden>
-    <div><h1>Lecturer setup</h1><p class="muted">One time. Your account follows you to any phone.</p></div>
-    <form id="lonboardForm" class="card" autocomplete="off" novalidate>
-      <div class="field"><label for="loUni">University</label><select id="loUni"><option value="nmu">Nigeria Maritime University</option><option value="other">Another university</option></select></div>
-      <div class="field" id="loUniOtherWrap" hidden><label for="loUniOther">University name</label><input id="loUniOther" autocomplete="off" enterkeyhint="next"></div>
-      <div class="field"><label for="loName">Your name</label><input id="loName" autocomplete="name" enterkeyhint="go" placeholder="e.g. Dr. A. Okafor"></div>
-      <button class="btn primary lg" type="submit" id="lonboardGo">Create lecturer account</button>
+    <div class="onboard-progress-wrap">
+      <button type="button" class="onboard-back-btn" id="loBackBtn" hidden aria-label="Go to previous step">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Back</span>
+      </button>
+      <div class="onboard-progress-bar" aria-hidden="true">
+        <div class="onboard-progress-fill" id="loProgressFill" style="width:50%"></div>
+      </div>
+      <span class="onboard-step-pill" id="loStepPill">1 of 2</span>
+    </div>
+
+    <form id="lonboardForm" class="card" autocomplete="off" novalidate style="padding:24px 20px">
+      <!-- Step 1: Institution -->
+      <div class="onboard-step active" id="loStep1" data-step="1">
+        <h2 class="onboard-heading">Where do you teach?</h2>
+        <p class="onboard-sub">Select your university to configure official course codes and student attendance lists.</p>
+        <div class="field" style="margin-bottom:14px">
+          <label for="loUni">University</label>
+          <select id="loUni">
+            <option value="nmu">Nigeria Maritime University</option>
+            <option value="other">Another university</option>
+          </select>
+        </div>
+        <div class="field" id="loUniOtherWrap" hidden style="margin-bottom:14px">
+          <label for="loUniOther">University name</label>
+          <input id="loUniOther" autocomplete="off" placeholder="Enter full university name">
+        </div>
+        <div style="margin-top:26px">
+          <button class="btn primary lg" type="button" data-act="loNext" data-step="1">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Faculty Profile & Crypto Keys -->
+      <div class="onboard-step" id="loStep2" data-step="2">
+        <h2 class="onboard-heading">Your faculty profile</h2>
+        <p class="onboard-sub">A secure cryptographic signing key will be generated on this phone for signing dynamic class QR codes.</p>
+        <div class="field" style="margin-bottom:14px">
+          <label for="loName">Your name & academic title</label>
+          <input id="loName" autocomplete="name" placeholder="e.g. Dr. A. Okafor">
+        </div>
+        <div class="device-lock-pill">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span><b>Cryptographic Security:</b> Your private key is stored securely on this phone and backed up to your verified account.</span>
+        </div>
+        <div style="margin-top:26px">
+          <button class="btn primary lg" type="submit" id="lonboardGo">Create faculty account</button>
+        </div>
+      </div>
     </form>
   </section>
 
@@ -1798,6 +1932,14 @@ function rid(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); return 
 function hexBytes(h){ const a = new Uint8Array(h.length / 2); for (let i = 0; i < a.length; i++) a[i] = parseInt(h.substr(i * 2, 2), 16); return a; }
 function normCourse(s){ return String(s || '').toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,12); }
 function normMatric(s){ return String(s || '').toUpperCase().replace(/\s+/g,'').replace(/[^A-Z0-9\/\-]/g,'').slice(0,24); }
+function getDeviceId(){
+  let id = localStorage.getItem('adesse_device_id');
+  if (!id) {
+    id = 'dev_' + rid(16);
+    localStorage.setItem('adesse_device_id', id);
+  }
+  return id;
+}
 
 async function genKeys(){
   const kp = await crypto.subtle.generateKey(ALG, true, ['sign','verify']);
@@ -2227,8 +2369,14 @@ function go(v, p){
 }
 function back(){
   if (view === 'set') return go(prev.view && prev.view !== 'set' && prev.view !== 'welcome' ? prev.view : roleHome(), prev.param);
-  if (view === 'sonboard') return go('sreg');
-  if (view === 'lonboard') return go('lreg');
+  if (view === 'sonboard') {
+    if (soStep > 1) return updateSoStep(soStep - 1);
+    return go('sreg');
+  }
+  if (view === 'lonboard') {
+    if (loStep > 1) return updateLoStep(loStep - 1);
+    return go('lreg');
+  }
   if (view === 'sreg' || view === 'lreg') return go('welcome');
   if (view === 'lcnew' || view === 'lcourse') return go('lhome');
   go(roleHome());
@@ -2276,13 +2424,57 @@ function uniSwitch(prefix, deptWrap, all){
   deptField(deptWrap, other ? 'x' : NMU, all, '');
 }
 
-/* ---------- student: setup (OAuth-only flow) ---------- */
+/* ---------- student: setup (Claude-style multi-step flow) ---------- */
+let soStep = 1;
+let loStep = 1;
+
+function updateSoStep(newStep){
+  clearErrs($('#sonboardForm'));
+  soStep = Math.max(1, Math.min(4, newStep));
+  for (let i = 1; i <= 4; i++) {
+    const el = $('#soStep' + i);
+    if (el) el.classList.toggle('active', i === soStep);
+  }
+  const back = $('#soBackBtn');
+  if (back) back.hidden = (soStep === 1);
+  const fill = $('#soProgressFill');
+  if (fill) fill.style.width = (soStep * 25) + '%';
+  const pill = $('#soStepPill');
+  if (pill) pill.textContent = soStep + ' of 4';
+  if (soStep === 2) {
+    setTimeout(() => { const m = $('#soMatric'); if (m) m.focus(); }, 120);
+  } else if (soStep === 3) {
+    setTimeout(() => { const n = $('#soName'); if (n) n.focus(); }, 120);
+  } else if (soStep === 4) {
+    setTimeout(() => { const p = $('#soPin'); if (p) p.focus(); }, 120);
+  }
+}
+
+function updateLoStep(newStep){
+  clearErrs($('#lonboardForm'));
+  loStep = Math.max(1, Math.min(2, newStep));
+  for (let i = 1; i <= 2; i++) {
+    const el = $('#loStep' + i);
+    if (el) el.classList.toggle('active', i === loStep);
+  }
+  const back = $('#loBackBtn');
+  if (back) back.hidden = (loStep === 1);
+  const fill = $('#loProgressFill');
+  if (fill) fill.style.width = (loStep * 50) + '%';
+  const pill = $('#loStepPill');
+  if (pill) pill.textContent = loStep + ' of 2';
+  if (loStep === 2) {
+    setTimeout(() => { const n = $('#loName'); if (n) n.focus(); }, 120);
+  }
+}
+
 function renderSreg(){ /* OAuth buttons only — no form state to init */ }
 function renderSonboard(){
   if (!$('#soLevel').children.length) levelChips('soLevel', false);
   if (!$('#soDeptWrap').children.length) deptField('soDeptWrap', NMU, false, '');
   const od = window._oauthData || {};
   const nameEl = $('#soName'); if (nameEl && od.fullName && !nameEl.value) nameEl.value = od.fullName;
+  updateSoStep(1);
 }
 /* kept for legacy/restore flow — still used by wipeStudent reset */
 function setSregMode(m){ /* no-op in OAuth mode */ }
@@ -2571,6 +2763,7 @@ function renderLreg(){ /* OAuth buttons only */ }
 function renderLonboard(){
   const od = window._oauthData || {};
   const nameEl = $('#loName'); if (nameEl && od.fullName && !nameEl.value) nameEl.value = od.fullName;
+  updateLoStep(1);
 }
 async function signInLecturer(uni, email, pass){
   const LK = 'dey.llock', lm = lockedMins(LK);
@@ -2768,6 +2961,42 @@ document.addEventListener('click', async e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act;
   if (a === 'oauth') return handleOAuth(b.dataset.provider, b.dataset.role);
+  if (a === 'soNext') {
+    clearErrs($('#sonboardForm'));
+    const step = Number(b.dataset.step || soStep);
+    if (step === 1) {
+      const other = $('#soUni').value === 'other';
+      const uni = other ? $('#soUniOther').value.trim() : NMU;
+      if (!uni) return fieldErr('#soUniOther', 'Enter your university name.');
+      return updateSoStep(2);
+    }
+    if (step === 2) {
+      const matric = normMatric($('#soMatric').value);
+      if (matric.length < 4 || !/\d/.test(matric)) return fieldErr('soMatric', 'Enter your valid matric number (e.g. 2021/1234).');
+      const boundMatric = localStorage.getItem('adesse_bound_matric');
+      if (boundMatric && boundMatric !== matric) {
+        return fieldErr('soMatric', 'This device is already locked to student ' + boundMatric + '. Shared devices are blocked to prevent proxy check-ins.');
+      }
+      return updateSoStep(3);
+    }
+    if (step === 3) {
+      const name = $('#soName').value.trim();
+      if (name.split(/\s+/).filter(Boolean).length < 2) return fieldErr('soName', 'Enter your full first and last name.');
+      const dept = deptVal('soDeptWrap');
+      if (!dept) return fieldErr($('#soDeptWrap select, #soDeptWrap input'), 'Choose your department.');
+      const level = chosen.soLevel;
+      if (!level) return fieldErr($('#soLevel'), 'Choose your study level.');
+      return updateSoStep(4);
+    }
+    return;
+  }
+  if (a === 'loNext') {
+    clearErrs($('#lonboardForm'));
+    const other = $('#loUni').value === 'other';
+    const uni = other ? $('#loUniOther').value.trim() : NMU;
+    if (!uni) return fieldErr('#loUniOther', 'Enter your university name.');
+    return updateLoStep(2);
+  }
   if (a === 'role') { cfg.role = b.dataset.role; saveCfg(); return go(roleHome()); }
   if (a === 'back') return back();
   if (a === 'settings') { prev = { view, param }; return go('set'); }
@@ -2838,7 +3067,7 @@ document.addEventListener('click', async e => {
   if (a === 'eraseAll') {
     const r = await dialog({ title:'Erase everything on this phone?', body:'<p>Profile, scans, courses, keys and demo storage.</p>', ack:'I understand', yes:'Erase everything', danger:true });
     if (r !== 'yes') return;
-    ['dey.stu','dey.lec','dey.cfg','dey.cloud','dey.lock'].forEach(k => { try { localStorage.removeItem(k); } catch (er) {} });
+    ['dey.stu','dey.lec','dey.cfg','dey.cloud','dey.lock','adesse_bound_matric','adesse_device_id'].forEach(k => { try { localStorage.removeItem(k); } catch (er) {} });
     const th = cfg.theme; stu = null; lec = null; priv = null; cfg = Object.assign({}, DEF, { theme:th }); saveCfg();
     if (supabaseClient) supabaseClient.auth.signOut().catch(() => {});
     go('welcome'); toast('Erased.'); return;
@@ -2846,7 +3075,16 @@ document.addEventListener('click', async e => {
 });
 $('#soUni').addEventListener('change', () => { const other = $('#soUni').value === 'other'; $('#soUniOtherWrap').hidden = !other; deptField('soDeptWrap', other ? 'x' : NMU, false, ''); });
 $('#loUni').addEventListener('change', () => { $('#loUniOtherWrap').hidden = $('#loUni').value !== 'other'; });
-/* Student onboarding form (post-OAuth) */
+/* Student onboarding form (post-OAuth: step-validated & device-locked) */
+$('#soBackBtn').addEventListener('click', () => { updateSoStep(soStep - 1); });
+$('#loBackBtn').addEventListener('click', () => { updateLoStep(loStep - 1); });
+$('#soPinToggle').addEventListener('click', () => {
+  const pinInput = $('#soPin');
+  const isPass = pinInput.type === 'password';
+  pinInput.type = isPass ? 'text' : 'password';
+  $('#soPinToggle').textContent = isPass ? 'Hide' : 'Show';
+});
+
 $('#sonboardForm').addEventListener('submit', async e => {
   e.preventDefault(); clearErrs(e.target);
   const other = $('#soUni').value === 'other';
@@ -2855,32 +3093,60 @@ $('#sonboardForm').addEventListener('submit', async e => {
   const matric = normMatric($('#soMatric').value);
   const dept = deptVal('soDeptWrap');
   const level = chosen.soLevel;
-  if (!uni) return fieldErr('#soUniOther', 'Enter your university.');
-  if (name.split(/\s+/).filter(Boolean).length < 2) return fieldErr('soName', 'Enter your first and last name.');
-  if (matric.length < 4 || !/\d/.test(matric)) return fieldErr('soMatric', 'Enter your matric number, like 2021/1234.');
-  if (!dept) return fieldErr($('#soDeptWrap select, #soDeptWrap input'), 'Choose your department.');
-  if (!level) return fieldErr($('#soLevel'), 'Choose your level.');
+  const pin = ($('#soPin').value || '').trim();
+
+  if (!uni) { updateSoStep(1); return fieldErr('#soUniOther', 'Enter your university.'); }
+  if (matric.length < 4 || !/\d/.test(matric)) { updateSoStep(2); return fieldErr('soMatric', 'Enter your matric number, like 2021/1234.'); }
+  if (name.split(/\s+/).filter(Boolean).length < 2) { updateSoStep(3); return fieldErr('soName', 'Enter your first and last name.'); }
+  if (!dept) { updateSoStep(3); return fieldErr($('#soDeptWrap select, #soDeptWrap input'), 'Choose your department.'); }
+  if (!level) { updateSoStep(3); return fieldErr($('#soLevel'), 'Choose your level.'); }
+  if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+    updateSoStep(4);
+    return fieldErr('soPin', 'PIN must be exactly 6 numbers.');
+  }
+
+  const currentDev = getDeviceId();
+  const boundMatric = localStorage.getItem('adesse_bound_matric');
+  if (boundMatric && boundMatric !== matric) {
+    updateSoStep(2);
+    return fieldErr('soMatric', 'This device is already locked to student ' + boundMatric + '. Shared devices are blocked.');
+  }
+
   const od = window._oauthData || {};
   if (!od.userId) return toast('Sign in with Google or Apple first.');
-  const btn = $('#sonboardGo'); btn.disabled = true; btn.textContent = 'Saving…';
+  const btn = $('#sonboardGo'); btn.disabled = true; btn.textContent = 'Securing account…';
+
   try {
-    const result = await SB.rpc('claim_student', {
+    const h = await pinHash(pin, uni + '|' + matric);
+    await SB.rpc('claim_student', {
       p_uni: uni, p_matric: matric, p_name: name, p_dept: dept, p_level: level,
-      p_email: od.email || '', p_provider: od.provider || 'google'
+      p_email: od.email || '', p_provider: od.provider || 'google',
+      p_device_id: currentDev, p_pin_hash: h
     });
-    const existing = stu || {};
+    localStorage.setItem('adesse_bound_matric', matric);
+    localStorage.setItem('adesse_device_id', currentDev);
     stu = freshStu({
-      uni, name, matric, dept, level, did: existing.did || rid(3),
+      uni, name, matric, dept, level, did: currentDev, pinHash: h,
       email: od.email || '', user_id: od.userId, auth_provider: od.provider || 'google',
-      scans: existing.scans || [], keys: existing.keys || {}, sessions: existing.sessions || {},
-      profileSent: true, conflict: false
+      scans: [], keys: {}, sessions: {}, profileSent: true, conflict: false
     });
     saveStu(); go('shome'); sync(false);
-    toast('Welcome, ' + name.split(' ')[0] + '!');
+    toast('Welcome, ' + name.split(' ')[0] + '! Device secured.');
   } catch(e) {
-    btn.disabled = false; btn.textContent = 'Start using Adesse';
+    btn.disabled = false; btn.textContent = 'Complete setup';
     const msg = e.message || '';
-    if (msg.includes('matric_taken')) return fieldErr('soMatric', 'This matric number is already registered to another account.');
+    if (msg.includes('device_mismatch')) {
+      updateSoStep(2);
+      return fieldErr('soMatric', 'This matric number is already tied to another registered phone.');
+    }
+    if (msg.includes('device_already_registered')) {
+      updateSoStep(2);
+      return fieldErr('soMatric', 'This phone is already registered to another student account.');
+    }
+    if (msg.includes('matric_taken')) {
+      updateSoStep(2);
+      return fieldErr('soMatric', 'This matric number is already registered by another account.');
+    }
     toast('Could not save your profile. Check your connection and try again.');
   }
 });
@@ -3028,11 +3294,49 @@ async function handleAuthSession(user){
       if (!rows || !rows.length) rows = await SB.query('students', 'email', email);
       if (rows && rows.length > 0) {
         const found = rows[0];
+        const currentDev = getDeviceId();
+        const boundMatric = localStorage.getItem('adesse_bound_matric');
+
+        // Check 1: Is this physical phone already bound to another student?
+        if (boundMatric && boundMatric !== found.matric) {
+          await dialog({
+            title: 'Device Already Registered',
+            body: '<p>This phone is registered to student <b>' + esc(boundMatric) + '</b>.</p><p>To prevent proxy attendance, each phone is tied to one student. A single phone cannot be shared for attendance.</p>',
+            yes: 'Understood',
+            danger: true
+          });
+          if (supabaseClient) supabaseClient.auth.signOut().catch(() => {});
+          go('welcome');
+          return;
+        }
+
+        // Check 2: Is this student matric already bound to a different phone?
+        if (found.device_id && found.device_id !== currentDev) {
+          await dialog({
+            title: 'Device Mismatch',
+            body: '<p>Your matriculation number (<b>' + esc(found.matric) + '</b>) is locked to a different device.</p><p>You cannot sign in from another phone to prevent proxy attendance. If you changed your phone, please contact your department admin to reset your device link.</p>',
+            yes: 'Understood',
+            danger: true
+          });
+          if (supabaseClient) supabaseClient.auth.signOut().catch(() => {});
+          go('welcome');
+          return;
+        }
+
+        // Check 3: If not bound yet, lock this device now!
+        if (!found.device_id) {
+          try {
+            await SB.put('students', { user_id: user.id, device_id: currentDev }, 'user_id');
+          } catch(e) {}
+        }
+        localStorage.setItem('adesse_bound_matric', found.matric);
+        localStorage.setItem('adesse_device_id', currentDev);
+
         const existing = stu || {};
         stu = freshStu({
           uni: found.uni, name: found.name, matric: found.matric,
-          dept: found.dept, level: found.level, did: existing.did || rid(3),
-          email, user_id: user.id, auth_provider: provider,
+          dept: found.dept, level: found.level, did: currentDev,
+          pinHash: found.pinHash || '', email, user_id: user.id, auth_provider: provider,
           scans: existing.scans || [], keys: existing.keys || {},
           sessions: existing.sessions || {}, profileSent: true
         });
