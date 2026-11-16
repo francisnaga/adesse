@@ -1,0 +1,18 @@
+{
+  "name": "adesse",
+  "version": "1.0.0",
+  "description": "Adesse - Attendance without the paper. Modern offline-first attendance verification system with Supabase, Google and Apple Auth.",
+  "scripts": {
+    "start": "npx serve .",
+    "deploy:vercel": "npx vercel --prod"
+  },
+  "keywords": [
+    "attendance",
+    "pwa",
+    "supabase",
+    "education",
+    "offline-first"
+  ],
+  "author": "Francis Naga",
+  "license": "MIT"
+}

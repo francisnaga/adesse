@@ -1,0 +1,3030 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Adesse"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png"></head><body>
+<title>Adesse</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Design system: shadcn/ui "neutral" tokens. Black and white, one border colour, one radius, no accent hue.
+   Colour is reserved for meaning: red = below your minimum, a small green dot = online. Light and dark are first-class. */
+:root{
+  --background:#ffffff; --foreground:#0a0a0a; --card:#ffffff;
+  --primary:#171717; --primary-foreground:#fafafa;
+  --secondary:#f5f5f5; --muted:#f5f5f5; --muted-foreground:#6b6b6b; --accent:#f5f5f5;
+  --destructive:#e7000b; --destructive-solid:#dc2626; --destructive-soft:rgba(231,0,11,.08); --destructive-line:rgba(231,0,11,.28);
+  --border:#e5e5e5; --input:#e5e5e5; --ring:rgba(115,115,115,.35);
+  --ok:#16a34a; --radius:10px; --shadow:0 1px 2px rgba(0,0,0,.05);
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --background:#0a0a0a; --foreground:#fafafa; --card:#171717;
+    --primary:#e5e5e5; --primary-foreground:#171717;
+    --secondary:#262626; --muted:#262626; --muted-foreground:#a1a1a1; --accent:#262626;
+    --destructive:#ff6467; --destructive-solid:#b91c1c; --destructive-soft:rgba(255,100,103,.12); --destructive-line:rgba(255,100,103,.32);
+    --border:rgba(255,255,255,.1); --input:rgba(255,255,255,.15); --ring:rgba(163,163,163,.4);
+    --ok:#4ade80; --shadow:none; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --background:#0a0a0a; --foreground:#fafafa; --card:#171717;
+  --primary:#e5e5e5; --primary-foreground:#171717;
+  --secondary:#262626; --muted:#262626; --muted-foreground:#a1a1a1; --accent:#262626;
+  --destructive:#ff6467; --destructive-solid:#b91c1c; --destructive-soft:rgba(255,100,103,.12); --destructive-line:rgba(255,100,103,.32);
+  --border:rgba(255,255,255,.1); --input:rgba(255,255,255,.15); --ring:rgba(163,163,163,.4);
+  --ok:#4ade80; --shadow:none; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{
+  background:var(--background); color:var(--foreground); font:15px/1.5 var(--font-body);
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:12px 56px; -webkit-text-size-adjust:100%; -webkit-font-smoothing:antialiased;
+}
+.app{max-width:480px; margin:0 auto; display:grid; gap:20px; align-content:start}
+.screen{display:grid; gap:20px; align-content:start; min-width:0}
+.screen[id^="v-"]:not([hidden]){animation:enter .24s var(--ease) both}
+@keyframes enter{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{opacity:0; transform:translateY(8px) scale(.97)}to{opacity:1; transform:none}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes draw{from{stroke-dashoffset:30}to{stroke-dashoffset:0}}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}100%{box-shadow:0 0 0 8px rgba(22,163,74,0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bump{40%{transform:scale(1.12)}}
+@keyframes swap{from{opacity:.15}to{opacity:1}}
+.bar{display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:44px}
+.bar .r{display:flex; align-items:center; gap:8px}
+.logo{display:inline-flex; align-items:center; gap:8px; font:600 20px/1 var(--font-body); letter-spacing:-.04em; color:var(--foreground)}
+.logo .lm{width:26px; height:26px; flex:none}
+.hero .logo{font-size:34px; gap:12px}
+.hero .logo .lm{width:42px; height:42px}
+.iconbtn{width:44px; height:44px; border-radius:8px; border:1px solid var(--border); background:var(--background); display:grid; place-items:center; color:var(--foreground); cursor:pointer; flex:none; transition:background .15s, transform .1s}
+.iconbtn:hover{background:var(--accent)}
+.iconbtn:active{transform:scale(.95)}
+h1{font:600 26px/1.15 var(--font-body); letter-spacing:-.03em; margin:0}
+h2{font:600 16px/1.3 var(--font-body); letter-spacing:-.01em; margin:0}
+.lbl{font:500 12px/1.3 var(--font-body); letter-spacing:.06em; text-transform:uppercase; color:var(--muted-foreground)}
+p{margin:0}
+.muted{color:var(--muted-foreground)}
+.sub{font-size:14px; color:var(--muted-foreground)}
+.blk{display:block}
+.mono{font-family:var(--font-mono)}
+.net{display:inline-flex; align-items:center; gap:6px; font:500 12px/1 var(--font-body); padding:7px 10px; border-radius:999px; white-space:nowrap; border:1px solid var(--border); color:var(--muted-foreground)}
+.net::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--muted-foreground)}
+.net[data-s="on"]::before{background:var(--ok)}
+.card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; display:grid; gap:14px; min-width:0; box-shadow:var(--shadow)}
+.row{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.row > *{min-width:0}
+.field{display:grid; gap:8px}
+label,.fl{font:500 14px/1.3 var(--font-body); color:var(--foreground)}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{
+  font:16px/1.3 var(--font-body); color:var(--foreground); background:transparent; border:1px solid var(--input); border-radius:8px;
+  padding:0 12px; min-height:44px; width:100%; min-width:0; transition:border-color .15s, box-shadow .15s;
+}
+select{appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:36px}
+select option{color:#0a0a0a; background:#fff}
+textarea{padding:10px 12px; min-height:84px; font:13px/1.35 var(--font-mono); resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--muted-foreground); opacity:.8}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:0; border-color:var(--muted-foreground); box-shadow:0 0 0 3px var(--ring)}
+input[type="checkbox"]{width:18px; height:18px; accent-color:var(--primary); flex:none; margin:2px 0 0}
+:focus-visible{outline:2px solid var(--muted-foreground); outline-offset:2px}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:0 16px; border-radius:8px; border:1px solid var(--border); background:var(--background); color:var(--foreground); font:500 14px/1 var(--font-body); cursor:pointer; width:100%; transition:background .15s, opacity .15s, transform .1s; box-shadow:var(--shadow)}
+.btn:hover{background:var(--accent)}
+.btn:active{transform:scale(.985)}
+.btn.primary{background:var(--primary); color:var(--primary-foreground); border-color:transparent}
+.btn.primary:hover{background:var(--primary); opacity:.9}
+.btn.lg{min-height:52px; font-size:16px; border-radius:10px}
+.btn.danger{color:var(--destructive); border-color:var(--destructive-line); background:transparent; box-shadow:none}
+.btn.danger:hover{background:var(--destructive-soft)}
+.btn.destructive{background:var(--destructive-solid); color:#fff; border-color:transparent}
+.btn.destructive:hover{background:var(--destructive-solid); opacity:.92}
+.btn.sm{min-height:44px; padding:0 12px; font-size:13px; width:auto}
+.btn:disabled{opacity:.45; cursor:not-allowed; transform:none}
+.link{display:inline-flex; align-items:center; gap:6px; background:none; border:0; padding:8px 0; color:var(--foreground); font:500 14px var(--font-body); cursor:pointer; text-align:left; text-decoration:underline; text-underline-offset:4px; text-decoration-color:var(--border); transition:text-decoration-color .15s}
+.link:hover{text-decoration-color:var(--foreground)}
+.link.spin svg{animation:spin .8s linear infinite}
+.chips{display:flex; gap:8px; flex-wrap:wrap}
+.cb{min-height:44px; min-width:0; padding:0 4px; border-radius:8px; border:1px solid var(--input); background:transparent; color:var(--foreground); font:500 14px var(--font-body); cursor:pointer; flex:1 1 0; transition:background .15s, color .15s}
+.cb:hover{background:var(--accent)}
+.cb[aria-pressed="true"]{background:var(--primary); color:var(--primary-foreground); border-color:transparent}
+.chip{display:inline-flex; align-items:center; padding:2px 10px; border-radius:999px; font:600 12px/1.7 var(--font-body); white-space:nowrap; font-variant-numeric:tabular-nums; border:1px solid var(--border); color:var(--foreground)}
+.chip.mute{background:var(--secondary); color:var(--muted-foreground); border-color:transparent}
+.chip.warn,.chip.bad{background:var(--destructive-soft); color:var(--destructive); border-color:transparent}
+.hero{display:grid; gap:14px; padding-top:28px}
+.hero p{font-size:17px; color:var(--muted-foreground); max-width:28ch}
+.scan{display:grid; gap:8px; justify-items:start; align-content:center; min-height:132px; padding:20px; border-radius:14px; border:0; width:100%; background:var(--primary); color:var(--primary-foreground); font:600 22px/1.1 var(--font-body); letter-spacing:-.02em; cursor:pointer; text-align:left; transition:transform .12s, opacity .15s}
+.scan:hover{opacity:.92}
+.scan:active{transform:scale(.985)}
+.scan small{font:400 14px var(--font-body); opacity:.7; letter-spacing:0}
+.list{list-style:none; margin:0; padding:0; display:grid; gap:12px}
+.course{display:grid; gap:12px; width:100%; text-align:left; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; color:var(--foreground); font:inherit; box-shadow:var(--shadow)}
+button.course{cursor:pointer; transition:background .15s, transform .1s}
+button.course:hover{background:var(--accent)}
+button.course:active{transform:scale(.99)}
+.course .cc{display:block; font:600 18px/1.15 var(--font-body); letter-spacing:-.02em}
+.meter{position:relative; height:6px; background:var(--secondary); border-radius:999px}
+.meter i{position:absolute; inset:0 auto 0 0; border-radius:999px; background:var(--primary); transform-origin:left center}
+.meter i.low{background:var(--destructive)}
+.enter .meter i{animation:grow .7s var(--ease) both}
+.meter b{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--foreground); opacity:.35; border-radius:1px}
+.note{display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:var(--radius); border:1px solid var(--border); font-size:14px; background:var(--card)}
+.note svg{flex:none; margin-top:2px}
+.note.bad{border-color:var(--destructive-line); background:var(--destructive-soft); color:var(--destructive)}
+.note:empty{display:none}
+.note .t{display:block; font-weight:600}
+.stats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+.stat{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px; display:grid; gap:2px; box-shadow:var(--shadow)}
+.stat b{font:600 24px/1 var(--font-body); letter-spacing:-.03em; font-variant-numeric:tabular-nums}
+.stat span{font-size:12px; color:var(--muted-foreground)}
+.rows{list-style:none; margin:0; padding:0; display:grid}
+.rows li{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-top:1px solid var(--border)}
+.rows li:first-child{border-top:0; padding-top:0}
+.rows li:last-child{padding-bottom:0}
+.rows .who{min-width:0}
+.rows .who b{display:block; font-weight:500; overflow-wrap:anywhere}
+.rows .num{text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; display:grid; gap:4px; justify-items:end}
+.done{display:grid; gap:14px; justify-items:center; text-align:center; padding-top:44px}
+.done .big{width:84px; height:84px; border-radius:50%; background:var(--primary); color:var(--primary-foreground); display:grid; place-items:center; animation:pop .35s var(--ease) both}
+.done .big path{stroke-dasharray:30; stroke-dashoffset:30; animation:draw .4s .2s var(--ease) forwards}
+.done h1{font-size:28px}
+.bigpct{font:600 56px/1 var(--font-body); letter-spacing:-.05em; font-variant-numeric:tabular-nums}
+.bigpct small{font-size:24px; letter-spacing:-.02em; color:var(--muted-foreground); margin-left:2px}
+.stage{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; display:grid; gap:14px; justify-items:center; box-shadow:var(--shadow)}
+.stage .top{width:100%; display:flex; justify-content:space-between; align-items:flex-start; gap:12px}
+.stage .cc{font:600 28px/1.05 var(--font-body); letter-spacing:-.03em}
+.stage .live{display:inline-flex; align-items:center; gap:7px; font:500 12px var(--font-body); color:var(--muted-foreground); letter-spacing:.06em; text-transform:uppercase; margin-bottom:4px}
+.stage .live::before{content:""; width:8px; height:8px; border-radius:50%; background:var(--ok); animation:ping 1.6s ease-out infinite}
+.stage .cnt{text-align:right}
+.stage .cnt b{display:block; font:600 44px/1 var(--font-body); letter-spacing:-.04em; font-variant-numeric:tabular-nums}
+.stage .cnt b.bump{animation:bump .3s var(--ease)}
+.stage .cnt span{font-size:13px; color:var(--muted-foreground)}
+.qr{background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px; width:min(100%,440px); aspect-ratio:1}
+.qr.swap{animation:swap .35s ease-out}
+.qr svg{display:block; width:100%; height:100%}
+.qr .fail{color:#333; font-size:14px; padding:24px}
+.pin{font:600 44px/1 var(--font-mono); letter-spacing:.06em; font-variant-numeric:tabular-nums}
+.pinlbl{font-size:13px; color:var(--muted-foreground); margin-bottom:-6px}
+.rot{width:100%; height:4px; background:var(--secondary); border-radius:999px; overflow:hidden}
+.rot i{display:block; height:100%; width:100%; background:var(--primary); transform-origin:left center; transition:transform .25s linear}
+.scanner{position:fixed; inset:0; background:#000; z-index:30; display:grid; grid-template-rows:auto 1fr auto; color:#fff; animation:fade .2s ease-out}
+.scanner .t{display:flex; justify-content:space-between; align-items:center; padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px))}
+.scanner video{width:100%; height:100%; object-fit:cover; min-height:0}
+.scanner .reticle{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none}
+.scanner .reticle i{width:min(68vw,300px); aspect-ratio:1; border-radius:24px; box-shadow:0 0 0 999px rgba(0,0,0,.5); outline:2px solid rgba(255,255,255,.85); outline-offset:-2px}
+.scanner .b{padding:16px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); display:grid; gap:8px; justify-items:center}
+.scanner .link{color:#fff; text-decoration-color:rgba(255,255,255,.35)}
+.vwrap{position:relative; min-height:0}
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(22px + env(safe-area-inset-bottom,0px)); max-width:min(92vw,420px); background:var(--foreground); color:var(--background); padding:11px 16px; border-radius:10px; font-size:14px; z-index:60; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.toast:not([hidden]){animation:toast .25s var(--ease) both}
+@keyframes toast{from{opacity:0; transform:translate(-50%,10px)}to{opacity:1; transform:translate(-50%,0)}}
+.pinbox{display:grid; gap:10px; margin-top:6px}
+.pinbox input{font:600 28px var(--font-mono)!important; letter-spacing:.3em; text-align:center; min-height:60px!important}
+.radio{min-height:44px; align-items:center; display:flex; gap:12px; align-items:flex-start; font-weight:400; cursor:pointer}
+.radio b{font-weight:500}
+.fine{font-size:13px; color:var(--muted-foreground)}
+.empty{text-align:center; padding:28px 14px; color:var(--muted-foreground); display:grid; gap:6px; border:1px dashed var(--input); border-radius:14px}
+.empty b{color:var(--foreground); font:600 15px var(--font-body)}
+.seg{display:grid; grid-template-columns:repeat(3,1fr); gap:4px; background:var(--secondary); padding:4px; border-radius:10px}
+.seg button{min-height:44px; border:0; border-radius:7px; background:transparent; color:var(--muted-foreground); font:500 14px var(--font-body); cursor:pointer; transition:background .15s, color .15s}
+.seg button[aria-pressed="true"]{background:var(--background); color:var(--foreground); box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.switchrow{min-height:44px; display:flex; align-items:center; justify-content:space-between; gap:14px; cursor:pointer}
+.switchrow > span:first-child{display:grid; gap:2px; min-width:0}
+.switch{position:relative; width:40px; height:24px; flex:none}
+.switch input{position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer}
+.switch i{position:absolute; inset:0; border-radius:999px; background:var(--input); transition:background .15s; pointer-events:none}
+.switch i::after{content:""; position:absolute; left:2px; top:2px; width:20px; height:20px; border-radius:50%; background:var(--background); box-shadow:0 1px 2px rgba(0,0,0,.25); transition:transform .18s var(--ease)}
+.switch input:checked + i{background:var(--primary)}
+.switch input:checked + i::after{transform:translateX(16px)}
+.switch input:focus-visible + i{outline:2px solid var(--muted-foreground); outline-offset:2px}
+.stepper{display:flex; align-items:center; gap:6px; flex-shrink:0}
+.row>div:first-child{min-width:0}
+.stepper b{min-width:52px; text-align:center; font:600 20px var(--font-body); font-variant-numeric:tabular-nums}
+.ovl{position:fixed; inset:0; background:rgba(0,0,0,.55); display:grid; place-items:center; padding:16px; z-index:50; animation:fade .15s ease-out both}
+.dlg{width:min(100%,420px); background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; display:grid; gap:14px; animation:pop .2s var(--ease) both; box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.dlg .dlgb{display:grid; gap:8px; font-size:14px; color:var(--muted-foreground)}
+.dlg .dlgb b{color:var(--foreground)}
+.dlgf{display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap}
+.dlgf .btn{width:auto; min-width:96px}
+details.card > summary{min-height:44px; cursor:pointer; font-weight:500; list-style:none; display:flex; justify-content:space-between; align-items:center}
+details.card > summary::-webkit-details-marker{display:none}
+details.card > summary::after{content:"+"; color:var(--muted-foreground); font-size:18px}
+details.card[open] > summary::after{content:"–"}
+details.card[open] > summary{margin-bottom:14px}
+details.card > .in{display:grid; gap:14px}
+.sep{height:1px; background:var(--border); border:0; margin:0}
+a{color:var(--foreground); text-underline-offset:4px; text-decoration-color:var(--border)}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} .done .big path{stroke-dashoffset:0} }
+
+/* production polish: errors under fields, show/hide PIN, step label, tap targets for links, welcome layout */
+.ferr{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:0; font-size:13px; line-height:1.4; color:var(--destructive); animation:fade .2s var(--ease) both}
+.ferr .link{padding:0; min-height:32px; color:var(--destructive); font-size:13px}
+[aria-invalid="true"]{border-color:var(--destructive-line)!important}
+[aria-invalid="true"]:focus-visible{box-shadow:0 0 0 3px var(--destructive-soft)!important}
+.pinwrap{position:relative; display:grid}
+.pinwrap input{padding-right:72px!important}
+.pinwrap .reveal{position:absolute; right:4px; top:50%; transform:translateY(-50%); min-height:44px; min-width:60px; padding:0 12px; border:0; background:none; color:var(--muted-foreground); font:500 13px var(--font-body); cursor:pointer; border-radius:8px}
+.pinwrap .reveal:hover{color:var(--foreground)}
+.steps{display:flex; gap:6px; margin:0 0 4px}
+.steps i{height:4px; flex:1; border-radius:4px; background:var(--secondary); transition:background .25s var(--ease)}
+.steps i.on{background:var(--foreground)}
+.fine a{display:inline-flex; align-items:center; min-height:44px; padding:0 8px}
+.fine a:first-of-type{margin-left:-8px}
+#v-welcome{min-height:calc(100dvh - 48px); align-content:stretch; grid-template-rows:1fr auto auto}
+#v-welcome .hero{align-self:center; padding-top:0}
+#v-welcome h1{font-size:34px; line-height:1.1; max-width:14ch}
+.summary{display:flex; gap:8px; align-items:center; padding:10px 12px; border-radius:var(--radius); background:var(--secondary); font-size:14px}
+.summary b{font-weight:600}
+.summary .link{margin:-10px -12px -10px auto; padding:0 12px; min-height:44px}
+textarea.mono{font:13px/1.5 var(--font-mono); min-height:140px}
+.link{min-height:44px}
+.ferr .link{min-height:44px; margin:-6px 0}
+details.card:not([open]){gap:0}
+.oauth-stack{display:grid; gap:10px}
+.oauth-btn{background:var(--background); border:1px solid var(--border); font-weight:500; min-height:48px; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; cursor:pointer; color:var(--foreground); transition:background .15s}
+.oauth-btn:hover{background:var(--accent)}
+.oauth-icon{width:18px; height:18px; flex:none}
+.divider{display:flex; align-items:center; text-align:center; color:var(--muted-foreground); font-size:12px; margin:4px 0}
+.divider::before, .divider::after{content:''; flex:1; border-bottom:1px solid var(--border)}
+.divider:not(:empty)::before{margin-right:12px}
+.divider:not(:empty)::after{margin-left:12px}
+</style>
+
+<div class="app">
+  <header id="bar" class="bar" hidden>
+    <div id="barL"></div>
+    <div class="r">
+      <span id="net" class="net" data-s="on">Online</span>
+      <button id="themeBtn" class="iconbtn" type="button" data-act="themeToggle" aria-label="Switch light or dark mode"></button>
+      <button id="gear" class="iconbtn" type="button" data-act="settings" aria-label="Settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h1M11 17h9"/><circle cx="16" cy="7" r="2.4"/><circle cx="8" cy="17" r="2.4"/></svg></button>
+    </div>
+  </header>
+
+  <!-- WELCOME -->
+  <section id="v-welcome" class="screen" hidden>
+    <div class="hero">
+      <span class="logo" data-brand></span>
+      <h1>Attendance without the paper.</h1>
+      <p>Scan the code in class. It works even when the network does not.</p>
+    </div>
+    <div class="screen" style="gap:10px">
+      <button class="btn primary lg" type="button" data-act="role" data-role="student">I'm a student</button>
+      <button class="btn lg" type="button" data-act="role" data-role="lecturer">I'm a lecturer</button>
+    </div>
+    <p class="fine">Scans are saved on your phone and sent when you are back online.</p>
+  </section>
+
+  <!-- STUDENT SETUP / RESTORE -->
+  <section id="v-sreg" class="screen" hidden>
+    <div><h1 id="sregH">Quick setup</h1><p id="sregP" class="muted">One time only. After this, just scan.</p></div>
+    <div class="oauth-stack" id="sOauthWrap">
+      <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="google" data-role="student">
+        <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.94H1.27v3.15C3.25 21.36 7.32 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.26c-.25-.72-.38-1.49-.38-2.26s.13-1.54.38-2.26V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.25 2.64 1.27 6.59l4.01 3.15c.95-2.84 3.6-4.99 6.72-4.99z"/></svg>
+        <span>Continue with Google</span>
+      </button>
+      <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="apple" data-role="student">
+        <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.84c.66-.82 1.11-1.96.99-3.1-.96.04-2.13.64-2.81 1.45-.6.7-.1.13-1.87 1.03-3.04 1.07-.02 2.13-.6 2.79-1.39z"/></svg>
+        <span>Continue with Apple</span>
+      </button>
+    </div>
+    <div class="divider" id="sDivider"><span>or setup with matric number</span></div>
+    <form id="sregForm" class="card" autocomplete="off" novalidate>
+      <div class="steps" id="sregSteps" aria-hidden="true"><i class="on"></i><i></i></div>
+      <div id="sSummary" class="summary" hidden><span id="sSummaryTxt"></span><button class="link" type="button" data-act="sregEdit">Edit</button></div>
+      <div class="field" data-s="n1 r"><label for="sUni">University</label><select id="sUni"><option value="nmu">Nigeria Maritime University</option><option value="other">Another university</option></select></div>
+      <div class="field" id="sUniOtherWrap" hidden><label for="sUniOther">University name</label><input id="sUniOther" autocomplete="off" enterkeyhint="next"></div>
+      <div class="field" data-s="n1"><label for="sName">Full name</label><input id="sName" autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="As on your student ID"></div>
+      <div class="field" data-s="n1 r"><label for="sMatric">Matric number</label><input id="sMatric" autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="e.g. 2021/1234"></div>
+      <div class="field" data-s="n2"><label for="sDeptSel">Department</label><div id="sDeptWrap"></div></div>
+      <div class="field" data-s="n2"><span class="fl" id="sLevelLbl">Level</span><div id="sLevel" class="chips" role="group" aria-labelledby="sLevelLbl"></div></div>
+      <div class="field" data-s="n2 r"><label for="sPin" id="sPinLbl">Create a 6-digit PIN</label><div class="pinwrap"><input id="sPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" enterkeyhint="go" placeholder="••••••"><button type="button" class="reveal" data-act="reveal" data-for="sPin" aria-pressed="false">Show</button></div><p class="fine" id="sPinHelp">You need it to get your attendance back on a new phone. It also stops others using your matric number.</p></div>
+      <button class="btn primary lg" type="submit" id="sregGo">Continue</button>
+    </form>
+    <div class="row" style="justify-content:flex-start;gap:16px;flex-wrap:wrap"><button class="link" type="button" data-act="sregMode" id="sregMode">Already registered? Restore</button><button class="link" type="button" data-act="forgot" id="forgotPin" hidden>Forgot your PIN?</button></div>
+  </section>
+
+  <!-- STUDENT HOME -->
+  <section id="v-shome" class="screen" hidden>
+    <div><h1 id="sHi"></h1><p id="sWho" class="sub"></p></div>
+    <button class="scan" type="button" data-act="scan">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/></svg>
+      <span>Scan class QR</span>
+      <small>Point your camera at the screen in class</small>
+    </button>
+    <div>
+      <button class="link" type="button" data-act="pinShow">Camera not working? Type the code</button>
+      <div id="pinBox" class="pinbox" hidden>
+        <input id="pinIn" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="6 digit class code">
+        <button class="btn primary" type="button" data-act="pinGo">Send code</button>
+      </div>
+    </div>
+    <div id="sNote" class="note"></div>
+    <div id="alertPrompt" class="card" hidden>
+      <div><b>Get alerts when you miss a class</b><p class="fine">We tell you as soon as a class you missed is recorded, so you can catch up early.</p></div>
+      <div class="row"><button class="btn sm" type="button" data-act="alertNo">Not now</button><button class="btn primary sm" type="button" data-act="alertYes">Turn on alerts</button></div>
+    </div>
+    <div class="screen" style="gap:12px">
+      <div class="row"><span class="lbl">Your classes</span><button id="sSync" class="link" style="padding:0" type="button" data-act="sync">Refresh</button></div>
+      <ul id="sList" class="list"></ul>
+    </div>
+  </section>
+
+  <!-- STUDENT COURSE DETAIL -->
+  <section id="v-sdetail" class="screen" hidden>
+    <div><h1 id="dtCode"></h1><p id="dtSub" class="sub"></p></div>
+    <div class="card">
+      <div class="row"><div class="bigpct" id="dtPct"></div><span id="dtChip"></span></div>
+      <div class="meter" id="dtMeter"></div>
+      <div><p id="dtCount"></p><p id="dtAdvice" class="sub"></p></div>
+    </div>
+    <div class="card">
+      <div class="row"><div><b>Minimum attendance</b><p class="fine">You get warned when you drop below this.</p></div>
+        <div class="stepper"><button class="iconbtn" type="button" data-act="tgt" data-d="-5" aria-label="Lower minimum">−</button><b id="dtTgt"></b><button class="iconbtn" type="button" data-act="tgt" data-d="5" aria-label="Raise minimum">+</button></div></div>
+      <hr class="sep">
+      <label class="switchrow"><span><b>Alerts for this course</b><span class="fine">When you miss a class</span></span><span class="switch"><input type="checkbox" id="dtAlert"><i></i></span></label>
+    </div>
+    <div class="card">
+      <div class="row"><h2>Every class</h2><span class="sub" id="dtHistN"></span></div>
+      <ul id="dtHist" class="rows"></ul>
+    </div>
+  </section>
+
+  <!-- SCAN RESULT -->
+  <section id="v-sdone" class="screen" hidden>
+    <div class="done">
+      <div class="big" id="dBig"></div>
+      <h1 id="dTitle"></h1>
+      <div id="dCourse" class="cc" style="font:600 20px var(--font-body); letter-spacing:-.02em"></div>
+      <p id="dLine" class="muted"></p>
+    </div>
+    <button class="btn primary lg" type="button" data-act="home">Done</button>
+  </section>
+
+  <!-- LECTURER SETUP -->
+  <section id="v-lreg" class="screen" hidden>
+    <div><h1 id="lregH">Lecturer setup</h1><p id="lregP" class="muted">One time. Your account follows you to any phone.</p></div>
+    <div class="oauth-stack" id="lOauthWrap">
+      <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="google" data-role="lecturer">
+        <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.94H1.27v3.15C3.25 21.36 7.32 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.26c-.25-.72-.38-1.49-.38-2.26s.13-1.54.38-2.26V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.25 2.64 1.27 6.59l4.01 3.15c.95-2.84 3.6-4.99 6.72-4.99z"/></svg>
+        <span>Continue with Google</span>
+      </button>
+      <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="apple" data-role="lecturer">
+        <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.84c.66-.82 1.11-1.96.99-3.1-.96.04-2.13.64-2.81 1.45-.6.7-.1.13-1.87 1.03-3.04 1.07-.02 2.13-.6 2.79-1.39z"/></svg>
+        <span>Continue with Apple</span>
+      </button>
+    </div>
+    <div class="divider" id="lDivider"><span>or setup with email & passphrase</span></div>
+    <form id="lregForm" class="card" autocomplete="off" novalidate>
+      <div class="field"><label for="lUni">University</label><select id="lUni"><option value="nmu">Nigeria Maritime University</option><option value="other">Another university</option></select></div>
+      <div class="field" id="lUniOtherWrap" hidden><label for="lUniOther">University name</label><input id="lUniOther" autocomplete="off"></div>
+      <div class="field" data-l="n"><label for="lName">Your name</label><input id="lName" autocomplete="name" enterkeyhint="next" placeholder="e.g. Dr. A. Okafor"></div>
+      <div class="field"><label for="lEmail">Email</label><input id="lEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" enterkeyhint="next" placeholder="you@university.edu.ng"></div>
+      <div class="field"><label for="lPass" id="lPassLbl">Create a passphrase</label><div class="pinwrap"><input id="lPass" type="password" autocomplete="off" enterkeyhint="go" placeholder="At least 8 characters"><button type="button" class="reveal" data-act="reveal" data-for="lPass" aria-pressed="false">Show</button></div><p class="fine" id="lPassHelp">It locks your class key. With your email and this passphrase you can sign in on any phone. We cannot recover it for you.</p></div>
+      <button class="btn primary lg" type="submit" id="lregGo">Create account</button>
+    </form>
+    <button class="link" type="button" data-act="lregMode" id="lregMode">Already have an account? Sign in</button>
+  </section>
+
+  <!-- LECTURER HOME -->
+  <section id="v-lhome" class="screen" hidden>
+    <div><h1>Your courses</h1><p id="lWho" class="sub"></p></div>
+    <ul id="lList" class="list"></ul>
+    <button class="btn" type="button" data-act="cnew">Add a course</button>
+  </section>
+
+  <!-- NEW COURSE -->
+  <section id="v-lcnew" class="screen" hidden>
+    <div><h1>Add a course</h1><p class="muted">You can paste a class list on the course page afterwards.</p></div>
+    <form id="cnewForm" class="card" autocomplete="off">
+      <div class="field"><label for="cCode">Course code</label><input id="cCode" autocapitalize="characters" placeholder="e.g. MEE 301"></div>
+      <div class="field"><label for="cTitle">Title (optional)</label><input id="cTitle" placeholder="e.g. Marine Engines"></div>
+      <div class="field"><label for="cDeptSel">Who takes it? Department</label><div id="cDeptWrap"></div></div>
+      <div class="field"><span class="fl">Level</span><div id="cLevel" class="chips"></div></div>
+      <p class="fine">Students from this department and level who set up Adesse show as absent if they never scan.</p>
+      <button class="btn primary lg" type="submit">Save course</button>
+    </form>
+  </section>
+
+  <!-- LIVE CLASS -->
+  <section id="v-llive" class="screen" hidden>
+    <div class="stage">
+      <div class="top">
+        <div><span class="live">Live</span><div id="xCourse" class="cc"></div></div>
+        <div class="cnt"><b id="xCount">0</b><span id="xCountLbl">present</span></div>
+      </div>
+      <div id="xQr" class="qr" role="img" aria-label="Class QR code"></div>
+      <div class="pinlbl">Or type this code in <span data-app></span></div>
+      <div id="xPin" class="pin" aria-live="off"></div>
+      <div class="rot"><i id="xRot"></i></div>
+      <div class="fine">The code changes every 15 seconds</div>
+      <div id="xNote" class="note" style="width:100%"></div>
+      <form id="manForm" class="screen" style="width:100%; gap:10px" hidden autocomplete="off">
+        <input id="manMatric" placeholder="Matric number" autocapitalize="characters">
+        <input id="manName" placeholder="Name (optional)">
+        <button class="btn" type="submit">Mark present</button>
+      </form>
+      <div class="row" style="width:100%">
+        <button class="link" type="button" data-act="manShow">Add by matric</button>
+        <button class="link" type="button" data-act="fs">Full screen</button>
+      </div>
+      <div id="endIdle" style="width:100%"><button class="btn danger" type="button" data-act="endAsk">End class</button></div>
+      <div id="endSure" class="screen" style="width:100%; gap:10px" hidden>
+        <p id="endTxt" style="text-align:center"></p>
+        <div class="row"><button class="btn" type="button" data-act="endNo">Keep going</button><button class="btn primary" type="button" data-act="endYes">End class</button></div>
+      </div>
+      <textarea id="codeText" readonly hidden aria-hidden="true"></textarea>
+    </div>
+  </section>
+
+  <!-- COURSE DETAIL (lecturer) -->
+  <section id="v-lcourse" class="screen" hidden>
+    <div><h1 id="kCode"></h1><p id="kTitle" class="sub"></p></div>
+    <button id="kStart" class="btn primary lg" type="button" data-act="startCourse">Start class</button>
+    <div class="stats">
+      <div class="stat"><b id="kHeld">0</b><span>classes held</span></div>
+      <div class="stat"><b id="kStud">0</b><span>students</span></div>
+      <div class="stat"><b id="kLow">0</b><span id="kLowLbl">below 75%</span></div>
+    </div>
+    <div id="kReview"></div>
+    <details class="card" id="kListCard">
+      <summary><span>Class list</span><span class="sub" id="kListN"></span></summary>
+      <div class="in">
+        <p class="fine">Paste your registered students, one per line: matric number, then name. Anyone else who scans is held for your review.</p>
+        <textarea id="kListIn" class="mono" spellcheck="false" autocapitalize="none" placeholder="2021/0001 Adaeze Okafor&#10;2021/0002 Bayo Ade"></textarea>
+        <div class="row"><button class="btn sm" type="button" data-act="listSave">Save list</button><button class="btn sm" type="button" data-act="listClear" id="listClear">Remove list</button></div>
+      </div>
+    </details>
+    <div class="card">
+      <div class="row"><h2>Attendance</h2><span class="sub">lowest first</span></div>
+      <ul id="kRows" class="rows"></ul>
+      <p id="kFoot" class="fine"></p>
+    </div>
+    <div class="row">
+      <button class="btn sm" type="button" data-act="csv">Download list</button>
+      <button class="btn sm" type="button" data-act="lpull">Refresh</button>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="v-set" class="screen" hidden>
+    <h1>Settings</h1>
+    <div class="card">
+      <span class="lbl">Appearance</span>
+      <div class="seg" id="themeSeg" role="group" aria-label="Theme">
+        <button type="button" data-act="theme" data-v="system">System</button>
+        <button type="button" data-act="theme" data-v="light">Light</button>
+        <button type="button" data-act="theme" data-v="dark">Dark</button>
+      </div>
+    </div>
+    <div class="card" id="setAlerts">
+      <span class="lbl">Alerts</span>
+      <label class="switchrow"><span><b>Alerts on this phone</b><span class="fine" id="setAlertHelp">Tells you when you miss a class or fall below your minimum.</span></span><span class="switch"><input type="checkbox" id="setAlert"><i></i></span></label>
+    </div>
+    <div class="card">
+      <div class="field"><label id="setCutLbl" for="setCut">My minimum attendance (%)</label><input id="setCut" type="number" inputmode="numeric" min="1" max="100"></div>
+      <p class="fine" id="setCutHelp">You can set a different minimum for each class on its page.</p>
+    </div>
+    <div class="card" id="setData">
+      <span class="lbl">Your data</span>
+      <p class="sub" id="dataState"></p>
+      <button class="btn" type="button" data-act="sync" id="dataSend">Send unsent scans now</button>
+      <button class="btn" type="button" data-act="clearPhone">Clear data on this phone</button>
+      <button class="btn danger" type="button" data-act="deleteAcct">Delete my account</button>
+    </div>
+    <div class="card" id="setLecData">
+      <span class="lbl">Your account</span>
+      <p class="sub" id="lecAcct"></p>
+      <button class="btn" type="button" data-act="lecErase">Sign out of this phone</button>
+      <button class="btn danger" type="button" data-act="lecDelete">Delete my account</button>
+    </div>
+    <div class="card"><button id="roleSwap" class="btn" type="button" data-act="swap"></button></div>
+    <details class="card" id="dev">
+      <summary>Developer options</summary>
+      <div class="in">
+        <label class="radio"><input type="checkbox" id="setOff"><span><b>Pretend I'm offline</b><br><span class="muted">Scans stay on the phone. Turn this off to watch them send.</span></span></label>
+        <label class="radio"><input type="radio" name="cloud" value="demo" id="setDemo"><span><b>Demo storage</b><br><span class="muted">Everything stays on this phone.</span></span></label>
+        <label class="radio"><input type="radio" name="cloud" value="supabase" id="setFb"><span><b>Supabase</b><br><span class="muted">Real cloud sync between phones.</span></span></label>
+        <div id="fbF" class="screen" style="gap:10px" hidden>
+          <div class="field"><label for="fbP">Supabase URL</label><input id="fbP" autocapitalize="none" spellcheck="false" placeholder="https://xxx.supabase.co"></div>
+          <div class="field"><label for="fbK">Supabase Anon Key</label><input id="fbK" autocapitalize="none" spellcheck="false"></div>
+        </div>
+        <div class="field"><label for="devCode">Paste a long class code (one-phone testing)</label><textarea id="devCode" spellcheck="false" placeholder="DY1.…"></textarea></div>
+        <button class="btn sm" type="button" data-act="devGo">Record as student</button>
+        <div id="sampleWrap"><button class="btn sm" type="button" data-act="sample">Load example course</button></div>
+        <button class="btn danger" type="button" data-act="eraseAll">Erase everything on this phone</button>
+      </div>
+    </details>
+    <p class="fine"><span data-app></span> · <a href="privacy.html" target="_blank" rel="noopener">Privacy</a> · <a href="delete-account.html" target="_blank" rel="noopener">Delete account</a></p>
+  </section>
+</div>
+
+<!-- CAMERA -->
+<div id="scanner" class="scanner" hidden>
+  <div class="t"><span style="font:600 17px var(--font-body)">Scan class QR</span><button class="link" type="button" data-act="scanStop">Cancel</button></div>
+  <div class="vwrap"><video id="cam" muted playsinline style="position:absolute; inset:0"></video><div class="reticle"><i></i></div></div>
+  <div class="b"><p class="sub" style="color:#d4d4d4">Hold steady until it records</p><button class="link" type="button" data-act="scanPin">Camera not working? Type the code</button></div>
+</div>
+<div id="dlgRoot"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script>/* QRCode for JavaScript, (c) 2009 Kazuhiko Arase, MIT license (http://www.opensource.org/licenses/mit-license.php).
+   "QR Code" is a registered trademark of DENSO WAVE INCORPORATED. Bundled from qrcode-terminal vendor files. */
+var QRCodeLib=(function(){var __m={};function __r(n){return __m[n]}
+__m["QRMode"]=(function(){var module={exports:{}};var exports=module.exports;
+module.exports = {
+    MODE_NUMBER :       1 << 0,
+    MODE_ALPHA_NUM :    1 << 1,
+    MODE_8BIT_BYTE :    1 << 2,
+    MODE_KANJI :        1 << 3
+};
+
+return module.exports})();
+__m["QRErrorCorrectLevel"]=(function(){var module={exports:{}};var exports=module.exports;
+module.exports = {
+	L : 1,
+	M : 0,
+	Q : 3,
+	H : 2
+};
+
+
+return module.exports})();
+__m["QRMaskPattern"]=(function(){var module={exports:{}};var exports=module.exports;
+module.exports = {
+	PATTERN000 : 0,
+	PATTERN001 : 1,
+	PATTERN010 : 2,
+	PATTERN011 : 3,
+	PATTERN100 : 4,
+	PATTERN101 : 5,
+	PATTERN110 : 6,
+	PATTERN111 : 7
+};
+
+return module.exports})();
+__m["QRMath"]=(function(){var module={exports:{}};var exports=module.exports;
+var QRMath = {
+
+	glog : function(n) {
+	
+		if (n < 1) {
+			throw new Error("glog(" + n + ")");
+		}
+		
+		return QRMath.LOG_TABLE[n];
+	},
+	
+	gexp : function(n) {
+	
+		while (n < 0) {
+			n += 255;
+		}
+	
+		while (n >= 256) {
+			n -= 255;
+		}
+	
+		return QRMath.EXP_TABLE[n];
+	},
+	
+	EXP_TABLE : new Array(256),
+	
+	LOG_TABLE : new Array(256)
+
+};
+	
+for (var i = 0; i < 8; i++) {
+	QRMath.EXP_TABLE[i] = 1 << i;
+}
+for (var i = 8; i < 256; i++) {
+	QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4]
+		^ QRMath.EXP_TABLE[i - 5]
+		^ QRMath.EXP_TABLE[i - 6]
+		^ QRMath.EXP_TABLE[i - 8];
+}
+for (var i = 0; i < 255; i++) {
+	QRMath.LOG_TABLE[QRMath.EXP_TABLE[i] ] = i;
+}
+
+module.exports = QRMath;
+
+return module.exports})();
+__m["QRPolynomial"]=(function(){var module={exports:{}};var exports=module.exports;
+var QRMath = __r('QRMath');
+
+function QRPolynomial(num, shift) {
+	if (num.length === undefined) {
+		throw new Error(num.length + "/" + shift);
+	}
+
+	var offset = 0;
+
+	while (offset < num.length && num[offset] === 0) {
+		offset++;
+	}
+
+	this.num = new Array(num.length - offset + shift);
+	for (var i = 0; i < num.length - offset; i++) {
+		this.num[i] = num[i + offset];
+	}
+}
+
+QRPolynomial.prototype = {
+
+	get : function(index) {
+		return this.num[index];
+	},
+	
+	getLength : function() {
+		return this.num.length;
+	},
+	
+	multiply : function(e) {
+	
+		var num = new Array(this.getLength() + e.getLength() - 1);
+	
+		for (var i = 0; i < this.getLength(); i++) {
+			for (var j = 0; j < e.getLength(); j++) {
+				num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i) ) + QRMath.glog(e.get(j) ) );
+			}
+		}
+	
+		return new QRPolynomial(num, 0);
+	},
+	
+	mod : function(e) {
+	
+		if (this.getLength() - e.getLength() < 0) {
+			return this;
+		}
+	
+		var ratio = QRMath.glog(this.get(0) ) - QRMath.glog(e.get(0) );
+	
+		var num = new Array(this.getLength() );
+		
+		for (var i = 0; i < this.getLength(); i++) {
+			num[i] = this.get(i);
+		}
+		
+		for (var x = 0; x < e.getLength(); x++) {
+			num[x] ^= QRMath.gexp(QRMath.glog(e.get(x) ) + ratio);
+		}
+	
+		// recursive call
+		return new QRPolynomial(num, 0).mod(e);
+	}
+};
+
+module.exports = QRPolynomial;
+
+return module.exports})();
+__m["QRRSBlock"]=(function(){var module={exports:{}};var exports=module.exports;
+var QRErrorCorrectLevel = __r('QRErrorCorrectLevel');
+
+function QRRSBlock(totalCount, dataCount) {
+	this.totalCount = totalCount;
+	this.dataCount  = dataCount;
+}
+
+QRRSBlock.RS_BLOCK_TABLE = [
+
+	// L
+	// M
+	// Q
+	// H
+
+	// 1
+	[1, 26, 19],
+	[1, 26, 16],
+	[1, 26, 13],
+	[1, 26, 9],
+	
+	// 2
+	[1, 44, 34],
+	[1, 44, 28],
+	[1, 44, 22],
+	[1, 44, 16],
+
+	// 3
+	[1, 70, 55],
+	[1, 70, 44],
+	[2, 35, 17],
+	[2, 35, 13],
+
+	// 4		
+	[1, 100, 80],
+	[2, 50, 32],
+	[2, 50, 24],
+	[4, 25, 9],
+	
+	// 5
+	[1, 134, 108],
+	[2, 67, 43],
+	[2, 33, 15, 2, 34, 16],
+	[2, 33, 11, 2, 34, 12],
+	
+	// 6
+	[2, 86, 68],
+	[4, 43, 27],
+	[4, 43, 19],
+	[4, 43, 15],
+	
+	// 7		
+	[2, 98, 78],
+	[4, 49, 31],
+	[2, 32, 14, 4, 33, 15],
+	[4, 39, 13, 1, 40, 14],
+	
+	// 8
+	[2, 121, 97],
+	[2, 60, 38, 2, 61, 39],
+	[4, 40, 18, 2, 41, 19],
+	[4, 40, 14, 2, 41, 15],
+	
+	// 9
+	[2, 146, 116],
+	[3, 58, 36, 2, 59, 37],
+	[4, 36, 16, 4, 37, 17],
+	[4, 36, 12, 4, 37, 13],
+	
+	// 10		
+	[2, 86, 68, 2, 87, 69],
+	[4, 69, 43, 1, 70, 44],
+	[6, 43, 19, 2, 44, 20],
+	[6, 43, 15, 2, 44, 16],
+
+	// 11
+	[4, 101, 81],
+	[1, 80, 50, 4, 81, 51],
+	[4, 50, 22, 4, 51, 23],
+	[3, 36, 12, 8, 37, 13],
+
+	// 12
+	[2, 116, 92, 2, 117, 93],
+	[6, 58, 36, 2, 59, 37],
+	[4, 46, 20, 6, 47, 21],
+	[7, 42, 14, 4, 43, 15],
+
+	// 13
+	[4, 133, 107],
+	[8, 59, 37, 1, 60, 38],
+	[8, 44, 20, 4, 45, 21],
+	[12, 33, 11, 4, 34, 12],
+
+	// 14
+	[3, 145, 115, 1, 146, 116],
+	[4, 64, 40, 5, 65, 41],
+	[11, 36, 16, 5, 37, 17],
+	[11, 36, 12, 5, 37, 13],
+
+	// 15
+	[5, 109, 87, 1, 110, 88],
+	[5, 65, 41, 5, 66, 42],
+	[5, 54, 24, 7, 55, 25],
+	[11, 36, 12],
+
+	// 16
+	[5, 122, 98, 1, 123, 99],
+	[7, 73, 45, 3, 74, 46],
+	[15, 43, 19, 2, 44, 20],
+	[3, 45, 15, 13, 46, 16],
+
+	// 17
+	[1, 135, 107, 5, 136, 108],
+	[10, 74, 46, 1, 75, 47],
+	[1, 50, 22, 15, 51, 23],
+	[2, 42, 14, 17, 43, 15],
+
+	// 18
+	[5, 150, 120, 1, 151, 121],
+	[9, 69, 43, 4, 70, 44],
+	[17, 50, 22, 1, 51, 23],
+	[2, 42, 14, 19, 43, 15],
+
+	// 19
+	[3, 141, 113, 4, 142, 114],
+	[3, 70, 44, 11, 71, 45],
+	[17, 47, 21, 4, 48, 22],
+	[9, 39, 13, 16, 40, 14],
+
+	// 20
+	[3, 135, 107, 5, 136, 108],
+	[3, 67, 41, 13, 68, 42],
+	[15, 54, 24, 5, 55, 25],
+	[15, 43, 15, 10, 44, 16],
+
+	// 21
+	[4, 144, 116, 4, 145, 117],
+	[17, 68, 42],
+	[17, 50, 22, 6, 51, 23],
+	[19, 46, 16, 6, 47, 17],
+
+	// 22
+	[2, 139, 111, 7, 140, 112],
+	[17, 74, 46],
+	[7, 54, 24, 16, 55, 25],
+	[34, 37, 13],
+
+	// 23
+	[4, 151, 121, 5, 152, 122],
+	[4, 75, 47, 14, 76, 48],
+	[11, 54, 24, 14, 55, 25],
+	[16, 45, 15, 14, 46, 16],
+
+	// 24
+	[6, 147, 117, 4, 148, 118],
+	[6, 73, 45, 14, 74, 46],
+	[11, 54, 24, 16, 55, 25],
+	[30, 46, 16, 2, 47, 17],
+
+	// 25
+	[8, 132, 106, 4, 133, 107],
+	[8, 75, 47, 13, 76, 48],
+	[7, 54, 24, 22, 55, 25],
+	[22, 45, 15, 13, 46, 16],
+
+	// 26
+	[10, 142, 114, 2, 143, 115],
+	[19, 74, 46, 4, 75, 47],
+	[28, 50, 22, 6, 51, 23],
+	[33, 46, 16, 4, 47, 17],
+
+	// 27
+	[8, 152, 122, 4, 153, 123],
+	[22, 73, 45, 3, 74, 46],
+	[8, 53, 23, 26, 54, 24],
+	[12, 45, 15, 28, 46, 16],
+
+	// 28
+	[3, 147, 117, 10, 148, 118],
+	[3, 73, 45, 23, 74, 46],
+	[4, 54, 24, 31, 55, 25],
+	[11, 45, 15, 31, 46, 16],
+
+	// 29
+	[7, 146, 116, 7, 147, 117],
+	[21, 73, 45, 7, 74, 46],
+	[1, 53, 23, 37, 54, 24],
+	[19, 45, 15, 26, 46, 16],
+
+	// 30
+	[5, 145, 115, 10, 146, 116],
+	[19, 75, 47, 10, 76, 48],
+	[15, 54, 24, 25, 55, 25],
+	[23, 45, 15, 25, 46, 16],
+
+	// 31
+	[13, 145, 115, 3, 146, 116],
+	[2, 74, 46, 29, 75, 47],
+	[42, 54, 24, 1, 55, 25],
+	[23, 45, 15, 28, 46, 16],
+
+	// 32
+	[17, 145, 115],
+	[10, 74, 46, 23, 75, 47],
+	[10, 54, 24, 35, 55, 25],
+	[19, 45, 15, 35, 46, 16],
+
+	// 33
+	[17, 145, 115, 1, 146, 116],
+	[14, 74, 46, 21, 75, 47],
+	[29, 54, 24, 19, 55, 25],
+	[11, 45, 15, 46, 46, 16],
+
+	// 34
+	[13, 145, 115, 6, 146, 116],
+	[14, 74, 46, 23, 75, 47],
+	[44, 54, 24, 7, 55, 25],
+	[59, 46, 16, 1, 47, 17],
+
+	// 35
+	[12, 151, 121, 7, 152, 122],
+	[12, 75, 47, 26, 76, 48],
+	[39, 54, 24, 14, 55, 25],
+	[22, 45, 15, 41, 46, 16],
+
+	// 36
+	[6, 151, 121, 14, 152, 122],
+	[6, 75, 47, 34, 76, 48],
+	[46, 54, 24, 10, 55, 25],
+	[2, 45, 15, 64, 46, 16],
+
+	// 37
+	[17, 152, 122, 4, 153, 123],
+	[29, 74, 46, 14, 75, 47],
+	[49, 54, 24, 10, 55, 25],
+	[24, 45, 15, 46, 46, 16],
+
+	// 38
+	[4, 152, 122, 18, 153, 123],
+	[13, 74, 46, 32, 75, 47],
+	[48, 54, 24, 14, 55, 25],
+	[42, 45, 15, 32, 46, 16],
+
+	// 39
+	[20, 147, 117, 4, 148, 118],
+	[40, 75, 47, 7, 76, 48],
+	[43, 54, 24, 22, 55, 25],
+	[10, 45, 15, 67, 46, 16],
+
+	// 40
+	[19, 148, 118, 6, 149, 119],
+	[18, 75, 47, 31, 76, 48],
+	[34, 54, 24, 34, 55, 25],
+	[20, 45, 15, 61, 46, 16]
+];
+
+QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
+	
+	var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+	
+	if (rsBlock === undefined) {
+		throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+	}
+
+	var length = rsBlock.length / 3;
+	
+	var list = [];
+	
+	for (var i = 0; i < length; i++) {
+
+		var count = rsBlock[i * 3 + 0];
+		var totalCount = rsBlock[i * 3 + 1];
+		var dataCount  = rsBlock[i * 3 + 2];
+
+		for (var j = 0; j < count; j++) {
+			list.push(new QRRSBlock(totalCount, dataCount) );	
+		}
+	}
+	
+	return list;
+};
+
+QRRSBlock.getRsBlockTable = function(typeNumber, errorCorrectLevel) {
+
+	switch(errorCorrectLevel) {
+	case QRErrorCorrectLevel.L :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+	case QRErrorCorrectLevel.M :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+	case QRErrorCorrectLevel.Q :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+	case QRErrorCorrectLevel.H :
+		return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+	default :
+		return undefined;
+	}
+};
+
+module.exports = QRRSBlock;
+
+return module.exports})();
+__m["QRBitBuffer"]=(function(){var module={exports:{}};var exports=module.exports;
+function QRBitBuffer() {
+	this.buffer = [];
+	this.length = 0;
+}
+
+QRBitBuffer.prototype = {
+
+	get : function(index) {
+		var bufIndex = Math.floor(index / 8);
+		return ( (this.buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+	},
+	
+	put : function(num, length) {
+		for (var i = 0; i < length; i++) {
+			this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+		}
+	},
+	
+	getLengthInBits : function() {
+		return this.length;
+	},
+	
+	putBit : function(bit) {
+	
+		var bufIndex = Math.floor(this.length / 8);
+		if (this.buffer.length <= bufIndex) {
+			this.buffer.push(0);
+		}
+	
+		if (bit) {
+			this.buffer[bufIndex] |= (0x80 >>> (this.length % 8) );
+		}
+	
+		this.length++;
+	}
+};
+
+module.exports = QRBitBuffer;
+
+return module.exports})();
+__m["QRUtil"]=(function(){var module={exports:{}};var exports=module.exports;
+var QRMode = __r('QRMode');
+var QRPolynomial = __r('QRPolynomial');
+var QRMath = __r('QRMath');
+var QRMaskPattern = __r('QRMaskPattern');
+
+var QRUtil = {
+
+    PATTERN_POSITION_TABLE : [
+        [],
+        [6, 18],
+        [6, 22],
+        [6, 26],
+        [6, 30],
+        [6, 34],
+        [6, 22, 38],
+        [6, 24, 42],
+        [6, 26, 46],
+        [6, 28, 50],
+        [6, 30, 54],        
+        [6, 32, 58],
+        [6, 34, 62],
+        [6, 26, 46, 66],
+        [6, 26, 48, 70],
+        [6, 26, 50, 74],
+        [6, 30, 54, 78],
+        [6, 30, 56, 82],
+        [6, 30, 58, 86],
+        [6, 34, 62, 90],
+        [6, 28, 50, 72, 94],
+        [6, 26, 50, 74, 98],
+        [6, 30, 54, 78, 102],
+        [6, 28, 54, 80, 106],
+        [6, 32, 58, 84, 110],
+        [6, 30, 58, 86, 114],
+        [6, 34, 62, 90, 118],
+        [6, 26, 50, 74, 98, 122],
+        [6, 30, 54, 78, 102, 126],
+        [6, 26, 52, 78, 104, 130],
+        [6, 30, 56, 82, 108, 134],
+        [6, 34, 60, 86, 112, 138],
+        [6, 30, 58, 86, 114, 142],
+        [6, 34, 62, 90, 118, 146],
+        [6, 30, 54, 78, 102, 126, 150],
+        [6, 24, 50, 76, 102, 128, 154],
+        [6, 28, 54, 80, 106, 132, 158],
+        [6, 32, 58, 84, 110, 136, 162],
+        [6, 26, 54, 82, 110, 138, 166],
+        [6, 30, 58, 86, 114, 142, 170]
+    ],
+
+    G15 : (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0),
+    G18 : (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0),
+    G15_MASK : (1 << 14) | (1 << 12) | (1 << 10)    | (1 << 4) | (1 << 1),
+
+    getBCHTypeInfo : function(data) {
+        var d = data << 10;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0) {
+            d ^= (QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) ) );    
+        }
+        return ( (data << 10) | d) ^ QRUtil.G15_MASK;
+    },
+
+    getBCHTypeNumber : function(data) {
+        var d = data << 12;
+        while (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0) {
+            d ^= (QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) ) );    
+        }
+        return (data << 12) | d;
+    },
+
+    getBCHDigit : function(data) {
+
+        var digit = 0;
+
+        while (data !== 0) {
+            digit++;
+            data >>>= 1;
+        }
+
+        return digit;
+    },
+
+    getPatternPosition : function(typeNumber) {
+        return QRUtil.PATTERN_POSITION_TABLE[typeNumber - 1];
+    },
+
+    getMask : function(maskPattern, i, j) {
+        
+        switch (maskPattern) {
+            
+        case QRMaskPattern.PATTERN000 : return (i + j) % 2 === 0;
+        case QRMaskPattern.PATTERN001 : return i % 2 === 0;
+        case QRMaskPattern.PATTERN010 : return j % 3 === 0;
+        case QRMaskPattern.PATTERN011 : return (i + j) % 3 === 0;
+        case QRMaskPattern.PATTERN100 : return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 === 0;
+        case QRMaskPattern.PATTERN101 : return (i * j) % 2 + (i * j) % 3 === 0;
+        case QRMaskPattern.PATTERN110 : return ( (i * j) % 2 + (i * j) % 3) % 2 === 0;
+        case QRMaskPattern.PATTERN111 : return ( (i * j) % 3 + (i + j) % 2) % 2 === 0;
+
+        default :
+            throw new Error("bad maskPattern:" + maskPattern);
+        }
+    },
+
+    getErrorCorrectPolynomial : function(errorCorrectLength) {
+
+        var a = new QRPolynomial([1], 0);
+
+        for (var i = 0; i < errorCorrectLength; i++) {
+            a = a.multiply(new QRPolynomial([1, QRMath.gexp(i)], 0) );
+        }
+
+        return a;
+    },
+
+    getLengthInBits : function(mode, type) {
+
+        if (1 <= type && type < 10) {
+
+            // 1 - 9
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 10;
+            case QRMode.MODE_ALPHA_NUM  : return 9;
+            case QRMode.MODE_8BIT_BYTE  : return 8;
+            case QRMode.MODE_KANJI      : return 8;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 27) {
+
+            // 10 - 26
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 12;
+            case QRMode.MODE_ALPHA_NUM  : return 11;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 10;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else if (type < 41) {
+
+            // 27 - 40
+
+            switch(mode) {
+            case QRMode.MODE_NUMBER     : return 14;
+            case QRMode.MODE_ALPHA_NUM  : return 13;
+            case QRMode.MODE_8BIT_BYTE  : return 16;
+            case QRMode.MODE_KANJI      : return 12;
+            default :
+                throw new Error("mode:" + mode);
+            }
+
+        } else {
+            throw new Error("type:" + type);
+        }
+    },
+
+    getLostPoint : function(qrCode) {
+        
+        var moduleCount = qrCode.getModuleCount();
+        var lostPoint = 0;
+        var row = 0; 
+        var col = 0;
+
+        
+        // LEVEL1
+        
+        for (row = 0; row < moduleCount; row++) {
+
+            for (col = 0; col < moduleCount; col++) {
+
+                var sameCount = 0;
+                var dark = qrCode.isDark(row, col);
+
+                for (var r = -1; r <= 1; r++) {
+
+                    if (row + r < 0 || moduleCount <= row + r) {
+                        continue;
+                    }
+
+                    for (var c = -1; c <= 1; c++) {
+
+                        if (col + c < 0 || moduleCount <= col + c) {
+                            continue;
+                        }
+
+                        if (r === 0 && c === 0) {
+                            continue;
+                        }
+
+                        if (dark === qrCode.isDark(row + r, col + c) ) {
+                            sameCount++;
+                        }
+                    }
+                }
+
+                if (sameCount > 5) {
+                    lostPoint += (3 + sameCount - 5);
+                }
+            }
+        }
+
+        // LEVEL2
+
+        for (row = 0; row < moduleCount - 1; row++) {
+            for (col = 0; col < moduleCount - 1; col++) {
+                var count = 0;
+                if (qrCode.isDark(row,     col    ) ) count++;
+                if (qrCode.isDark(row + 1, col    ) ) count++;
+                if (qrCode.isDark(row,     col + 1) ) count++;
+                if (qrCode.isDark(row + 1, col + 1) ) count++;
+                if (count === 0 || count === 4) {
+                    lostPoint += 3;
+                }
+            }
+        }
+
+        // LEVEL3
+
+        for (row = 0; row < moduleCount; row++) {
+            for (col = 0; col < moduleCount - 6; col++) {
+                if (qrCode.isDark(row, col) && 
+                        !qrCode.isDark(row, col + 1) && 
+                         qrCode.isDark(row, col + 2) && 
+                         qrCode.isDark(row, col + 3) && 
+                         qrCode.isDark(row, col + 4) && 
+                        !qrCode.isDark(row, col + 5) && 
+                         qrCode.isDark(row, col + 6) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount - 6; row++) {
+                if (qrCode.isDark(row, col) &&
+                        !qrCode.isDark(row + 1, col) &&
+                         qrCode.isDark(row + 2, col) &&
+                         qrCode.isDark(row + 3, col) &&
+                         qrCode.isDark(row + 4, col) &&
+                        !qrCode.isDark(row + 5, col) &&
+                         qrCode.isDark(row + 6, col) ) {
+                    lostPoint += 40;
+                }
+            }
+        }
+
+        // LEVEL4
+        
+        var darkCount = 0;
+
+        for (col = 0; col < moduleCount; col++) {
+            for (row = 0; row < moduleCount; row++) {
+                if (qrCode.isDark(row, col) ) {
+                    darkCount++;
+                }
+            }
+        }
+        
+        var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+        lostPoint += ratio * 10;
+
+        return lostPoint;       
+    }
+
+};
+
+module.exports = QRUtil;
+
+return module.exports})();
+__m["QR8bitByte"]=(function(){var module={exports:{}};var exports=module.exports;
+var QRMode = __r('QRMode');
+
+function QR8bitByte(data) {
+	this.mode = QRMode.MODE_8BIT_BYTE;
+	this.data = data;
+}
+
+QR8bitByte.prototype = {
+
+	getLength : function() {
+		return this.data.length;
+	},
+	
+	write : function(buffer) {
+		for (var i = 0; i < this.data.length; i++) {
+			// not JIS ...
+			buffer.put(this.data.charCodeAt(i), 8);
+		}
+	}
+};
+
+module.exports = QR8bitByte;
+
+return module.exports})();
+__m["index"]=(function(){var module={exports:{}};var exports=module.exports;
+// Modified to work in node for this project (and some refactoring)
+//---------------------------------------------------------------------
+
+var QR8bitByte = __r('QR8bitByte');
+var QRUtil = __r('QRUtil');
+var QRPolynomial = __r('QRPolynomial');
+var QRRSBlock = __r('QRRSBlock');
+var QRBitBuffer = __r('QRBitBuffer');
+
+function QRCode(typeNumber, errorCorrectLevel) {
+	this.typeNumber = typeNumber;
+	this.errorCorrectLevel = errorCorrectLevel;
+	this.modules = null;
+	this.moduleCount = 0;
+	this.dataCache = null;
+	this.dataList = [];
+}
+
+QRCode.prototype = {
+	
+	addData : function(data) {
+		var newData = new QR8bitByte(data);
+		this.dataList.push(newData);
+		this.dataCache = null;
+	},
+	
+	isDark : function(row, col) {
+		if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) {
+			throw new Error(row + "," + col);
+		}
+		return this.modules[row][col];
+	},
+
+	getModuleCount : function() {
+		return this.moduleCount;
+	},
+	
+	make : function() {
+		// Calculate automatically typeNumber if provided is < 1
+		if (this.typeNumber < 1 ){
+			var typeNumber = 1;
+			for (typeNumber = 1; typeNumber < 40; typeNumber++) {
+				var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, this.errorCorrectLevel);
+
+				var buffer = new QRBitBuffer();
+				var totalDataCount = 0;
+				for (var i = 0; i < rsBlocks.length; i++) {
+					totalDataCount += rsBlocks[i].dataCount;
+				}
+
+				for (var x = 0; x < this.dataList.length; x++) {
+					var data = this.dataList[x];
+					buffer.put(data.mode, 4);
+					buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+					data.write(buffer);
+				}
+				if (buffer.getLengthInBits() <= totalDataCount * 8)
+					break;
+			}
+			this.typeNumber = typeNumber;
+		}
+		this.makeImpl(false, this.getBestMaskPattern() );
+	},
+	
+	makeImpl : function(test, maskPattern) {
+		
+		this.moduleCount = this.typeNumber * 4 + 17;
+		this.modules = new Array(this.moduleCount);
+		
+		for (var row = 0; row < this.moduleCount; row++) {
+			
+			this.modules[row] = new Array(this.moduleCount);
+			
+			for (var col = 0; col < this.moduleCount; col++) {
+				this.modules[row][col] = null;//(col + row) % 3;
+			}
+		}
+	
+		this.setupPositionProbePattern(0, 0);
+		this.setupPositionProbePattern(this.moduleCount - 7, 0);
+		this.setupPositionProbePattern(0, this.moduleCount - 7);
+		this.setupPositionAdjustPattern();
+		this.setupTimingPattern();
+		this.setupTypeInfo(test, maskPattern);
+		
+		if (this.typeNumber >= 7) {
+			this.setupTypeNumber(test);
+		}
+	
+		if (this.dataCache === null) {
+			this.dataCache = QRCode.createData(this.typeNumber, this.errorCorrectLevel, this.dataList);
+		}
+	
+		this.mapData(this.dataCache, maskPattern);
+	},
+
+	setupPositionProbePattern : function(row, col)  {
+		
+		for (var r = -1; r <= 7; r++) {
+			
+			if (row + r <= -1 || this.moduleCount <= row + r) continue;
+			
+			for (var c = -1; c <= 7; c++) {
+				
+				if (col + c <= -1 || this.moduleCount <= col + c) continue;
+				
+				if ( (0 <= r && r <= 6 && (c === 0 || c === 6) ) || 
+                     (0 <= c && c <= 6 && (r === 0 || r === 6) ) || 
+                     (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+					this.modules[row + r][col + c] = true;
+				} else {
+					this.modules[row + r][col + c] = false;
+				}
+			}		
+		}		
+	},
+	
+	getBestMaskPattern : function() {
+	
+		var minLostPoint = 0;
+		var pattern = 0;
+	
+		for (var i = 0; i < 8; i++) {
+			
+			this.makeImpl(true, i);
+	
+			var lostPoint = QRUtil.getLostPoint(this);
+	
+			if (i === 0 || minLostPoint >  lostPoint) {
+				minLostPoint = lostPoint;
+				pattern = i;
+			}
+		}
+	
+		return pattern;
+	},
+	
+	createMovieClip : function(target_mc, instance_name, depth) {
+	
+		var qr_mc = target_mc.createEmptyMovieClip(instance_name, depth);
+		var cs = 1;
+	
+		this.make();
+
+		for (var row = 0; row < this.modules.length; row++) {
+			
+			var y = row * cs;
+			
+			for (var col = 0; col < this.modules[row].length; col++) {
+	
+				var x = col * cs;
+				var dark = this.modules[row][col];
+			
+				if (dark) {
+					qr_mc.beginFill(0, 100);
+					qr_mc.moveTo(x, y);
+					qr_mc.lineTo(x + cs, y);
+					qr_mc.lineTo(x + cs, y + cs);
+					qr_mc.lineTo(x, y + cs);
+					qr_mc.endFill();
+				}
+			}
+		}
+		
+		return qr_mc;
+	},
+
+	setupTimingPattern : function() {
+		
+		for (var r = 8; r < this.moduleCount - 8; r++) {
+			if (this.modules[r][6] !== null) {
+				continue;
+			}
+			this.modules[r][6] = (r % 2 === 0);
+		}
+	
+		for (var c = 8; c < this.moduleCount - 8; c++) {
+			if (this.modules[6][c] !== null) {
+				continue;
+			}
+			this.modules[6][c] = (c % 2 === 0);
+		}
+	},
+	
+	setupPositionAdjustPattern : function() {
+	
+		var pos = QRUtil.getPatternPosition(this.typeNumber);
+		
+		for (var i = 0; i < pos.length; i++) {
+		
+			for (var j = 0; j < pos.length; j++) {
+			
+				var row = pos[i];
+				var col = pos[j];
+				
+				if (this.modules[row][col] !== null) {
+					continue;
+				}
+				
+				for (var r = -2; r <= 2; r++) {
+				
+					for (var c = -2; c <= 2; c++) {
+					
+						if (Math.abs(r) === 2 || 
+                            Math.abs(c) === 2 ||
+                            (r === 0 && c === 0) ) {
+							this.modules[row + r][col + c] = true;
+						} else {
+							this.modules[row + r][col + c] = false;
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	setupTypeNumber : function(test) {
+	
+		var bits = QRUtil.getBCHTypeNumber(this.typeNumber);
+        var mod;
+	
+		for (var i = 0; i < 18; i++) {
+			mod = (!test && ( (bits >> i) & 1) === 1);
+			this.modules[Math.floor(i / 3)][i % 3 + this.moduleCount - 8 - 3] = mod;
+		}
+	
+		for (var x = 0; x < 18; x++) {
+			mod = (!test && ( (bits >> x) & 1) === 1);
+			this.modules[x % 3 + this.moduleCount - 8 - 3][Math.floor(x / 3)] = mod;
+		}
+	},
+	
+	setupTypeInfo : function(test, maskPattern) {
+	
+		var data = (this.errorCorrectLevel << 3) | maskPattern;
+		var bits = QRUtil.getBCHTypeInfo(data);
+        var mod;
+	
+		// vertical		
+		for (var v = 0; v < 15; v++) {
+	
+			mod = (!test && ( (bits >> v) & 1) === 1);
+	
+			if (v < 6) {
+				this.modules[v][8] = mod;
+			} else if (v < 8) {
+				this.modules[v + 1][8] = mod;
+			} else {
+				this.modules[this.moduleCount - 15 + v][8] = mod;
+			}
+		}
+	
+		// horizontal
+		for (var h = 0; h < 15; h++) {
+	
+			mod = (!test && ( (bits >> h) & 1) === 1);
+			
+			if (h < 8) {
+				this.modules[8][this.moduleCount - h - 1] = mod;
+			} else if (h < 9) {
+				this.modules[8][15 - h - 1 + 1] = mod;
+			} else {
+				this.modules[8][15 - h - 1] = mod;
+			}
+		}
+	
+		// fixed module
+		this.modules[this.moduleCount - 8][8] = (!test);
+	
+	},
+	
+	mapData : function(data, maskPattern) {
+		
+		var inc = -1;
+		var row = this.moduleCount - 1;
+		var bitIndex = 7;
+		var byteIndex = 0;
+		
+		for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+	
+			if (col === 6) col--;
+	
+			while (true) {
+	
+				for (var c = 0; c < 2; c++) {
+					
+					if (this.modules[row][col - c] === null) {
+						
+						var dark = false;
+	
+						if (byteIndex < data.length) {
+							dark = ( ( (data[byteIndex] >>> bitIndex) & 1) === 1);
+						}
+	
+						var mask = QRUtil.getMask(maskPattern, row, col - c);
+	
+						if (mask) {
+							dark = !dark;
+						}
+						
+						this.modules[row][col - c] = dark;
+						bitIndex--;
+	
+						if (bitIndex === -1) {
+							byteIndex++;
+							bitIndex = 7;
+						}
+					}
+				}
+								
+				row += inc;
+	
+				if (row < 0 || this.moduleCount <= row) {
+					row -= inc;
+					inc = -inc;
+					break;
+				}
+			}
+		}
+		
+	}
+
+};
+
+QRCode.PAD0 = 0xEC;
+QRCode.PAD1 = 0x11;
+
+QRCode.createData = function(typeNumber, errorCorrectLevel, dataList) {
+	
+	var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+	
+	var buffer = new QRBitBuffer();
+	
+	for (var i = 0; i < dataList.length; i++) {
+		var data = dataList[i];
+		buffer.put(data.mode, 4);
+		buffer.put(data.getLength(), QRUtil.getLengthInBits(data.mode, typeNumber) );
+		data.write(buffer);
+	}
+
+	// calc num max data.
+	var totalDataCount = 0;
+	for (var x = 0; x < rsBlocks.length; x++) {
+		totalDataCount += rsBlocks[x].dataCount;
+	}
+
+	if (buffer.getLengthInBits() > totalDataCount * 8) {
+		throw new Error("code length overflow. (" + 
+            buffer.getLengthInBits() + 
+            ">" +  
+            totalDataCount * 8 + 
+            ")");
+	}
+
+	// end code
+	if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+		buffer.put(0, 4);
+	}
+
+	// padding
+	while (buffer.getLengthInBits() % 8 !== 0) {
+		buffer.putBit(false);
+	}
+
+	// padding
+	while (true) {
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD0, 8);
+		
+		if (buffer.getLengthInBits() >= totalDataCount * 8) {
+			break;
+		}
+		buffer.put(QRCode.PAD1, 8);
+	}
+
+	return QRCode.createBytes(buffer, rsBlocks);
+};
+
+QRCode.createBytes = function(buffer, rsBlocks) {
+
+	var offset = 0;
+	
+	var maxDcCount = 0;
+	var maxEcCount = 0;
+	
+	var dcdata = new Array(rsBlocks.length);
+	var ecdata = new Array(rsBlocks.length);
+	
+	for (var r = 0; r < rsBlocks.length; r++) {
+
+		var dcCount = rsBlocks[r].dataCount;
+		var ecCount = rsBlocks[r].totalCount - dcCount;
+
+		maxDcCount = Math.max(maxDcCount, dcCount);
+		maxEcCount = Math.max(maxEcCount, ecCount);
+		
+		dcdata[r] = new Array(dcCount);
+		
+		for (var i = 0; i < dcdata[r].length; i++) {
+			dcdata[r][i] = 0xff & buffer.buffer[i + offset];
+		}
+		offset += dcCount;
+		
+		var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+		var rawPoly = new QRPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+		var modPoly = rawPoly.mod(rsPoly);
+		ecdata[r] = new Array(rsPoly.getLength() - 1);
+		for (var x = 0; x < ecdata[r].length; x++) {
+            var modIndex = x + modPoly.getLength() - ecdata[r].length;
+			ecdata[r][x] = (modIndex >= 0)? modPoly.get(modIndex) : 0;
+		}
+
+	}
+	
+	var totalCodeCount = 0;
+	for (var y = 0; y < rsBlocks.length; y++) {
+		totalCodeCount += rsBlocks[y].totalCount;
+	}
+
+	var data = new Array(totalCodeCount);
+	var index = 0;
+
+	for (var z = 0; z < maxDcCount; z++) {
+		for (var s = 0; s < rsBlocks.length; s++) {
+			if (z < dcdata[s].length) {
+				data[index++] = dcdata[s][z];
+			}
+		}
+	}
+
+	for (var xx = 0; xx < maxEcCount; xx++) {
+		for (var t = 0; t < rsBlocks.length; t++) {
+			if (xx < ecdata[t].length) {
+				data[index++] = ecdata[t][xx];
+			}
+		}
+	}
+
+	return data;
+
+};
+
+module.exports = QRCode;
+
+return module.exports})();
+return __m["index"]})();
+</script>
+<script>
+(function(){
+'use strict';
+
+// <core>
+const WIN = 15000;   // the QR and the typed code change every 15 s
+const SKEW = 45000;  // allowed clock difference between phones
+const te = new TextEncoder();
+const ALG = { name:'ECDSA', namedCurve:'P-256' };
+const SIGALG = { name:'ECDSA', hash:'SHA-256' };
+const b64u = {
+  enc(buf){ const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); },
+  dec(str){ str = str.replace(/-/g,'+').replace(/_/g,'/'); while (str.length % 4) str += '='; const s = atob(str); const b = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
+};
+function rid(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); return Array.from(a, x => x.toString(16).padStart(2,'0')).join(''); }
+function hexBytes(h){ const a = new Uint8Array(h.length / 2); for (let i = 0; i < a.length; i++) a[i] = parseInt(h.substr(i * 2, 2), 16); return a; }
+function normCourse(s){ return String(s || '').toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,12); }
+function normMatric(s){ return String(s || '').toUpperCase().replace(/\s+/g,'').replace(/[^A-Z0-9\/\-]/g,'').slice(0,24); }
+
+async function genKeys(){
+  const kp = await crypto.subtle.generateKey(ALG, true, ['sign','verify']);
+  const jwk = await crypto.subtle.exportKey('jwk', kp.privateKey);
+  const pub = b64u.enc(await crypto.subtle.exportKey('raw', kp.publicKey));
+  return { jwk, pub };
+}
+function importPriv(jwk){ return crypto.subtle.importKey('jwk', jwk, ALG, false, ['sign']); }
+function importPub(pub){ return crypto.subtle.importKey('raw', b64u.dec(pub), ALG, false, ['verify']); }
+async function sign(priv, msg){ return b64u.enc(await crypto.subtle.sign(SIGALG, priv, te.encode(msg))); }
+async function verify(pub, msg, sig){
+  try { return await crypto.subtle.verify(SIGALG, await importPub(pub), b64u.dec(sig), te.encode(msg)); }
+  catch (e) { return false; }
+}
+async function fingerprint(pub){
+  const h = new Uint8Array(await crypto.subtle.digest('SHA-256', b64u.dec(pub)));
+  return Array.from(h.slice(0,4), x => x.toString(16).padStart(2,'0')).join('');
+}
+// The typed code: 6 digits from a secret that only the lecturer's phone holds.
+async function pinFor(sk, win){
+  const key = await crypto.subtle.importKey('raw', hexBytes(sk), { name:'HMAC', hash:'SHA-256' }, false, ['sign']);
+  const s = new Uint8Array(await crypto.subtle.sign('HMAC', key, te.encode('pin|' + win)));
+  const n = ((s[0] << 24) | (s[1] << 16) | (s[2] << 8) | s[3]) >>> 0;
+  return String(n % 1000000).padStart(6, '0');
+}
+function sessionMsg(sid, course, win){ return sid + '|' + course + '|' + win; }
+async function buildCode(priv, lec, sess, now){
+  const win = Math.floor(now / WIN);
+  const sig = await sign(priv, sessionMsg(sess.id, sess.code, win));
+  return ['DY1', lec.lid, sess.id, sess.code, win, lec.pub, sig].join('.');
+}
+function parseCode(text){
+  const p = String(text || '').trim().split('.');
+  if (p.length !== 7 || p[0] !== 'DY1') return null;
+  const win = Number(p[4]);
+  if (!Number.isInteger(win) || !/^[0-9a-f]{8}$/.test(p[1]) || !/^[0-9a-f]{8}$/.test(p[2]) || !/^[A-Z0-9-]{1,12}$/.test(p[3])) return null;
+  if (!/^[A-Za-z0-9_-]+$/.test(p[5]) || !/^[A-Za-z0-9_-]+$/.test(p[6])) return null;
+  return { lid:p[1], sid:p[2], course:p[3], win, pk:p[5], sig:p[6] };
+}
+// Runs on the student's phone with no network.
+async function studentCheck(c, now, knownKeys){
+  const d = now - c.win * WIN;
+  if (d < -SKEW || d > WIN + SKEW) return { ok:false, msg:'That code has expired. Scan the live one on the screen.' };
+  let fp; try { fp = await fingerprint(c.pk); } catch (e) { fp = ''; }
+  if (fp !== c.lid) return { ok:false, msg:'This code looks damaged. Try again.' };
+  const known = knownKeys[c.lid];
+  if (known && known !== c.pk) return { ok:false, msg:'This code does not match the lecturer you scanned before.' };
+  if (!(await verify(c.pk, sessionMsg(c.sid, c.course, c.win), c.sig))) return { ok:false, msg:'This code is not valid.' };
+  return { ok:true };
+}
+// Runs on the lecturer's phone whenever scans are downloaded.
+async function lecturerCheck(rec, lec, now){
+  if (rec.kind === 'pin') {
+    const wAt = Math.floor(rec.at / WIN);
+    for (const s of lec.sessions) {
+      if (!s.sk || rec.at < s.startedAt - WIN || rec.at > (s.endedAt || now) + 2 * WIN) continue;
+      for (const w of [wAt, wAt - 1, wAt + 1]) if (await pinFor(s.sk, w) === rec.pin) return { status:'ok', sid:s.id, course:s.code, reason:'' };
+    }
+    return { status:'bad', reason:'That code did not match a live class' };
+  }
+  const sess = lec.sessions.find(s => s.id === rec.sid);
+  if (rec.lid !== lec.lid) return { status:'bad', reason:'Signed by a different lecturer' };
+  if (!sess) return { status:'bad', reason:'Unknown class' };
+  if (rec.course !== sess.code) return { status:'bad', reason:'Course does not match' };
+  if (!(await verify(lec.pub, sessionMsg(rec.sid, rec.course, rec.win), rec.sig))) return { status:'bad', reason:'Invalid signature' };
+  const wt = rec.win * WIN;
+  if (wt < sess.startedAt - WIN || wt > (sess.endedAt || now) + WIN) return { status:'bad', reason:'Code was not live during this class' };
+  const d = rec.at - wt;
+  if (d < -SKEW || d > WIN + SKEW) return { status:'review', reason:'Scan time does not match the code time' };
+  return { status:'ok', reason:'' };
+}
+function flagSharedDevices(recs){
+  const g = new Map();
+  for (const r of recs) if (r.status === 'ok' && r.did) { const k = r.sid + '|' + r.did; if (!g.has(k)) g.set(k, []); g.get(k).push(r); }
+  for (const list of g.values()) {
+    const m = new Set(list.map(r => r.matric));
+    if (m.size > 1) for (const r of list) { r.status = 'review'; r.reason = 'Same phone used for ' + m.size + ' matric numbers'; }
+  }
+}
+function audienceMatch(course, st){ return (!course.dept || st.dept === course.dept) && (!course.level || st.level === course.level); }
+// One course: who came to how many classes. The class list comes from scans, hand-added students and the roster.
+function attendance(lec, course, cutoff){
+  const sess = lec.sessions.filter(s => s.code === course.code);
+  const ids = new Set(sess.map(s => s.id));
+  const total = sess.length;
+  const by = new Map();
+  const touch = (matric, name) => { if (!by.has(matric)) by.set(matric, { name:name || '', sids:new Set() }); const e = by.get(matric); if (name && !e.name) e.name = name; return e; };
+  const scans = lec.cloudScans || [];
+  for (const r of scans) if (ids.has(r.sid) && (r.status === 'ok' || (lec.accepted || {})[r.key])) touch(r.matric, r.name).sids.add(r.sid);
+  for (const m of (lec.manual || [])) if (ids.has(m.sid)) touch(m.matric, m.name).sids.add(m.sid);
+  if (course.list && course.list.length) { for (const st of course.list) touch(st.matric, st.name); }
+  else for (const st of (lec.roster || [])) if (audienceMatch(course, st)) touch(st.matric, st.name);
+  const rows = Array.from(by, ([matric, v]) => {
+    const n = v.sids.size, pct = total ? Math.round(n / total * 100) : 0;
+    return { matric, name:v.name, n, pct, below: total > 0 && pct < cutoff };
+  }).sort((a, b) => a.pct - b.pct || a.matric.localeCompare(b.matric));
+  const review = scans.filter(r => ids.has(r.sid) && r.status === 'review' && !(lec.accepted || {})[r.key]);
+  const rejected = scans.filter(r => ids.has(r.sid) && r.status === 'bad').length;
+  return { total, rows, review, rejected };
+}
+// What a student should do next, in plain words.
+function advice(attended, held, cutoff){
+  if (!held) return '';
+  const c = cutoff / 100;
+  if (attended / held >= c) {
+    const k = Math.floor(attended / c - held + 1e-9);
+    return k <= 0 ? 'Attend every class to stay above ' + cutoff + '%' : 'You can miss ' + k + ' more and stay above ' + cutoff + '%';
+  }
+  if (c >= 1) return 'Below ' + cutoff + '%';
+  const x = Math.ceil((c * held - attended) / (1 - c) - 1e-9);
+  return 'Attend the next ' + x + ' to get back above ' + cutoff + '%';
+}
+function csvCell(v){ v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; }
+function toCSV(a, cutoff, roster){
+  const info = new Map((roster || []).map(r => [r.matric, r]));
+  const head = ['Matric','Name','Department','Level','Classes attended','Classes held','Percent','Status'];
+  return [head.join(',')].concat(a.rows.map(r => { const i = info.get(r.matric) || {}; return [r.matric, r.name, i.dept || '', i.level || '', r.n, a.total, r.pct, r.below ? 'Below ' + cutoff + '%' : 'OK'].map(csvCell).join(','); })).join('\n');
+}
+
+// Recovery PIN: slow hash so a copied record cannot be guessed quickly. Salt = university + matric.
+async function pinHash(pin, salt){
+  const key = await crypto.subtle.importKey('raw', te.encode(String(pin)), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-256', salt:te.encode('att1|' + salt), iterations:600000 }, key, 256);
+  return b64u.enc(bits);
+}
+// Classes a student could have attended but did not: after they joined, and already over.
+function missedSessions(list, attended, joinedAt, now){
+  return list.filter(s => !attended.has(s.sid) && s.startedAt >= joinedAt && (s.endedAt > 0 || now - s.startedAt > 4 * 3600 * 1000)).sort((a, b) => b.startedAt - a.startedAt);
+}
+
+// ---- lecturer account: one key, any phone ----
+// The typed-code secret is derived from the lecturer's private key, so any phone that holds the key can
+// rebuild it for every class, past or future. Nothing secret has to be uploaded.
+async function deriveSk(jwk, sid){
+  const key = await crypto.subtle.importKey('raw', b64u.dec(jwk.d), { name:'HMAC', hash:'SHA-256' }, false, ['sign']);
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, te.encode('sk|' + sid)));
+  return Array.from(mac.slice(0, 16), x => x.toString(16).padStart(2, '0')).join('');
+}
+function pubFromJwk(jwk){
+  const x = b64u.dec(jwk.x), y = b64u.dec(jwk.y), r = new Uint8Array(65);
+  r[0] = 4; r.set(x, 1); r.set(y, 33); return b64u.enc(r);
+}
+const WRAP_ITER = 300000;
+async function wrapKey(jwk, pass){
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const base = await crypto.subtle.importKey('raw', te.encode(String(pass)), 'PBKDF2', false, ['deriveKey']);
+  const k = await crypto.subtle.deriveKey({ name:'PBKDF2', hash:'SHA-256', salt, iterations:WRAP_ITER }, base, { name:'AES-GCM', length:256 }, false, ['encrypt']);
+  const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, k, te.encode(JSON.stringify(jwk)));
+  return JSON.stringify({ v:1, it:WRAP_ITER, salt:b64u.enc(salt), iv:b64u.enc(iv), ct:b64u.enc(ct) });
+}
+async function unwrapKey(wrap, pass){
+  try {
+    const w = typeof wrap === 'string' ? JSON.parse(wrap) : wrap;
+    const base = await crypto.subtle.importKey('raw', te.encode(String(pass)), 'PBKDF2', false, ['deriveKey']);
+    const k = await crypto.subtle.deriveKey({ name:'PBKDF2', hash:'SHA-256', salt:b64u.dec(w.salt), iterations:w.it }, base, { name:'AES-GCM', length:256 }, false, ['decrypt']);
+    return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name:'AES-GCM', iv:b64u.dec(w.iv) }, k, b64u.dec(w.ct))));
+  } catch (e) { return null; }
+}
+// Courses, class lists, hand-marked students and review decisions. Signed by the lecturer's key, so a copy that
+// someone else edited in the cloud is ignored.
+function stateOf(lec){
+  return {
+    courses:lec.courses.filter(c => !c.sample).map(c => ({ id:c.id, code:c.code, title:c.title || '', dept:c.dept || '', level:c.level || '', list:c.list || [], listAt:c.listAt || 0 })),
+    manual:lec.manual.filter(m => !m.sample).map(m => ({ sid:m.sid, matric:m.matric, name:m.name || '' })),
+    accepted:lec.accepted || {}
+  };
+}
+function mergeState(lec, st){
+  let ch = false;
+  for (const c of (st.courses || [])) {
+    const mine = lec.courses.find(x => x.code === c.code);
+    if (!mine) { lec.courses.push({ id:c.id, code:c.code, title:c.title, dept:c.dept, level:c.level, list:c.list || [], listAt:c.listAt || 0 }); ch = true; }
+    else if ((c.listAt || 0) > (mine.listAt || 0)) { mine.list = c.list || []; mine.listAt = c.listAt; ch = true; }
+  }
+  const have = new Set(lec.manual.map(m => m.sid + '|' + m.matric));
+  for (const m of (st.manual || [])) if (!have.has(m.sid + '|' + m.matric)) { lec.manual.push({ sid:m.sid, matric:m.matric, name:m.name }); ch = true; }
+  lec.accepted = lec.accepted || {};
+  for (const k in (st.accepted || {})) if (!lec.accepted[k]) { lec.accepted[k] = true; ch = true; }
+  return ch;
+}
+function mergeSessions(lec, rows){
+  let ch = false;
+  for (const r of rows) {
+    const id = r.sid, started = Number(r.startedAt) || 0, ended = Number(r.endedAt) || 0;
+    const mine = lec.sessions.find(s => s.id === id);
+    if (!mine) { lec.sessions.push({ id, code:r.course, startedAt:started, endedAt:ended, sk:'', pushed:true }); ch = true; }
+    else if (!mine.endedAt && ended) { mine.endedAt = ended; ch = true; }
+  }
+  return ch;
+}
+// ---- class list: who is supposed to be in this course ----
+function parseClassList(text){
+  const seen = new Set(), out = [];
+  for (const line of String(text || '').split(/\r?\n/)) {
+    const m = line.trim().match(/^([A-Za-z0-9][A-Za-z0-9\/\-]{2,23})(?:[\s,;\t]+(.*))?$/);
+    if (!m) continue;
+    const matric = normMatric(m[1]); if (matric.length < 3 || !/\d/.test(matric) || seen.has(matric)) continue;
+    seen.add(matric); out.push({ matric, name:(m[2] || '').replace(/^[\s,;\t]+|[\s,;\t]+$/g, '').replace(/\s+/g, ' ') });
+  }
+  return out;
+}
+const nameTokens = s => String(s || '').toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(t => t.length >= 3);
+// Returns a reason to hold the scan for the lecturer's review, or '' when it fits the course.
+function classCheck(course, rec){
+  if (!course) return '';
+  if (course.list && course.list.length) {
+    const st = course.list.find(x => x.matric === rec.matric);
+    if (!st) return 'Not on the class list';
+    const a = nameTokens(st.name), b = nameTokens(rec.name);
+    if (a.length && b.length && !b.some(t => a.includes(t))) return 'Name does not match the class list';
+    return '';
+  }
+  if (course.dept && rec.dept && course.dept !== rec.dept) return 'From ' + rec.dept + ', not ' + course.dept;
+  if (course.level && rec.level && course.level !== rec.level) return rec.level + ' level, not ' + course.level;
+  return '';
+}
+// Re-apply every check from the saved base result, so editing the class list updates old scans too.
+function applyChecks(recs, courseOf){
+  for (const r of recs) {
+    if (r.status0 === undefined) { r.status0 = r.status; r.reason0 = r.reason || ''; }
+    r.status = r.status0; r.reason = r.reason0;
+    if (r.status === 'ok') { const why = classCheck(courseOf(r.course), r); if (why) { r.status = 'review'; r.reason = why; } }
+  }
+  flagSharedDevices(recs);
+}
+// </core>
+
+/* ---------- brand and icons ---------- */
+const APP = 'Adesse';
+const MARK_D = 'M8.5 4h8.0a4.5 4.5 0 0 1 4.5 4.5v8.0a4.5 4.5 0 0 1 -4.5 4.5h-8.0a4.5 4.5 0 0 1 -4.5 -4.5v-8.0a4.5 4.5 0 0 1 4.5 -4.5zM15.5 11h8.0a4.5 4.5 0 0 1 4.5 4.5v8.0a4.5 4.5 0 0 1 -4.5 4.5h-8.0a4.5 4.5 0 0 1 -4.5 -4.5v-8.0a4.5 4.5 0 0 1 4.5 -4.5z';
+const LOGO_HTML = '<svg class="lm" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="' + MARK_D + '"/></svg><span>' + APP.toLowerCase() + '</span>';
+const ic = (p, s) => '<svg width="' + (s || 18) + '" height="' + (s || 18) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+const I = {
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  left:'<path d="M15 5l-7 7 7 7"/>', right:'<path d="M9 5l7 7-7 7"/>',
+  alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>', info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  refresh:'<path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M8 16H3v5"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+};
+
+/* ---------- small helpers ---------- */
+const NMU = 'Nigeria Maritime University';
+const NMU_DEPTS = ['Civil Engineering','Electrical Engineering','Environmental Management and Pollution Control','Fisheries and Aquaculture','Marine Economics and Finance','Marine Engineering','Marine Geology','Mechanical Engineering','Meteorology and Climate Change','Nautical Science','Petroleum and Gas Engineering','Port Management','Transport Logistics Management'];
+const $ = (s, el) => (el || document).querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const disp = c => String(c).replace(/-/g, ' ');
+const fmt = t => new Date(t).toLocaleString([], { day:'numeric', month:'short', hour:'numeric', minute:'2-digit' });
+const dateLong = t => new Date(t).toLocaleString([], { weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit' });
+const today = d => { const t = new Date(d || Date.now()); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0'); };
+const slug = s => String(s).replace(/[^A-Za-z0-9_-]+/g, '-').slice(0, 120);
+function load(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3800); }
+function setNote(el, kind, html){ el.className = 'note' + (kind ? ' ' + kind : ''); el.innerHTML = html ? ic(kind === 'bad' ? I.alert : I.info, 16) + '<span>' + html + '</span>' : ''; }
+
+/* ---------- errors under the field that caused them ---------- */
+function clearErr(el){ if (typeof el === 'string') el = $('#' + el); if (!el) return; const f = el.closest('.field') || el.parentElement; if (f) f.querySelectorAll('.ferr').forEach(x => x.remove()); el.removeAttribute('aria-invalid'); el.removeAttribute('aria-describedby'); }
+function clearErrs(form){ form.querySelectorAll('.ferr').forEach(x => x.remove()); form.querySelectorAll('[aria-invalid]').forEach(x => { x.removeAttribute('aria-invalid'); x.removeAttribute('aria-describedby'); }); }
+function fieldErr(el, msg, action){
+  if (typeof el === 'string') el = $('#' + el); if (!el) return toast(msg);
+  clearErr(el);
+  const f = el.closest('.field') || el.parentElement, p = document.createElement('p');
+  p.className = 'ferr'; p.setAttribute('role', 'alert'); p.id = 'err-' + (el.id || rid(2));
+  p.appendChild(document.createTextNode(msg));
+  if (action) { const x = document.createElement('button'); x.type = 'button'; x.className = 'link'; x.textContent = action.label; x.addEventListener('click', action.fn); p.appendChild(x); }
+  f.appendChild(p); el.setAttribute('aria-invalid', 'true'); el.setAttribute('aria-describedby', p.id);
+  const t = el.matches('input,select,textarea,button') ? el : el.querySelector('button,input,select'); if (t) t.focus();
+  return false;
+}
+document.addEventListener('input', e => { if (e.target.getAttribute && e.target.getAttribute('aria-invalid')) clearErr(e.target); });
+document.addEventListener('change', e => { if (e.target.getAttribute && e.target.getAttribute('aria-invalid')) clearErr(e.target); });
+const weakPin = p => /^(\d)\1{5}$/.test(p) || '0123456789012345'.includes(p) || '9876543210987654'.includes(p) || ['121212','112233','696969','123123'].includes(p);
+
+/* ---------- state ---------- */
+const CONF = window.ADESSE_CONFIG || {};
+const PROD = !!(CONF.supabaseUrl && CONF.supabaseAnonKey);
+let supabaseClient = null;
+if (window.supabase && (CONF.supabaseUrl || window.ADESSE_CONFIG?.supabaseUrl)) {
+  try {
+    const sUrl = CONF.supabaseUrl || window.ADESSE_CONFIG.supabaseUrl;
+    const sKey = CONF.supabaseAnonKey || window.ADESSE_CONFIG.supabaseAnonKey;
+    supabaseClient = window.supabase.createClient(sUrl, sKey, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+    window.supabaseClient = supabaseClient;
+  } catch (e) {
+    console.warn('Supabase initialization failed:', e);
+  }
+}
+const DEF = { role:null, cutoff:75, fakeOffline:false, cloud:'supabase', sbUrl:'', sbKey:'', theme:'system', alerts:false, alertAsk:false };
+let cfg = Object.assign({}, DEF, load('dey.cfg', {}));
+if (PROD) { cfg.cloud = 'supabase'; cfg.sbUrl = CONF.supabaseUrl; cfg.sbKey = CONF.supabaseAnonKey; cfg.fakeOffline = false; }
+let stu = load('dey.stu', null);
+let lec = load('dey.lec', null);
+if (stu) { stu.scans = stu.scans || []; stu.keys = stu.keys || {}; stu.sessions = stu.sessions || {}; stu.targets = stu.targets || {}; stu.mute = stu.mute || {}; stu.notified = stu.notified || {}; stu.joinedAt = stu.joinedAt || Date.now(); }
+if (lec) { lec.courses = lec.courses || []; lec.sessions = lec.sessions || []; lec.manual = lec.manual || []; lec.cloudScans = lec.cloudScans || []; lec.roster = lec.roster || []; lec.accepted = lec.accepted || {}; }
+let prev = { view:'welcome', param:null };
+let sregStep = 1, lregM = 'new';
+let priv = null, view = 'welcome', param = null, curCode = '', curPin = '', shownWin = -1, signing = false, wake = null, sregMode = 'new', lastCount = -1;
+const saveStu = () => save('dey.stu', stu), saveLec = () => save('dey.lec', lec), saveCfg = () => save('dey.cfg', cfg);
+
+/* ---------- theme: system, light or dark ---------- */
+const rootEl = document.documentElement, hostTheme = rootEl.getAttribute('data-theme');
+const mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+const effTheme = () => (cfg.theme === 'light' || cfg.theme === 'dark') ? cfg.theme : (hostTheme === 'dark' || hostTheme === 'light' ? hostTheme : (mq && mq.matches ? 'dark' : 'light'));
+function applyTheme(){
+  if (cfg.theme === 'light' || cfg.theme === 'dark') rootEl.setAttribute('data-theme', cfg.theme);
+  else if (hostTheme) rootEl.setAttribute('data-theme', hostTheme); else rootEl.removeAttribute('data-theme');
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = effTheme() === 'dark' ? '#0a0a0a' : '#ffffff';
+  const b = $('#themeBtn'); if (b) b.innerHTML = ic(effTheme() === 'dark' ? I.sun : I.moon, 18);
+  document.querySelectorAll('#themeSeg button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === cfg.theme)));
+}
+if (mq && mq.addEventListener) mq.addEventListener('change', applyTheme);
+
+/* ---------- cloud: Supabase backend ---------- */
+const isOnline = () => !cfg.fakeOffline && navigator.onLine !== false;
+const strObj = o => { const r = {}; for (const k in o) r[k] = o[k] == null ? '' : String(o[k]); return r; };
+const Demo = {
+  async put(coll, id, obj){ const db = load('dey.cloud', {}); (db[coll] = db[coll] || {})[id] = strObj(obj); save('dey.cloud', db); },
+  async query(coll, field, val){ const db = load('dey.cloud', {}); return Object.values(db[coll] || {}).filter(o => o[field] === val); },
+  async del(coll, id){ const db = load('dey.cloud', {}); if (db[coll]) delete db[coll][id]; save('dey.cloud', db); }
+};
+const SB = {
+  url(coll){
+    const u = (CONF.supabaseUrl || cfg.sbUrl || '').replace(/\/+$/, '');
+    return u + '/rest/v1/' + coll;
+  },
+  headers(extra){
+    const k = CONF.supabaseAnonKey || cfg.sbKey || '';
+    const h = { 'apikey': k, 'Authorization': 'Bearer ' + k, 'Content-Type': 'application/json' };
+    return Object.assign(h, extra);
+  },
+  async put(coll, id, obj){
+    const row = Object.assign({}, obj, { id });
+    const res = await fetch(SB.url(coll), {
+      method: 'POST',
+      headers: SB.headers({ 'Prefer': 'resolution=merge-duplicates' }),
+      body: JSON.stringify(row)
+    });
+    if (!res.ok) {
+      const errTxt = await res.text().catch(() => '');
+      throw new Error('Supabase ' + res.status + ': ' + errTxt);
+    }
+  },
+  async query(coll, field, val){
+    const res = await fetch(SB.url(coll) + '?' + encodeURIComponent(field) + '=eq.' + encodeURIComponent(val) + '&select=*', {
+      method: 'GET',
+      headers: SB.headers()
+    });
+    if (!res.ok) {
+      const errTxt = await res.text().catch(() => '');
+      throw new Error('Supabase ' + res.status + ': ' + errTxt);
+    }
+    return await res.json();
+  },
+  async del(coll, id){
+    const res = await fetch(SB.url(coll) + '?id=eq.' + encodeURIComponent(id), {
+      method: 'DELETE',
+      headers: SB.headers()
+    });
+    if (!res.ok && res.status !== 404) {
+      const errTxt = await res.text().catch(() => '');
+      throw new Error('Supabase ' + res.status + ': ' + errTxt);
+    }
+  }
+};
+const cloud = () => (cfg.cloud === 'supabase' && (CONF.supabaseUrl || cfg.sbUrl)) ? SB : Demo;
+const normScan = r => Object.assign({}, r, { win:Number(r.win) || 0, at:Number(r.at) || 0 });
+const normSess = r => Object.assign({}, r, { startedAt:Number(r.startedAt) || 0, endedAt:Number(r.endedAt) || 0 });
+
+/* ---------- dialog: a confirmation the person has to mean ---------- */
+function dialog(o){
+  return new Promise(res => {
+    const root = $('#dlgRoot');
+    root.innerHTML = '<div class="ovl" data-ovl><div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dlgT"><h2 id="dlgT">' + esc(o.title) + '</h2>' +
+      (o.body ? '<div class="dlgb">' + o.body + '</div>' : '') +
+      (o.ack ? '<label class="radio"><input type="checkbox" id="dlgAck"><span>' + esc(o.ack) + '</span></label>' : '') +
+      (o.type ? '<div class="field"><label for="dlgType">Type ' + esc(o.type) + ' to confirm</label><input id="dlgType" autocapitalize="characters" autocomplete="off"></div>' : '') +
+      '<div class="dlgf">' + (o.extra ? '<button class="btn" type="button" data-d="extra">' + esc(o.extra) + '</button>' : '') +
+      '<button class="btn" type="button" data-d="no">Cancel</button><button class="btn ' + (o.danger ? 'destructive' : 'primary') + '" type="button" data-d="yes" id="dlgYes">' + esc(o.yes || 'Confirm') + '</button></div></div></div>';
+    const yes = $('#dlgYes'), ack = $('#dlgAck'), ty = $('#dlgType');
+    const gate = () => { yes.disabled = !!((ack && !ack.checked) || (ty && ty.value.trim().toUpperCase() !== o.type)); };
+    gate(); if (ack) ack.addEventListener('change', gate); if (ty) ty.addEventListener('input', gate);
+    const key = e => { if (e.key === 'Escape') done('no'); };
+    const done = v => { root.innerHTML = ''; document.removeEventListener('keydown', key); res(v); };
+    root.firstChild.addEventListener('click', e => { const d = e.target.closest('[data-d]'); if (d) done(d.dataset.d); else if (e.target.hasAttribute('data-ovl')) done('no'); });
+    document.addEventListener('keydown', key);
+    setTimeout(() => { const f = ty || $('[data-d="no"]', root); if (f) f.focus(); }, 30);
+  });
+}
+
+/* ---------- navigation ---------- */
+function go(v, p){
+  view = v; param = p == null ? null : p;
+  const tt = $('#toast'); if (tt) tt.hidden = true;
+  if (v !== 'sreg' && v !== 'lreg' && v !== 'welcome' && v !== 'set') cfg.last = v;
+  document.body.classList.add('enter'); setTimeout(() => document.body.classList.remove('enter'), 900);
+  render();
+  window.scrollTo(0, 0);
+}
+function back(){
+  if (view === 'set') return go(prev.view && prev.view !== 'set' && prev.view !== 'welcome' ? prev.view : roleHome(), prev.param);
+  if (view === 'sreg' && sregMode === 'new' && sregStep === 2) { sregStep = 1; return applySreg(); }
+  if (view === 'sreg' || view === 'lreg') return go('welcome');
+  if (view === 'lcnew' || view === 'lcourse') return go('lhome');
+  go(roleHome());
+}
+function roleHome(){
+  if (cfg.role === 'student') return stu && stu.matric ? 'shome' : 'sreg';
+  if (cfg.role === 'lecturer') return lec ? (liveSession() ? 'llive' : 'lhome') : 'lreg';
+  return 'welcome';
+}
+function render(){
+  document.querySelectorAll('.screen[id^="v-"]').forEach(s => { s.hidden = s.id !== 'v-' + view; });
+  $('#bar').hidden = view === 'welcome';
+  const isRoot = view === 'shome' || view === 'lhome' || view === 'llive' || view === 'sdone';
+  $('#barL').innerHTML = isRoot ? '<span class="logo">' + LOGO_HTML + '</span>' : '<button class="iconbtn" type="button" data-act="back" aria-label="Back">' + ic(I.left, 18) + '</button>';
+  $('#gear').hidden = view === 'sreg' || view === 'lreg';
+  document.querySelectorAll('[data-brand]').forEach(e => { e.innerHTML = LOGO_HTML; });
+  document.querySelectorAll('[data-app]').forEach(e => { e.textContent = APP; });
+  $('#dev').hidden = PROD && location.hash !== '#dev';
+  applyTheme(); renderNet();
+  ({ sreg:renderSreg, shome:renderShome, sdetail:renderSdetail, sdone:renderSdone, lreg:renderLreg, lhome:renderLhome, lcnew:renderLcnew, llive:renderLive, lcourse:renderCourse, set:renderSet }[view] || (() => {}))();
+}
+function renderNet(){
+  const on = isOnline(), el = $('#net');
+  el.dataset.s = on ? 'on' : 'off'; el.textContent = on ? 'Online' : 'Offline';
+}
+function setSyncing(on){ const b = $('#sSync'); if (!b) return; b.classList.toggle('spin', on); b.innerHTML = on ? ic(I.refresh, 14) + ' Refreshing' : 'Refresh'; }
+
+/* ---------- forms: university, department, level ---------- */
+const chosen = { sLevel:'', cLevel:'' };
+function levelChips(id, withAll){
+  const vals = (withAll ? [''] : []).concat(['100','200','300','400','500']);
+  $('#' + id).innerHTML = vals.map(v => '<button type="button" class="cb" data-act="lv" data-g="' + id + '" data-v="' + v + '" aria-pressed="' + (chosen[id] === v && (chosen[id] !== '' || withAll) ? 'true' : 'false') + '">' + (v || 'All') + '</button>').join('');
+}
+function deptField(wrapId, uni, all, val){
+  const sid = wrapId.replace('Wrap', 'Sel');
+  if (uni === NMU) $('#' + wrapId).innerHTML = '<select id="' + sid + '">' + (all ? '<option value="">All departments</option>' : '<option value="" disabled>Choose your department</option>') + NMU_DEPTS.map(d => '<option' + (d === val ? ' selected' : '') + '>' + esc(d) + '</option>').join('') + '</select>';
+  else $('#' + wrapId).innerHTML = '<input id="' + sid + '" autocomplete="off" placeholder="' + (all ? 'Department (optional)' : 'Department') + '" value="' + esc(val || '') + '">';
+  const sel = $('#' + wrapId + ' select'); if (sel && !val && !all) sel.selectedIndex = 0;
+}
+const deptVal = wrapId => { const e = $('#' + wrapId + ' select, #' + wrapId + ' input'); return e ? e.value.trim() : ''; };
+const uniVal = (sel, other) => $('#' + sel).value === 'nmu' ? NMU : $('#' + other).value.trim();
+function uniSwitch(prefix, deptWrap, all){
+  const other = $('#' + prefix + 'Uni').value === 'other';
+  $('#' + prefix + 'UniOtherWrap').hidden = !other;
+  deptField(deptWrap, other ? 'x' : NMU, all, '');
+}
+
+/* ---------- student: setup and restore ---------- */
+const sregKey = () => sregMode === 'restore' ? 'r' : 'n' + sregStep;
+function applySreg(){
+  const key = sregKey(), rs = sregMode === 'restore', f = $('#sregForm');
+  clearErrs(f);
+  f.querySelectorAll('[data-s]').forEach(e => { e.hidden = !e.dataset.s.split(' ').includes(key); });
+  $('#sUniOtherWrap').hidden = !($('#sUni').value === 'other' && (key === 'n1' || key === 'r'));
+  $('#sregSteps').hidden = rs;
+  f.querySelectorAll('#sregSteps i').forEach((i, ix) => i.classList.toggle('on', ix < sregStep));
+  const sum = $('#sSummary'); sum.hidden = !(sregMode === 'new' && sregStep === 2);
+  if (!sum.hidden) $('#sSummaryTxt').innerHTML = '<b>' + esc($('#sName').value.trim()) + '</b> · ' + esc(normMatric($('#sMatric').value));
+  $('#sregH').textContent = rs ? 'Restore your account' : (sregStep === 1 ? 'Create your account' : 'Almost done');
+  $('#sregP').textContent = rs ? 'Enter your matric number and PIN to get your attendance back.' : (sregStep === 1 ? 'Step 1 of 2. Under a minute, once.' : 'Step 2 of 2. Your class, and a PIN that protects your matric number.');
+  $('#sPinLbl').textContent = rs ? 'Your PIN' : 'Create a 6-digit PIN';
+  $('#sPinHelp').hidden = rs;
+  $('#sregGo').textContent = rs ? 'Restore' : (sregStep === 1 ? 'Continue' : 'Start');
+  $('#sregMode').textContent = rs ? 'New here? Set up instead' : 'Already registered? Restore';
+  $('#forgotPin').hidden = !rs;
+}
+function setSregMode(m){ sregMode = m; sregStep = 1; applySreg(); }
+function renderSreg(){
+  if (!$('#sLevel').children.length) levelChips('sLevel', false);
+  if (!$('#sDeptWrap').children.length) deptField('sDeptWrap', NMU, false, '');
+  applySreg();
+}
+async function forgotPin(){
+  const mail = CONF.supportEmail;
+  const r = await dialog({ title:'Forgot your PIN?',
+    body:'<p>PINs cannot be reset inside the app yet, because that would let anyone take over your matric number.</p><p>' + (mail ? 'Email <b>' + esc(mail) + '</b> from your school email with your full name, matric number and university. We confirm with your department, then reset it.' : 'Ask your department admin to reset it for you.') + '</p>',
+    yes:mail ? 'Write the email' : 'OK' });
+  if (r === 'yes' && mail) location.href = 'mailto:' + mail + '?subject=' + encodeURIComponent('Reset my ' + APP + ' PIN') + '&body=' + encodeURIComponent('Full name:\nMatric number:\nUniversity:\nDepartment and level:\n');
+}
+const lockState = k => load(k || 'dey.lock', { n:0, until:0 });
+const lockedMins = k => { const l = lockState(k); return l.until > Date.now() ? Math.ceil((l.until - Date.now()) / 60000) : 0; };
+function failPin(k){ const l = lockState(k); l.n++; if (l.n >= 5) { l.until = Date.now() + 10 * 60000; l.n = 0; } save(k || 'dey.lock', l); }
+function freshStu(o){ return Object.assign({ scans:[], keys:{}, sessions:{}, targets:{}, mute:{}, notified:{}, joinedAt:Date.now(), profileSent:false, conflict:false }, o); }
+async function restoreAccount(uni, matric, pin){
+  const lm = lockedMins(); if (lm) return fieldErr('sPin', 'Too many wrong PINs. Try again in ' + lm + ' min.');
+  if (!isOnline()) return toast('Connect to the internet to restore your account.');
+  const c = cloud(); if (!c) return toast('Add your Supabase details in Settings, or use demo storage.');
+  let rows;
+  try { rows = (await c.query('students', 'matric', matric)).filter(r => r.uni === uni); } catch (e) { return toast('Could not reach the server. Try again.'); }
+  if (!rows.length) return fieldErr('sMatric', 'No account found for that matric number at this university.');
+  const r = rows[0], h = await pinHash(pin, uni + '|' + matric);
+  if (!r.pinHash || r.pinHash !== h) { failPin(); return fieldErr('sPin', 'That PIN is not right.'); }
+  save('dey.lock', { n:0, until:0 });
+  const keep = stu && stu.matric === matric && stu.uni === uni ? stu : null;
+  stu = freshStu({ uni, name:r.name, matric, dept:r.dept, level:r.level, did:keep ? keep.did : rid(3), pinHash:h, scans:keep ? keep.scans : [], keys:keep ? keep.keys : {}, profileSent:true });
+  saveStu(); sregMode = 'new'; sregStep = 1; go('shome'); await sync(false); toast('Welcome back, ' + (stu.name.split(' ')[0] || '') + '.');
+}
+
+/* ---------- student: home, detail, alerts ---------- */
+const targetFor = key => (stu.targets && stu.targets[key]) || cfg.cutoff;
+function courseRows(){
+  const g = new Map(); let waiting = 0;
+  for (const s of stu.scans) {
+    if (s.status === 'bad') continue;
+    if (!s.lid) { waiting++; continue; }
+    const k = s.lid + '|' + s.course;
+    if (!g.has(k)) g.set(k, { lid:s.lid, code:s.course, sids:new Set() });
+    g.get(k).sids.add(s.sid);
+  }
+  const rows = Array.from(g.values()).map(r => {
+    const ss = Object.values(stu.sessions).filter(x => x.lid === r.lid && x.course === r.code).sort((a, b) => b.startedAt - a.startedAt);
+    const held = ss.length ? ss.length : null, a = r.sids.size;
+    return { key:r.lid + '|' + r.code, lid:r.lid, code:r.code, lecturer:(ss[0] || {}).lecturer || '', title:(ss[0] || {}).title || '', a, held:held == null ? null : Math.max(held, a),
+      pct:held ? Math.round(a / Math.max(held, a) * 100) : null, ss, hist:ss.map(x => ({ sid:x.sid, at:x.startedAt, here:r.sids.has(x.sid) })) };
+  });
+  rows.sort((x, y) => (x.pct == null ? 101 : x.pct) - (y.pct == null ? 101 : y.pct));
+  return { rows, waiting };
+}
+function courseCard(r){
+  const tgt = targetFor(r.key), bad = r.pct != null && r.pct < tgt;
+  const miss = r.hist.find(h => !h.here && Date.now() - h.at < 7 * 864e5);
+  return '<li><button type="button" class="course" data-act="sopen" data-key="' + esc(r.key) + '"><span class="row"><span><span class="cc">' + esc(disp(r.code)) + '</span><span class="sub blk">' + esc([r.lecturer, r.title].filter(Boolean).join(' · ') || ' ') + '</span></span>' +
+    (r.pct == null ? '<span class="chip mute">' + r.a + (r.a === 1 ? ' class' : ' classes') + '</span>' : '<span class="chip ' + (bad ? 'warn' : '') + '">' + r.pct + '%</span>') + '</span>' +
+    (r.pct == null ? '<span class="sub blk">Connect once to see your percentage.</span>' :
+      '<span class="meter"><i class="' + (bad ? 'low' : '') + '" style="width:' + r.pct + '%"></i><b style="left:' + tgt + '%"></b></span>' +
+      '<span class="sub blk"><b style="color:var(--foreground);font-weight:600">' + r.a + ' of ' + r.held + '</b> classes attended</span>' +
+      '<span class="sub blk">' + esc(advice(r.a, r.held, tgt)) + '</span>' + (miss ? '<span class="sub blk" style="color:var(--destructive)">Missed ' + esc(dateLong(miss.at)) + '</span>' : '')) + '</button></li>';
+}
+function renderShome(){
+  $('#sHi').textContent = 'Hi, ' + (stu.name.split(' ')[0] || 'there');
+  $('#sWho').textContent = [stu.dept, stu.level ? stu.level + ' level' : ''].filter(Boolean).join(' · ');
+  const { rows, waiting } = courseRows();
+  const low = rows.filter(r => r.pct != null && r.pct < targetFor(r.key));
+  const pend = stu.scans.filter(s => !s.synced).length, n = $('#sNote');
+  if (stu.conflict) setNote(n, 'bad', '<span class="t">This matric number is already registered.</span>Restore it with its PIN so your scans can be sent. <button class="link" type="button" data-act="conflictFix">Restore now</button>');
+  else if (low.length === 1) setNote(n, 'bad', '<span class="t">' + esc(disp(low[0].code)) + ' is below your ' + targetFor(low[0].key) + '% minimum.</span>Open it to see how to recover.');
+  else if (low.length > 1) setNote(n, 'bad', '<span class="t">' + low.length + ' courses are below your minimum.</span>Open one to see how to recover.');
+  else if (pend) setNote(n, '', pend + (pend === 1 ? ' class' : ' classes') + ' saved on this phone. ' + (isOnline() ? 'Sending now.' : 'They send when you are back online.'));
+  else if (waiting) setNote(n, '', 'A typed code is waiting for your lecturer to confirm it.');
+  else setNote(n, '', '');
+  $('#alertPrompt').hidden = !(rows.length && !cfg.alerts && !cfg.alertAsk && ('Notification' in window));
+  $('#sList').innerHTML = rows.length ? rows.map(courseCard).join('') : '<li class="empty"><b>No classes yet</b><span>Scan the code at the start of your next class. Nothing else to set up.</span></li>';
+}
+function renderSdetail(){
+  const r = courseRows().rows.find(x => x.key === param); if (!r) return go('shome');
+  const tgt = targetFor(r.key), bad = r.pct != null && r.pct < tgt;
+  $('#dtCode').textContent = disp(r.code);
+  $('#dtSub').textContent = [r.lecturer, r.title].filter(Boolean).join(' · ');
+  $('#dtPct').innerHTML = r.pct == null ? '—' : r.pct + '<small>%</small>';
+  $('#dtChip').innerHTML = r.pct == null ? '' : '<span class="chip ' + (bad ? 'warn' : 'mute') + '">' + (bad ? 'Below minimum' : 'On track') + '</span>';
+  $('#dtMeter').innerHTML = r.pct == null ? '' : '<i class="' + (bad ? 'low' : '') + '" style="width:' + r.pct + '%"></i><b style="left:' + tgt + '%"></b>';
+  $('#dtCount').innerHTML = r.held == null ? r.a + (r.a === 1 ? ' class' : ' classes') + ' recorded' : '<b>' + r.a + ' of ' + r.held + '</b> classes attended';
+  $('#dtAdvice').textContent = r.held ? advice(r.a, r.held, tgt) : 'Connect once to see your percentage.';
+  $('#dtTgt').textContent = tgt + '%';
+  $('#dtAlert').checked = !stu.mute[r.key];
+  $('#dtHistN').textContent = r.hist.length + (r.hist.length === 1 ? ' class' : ' classes');
+  $('#dtHist').innerHTML = r.hist.length ? r.hist.map(h => '<li><span>' + esc(dateLong(h.at)) + '</span><span class="chip ' + (h.here ? 'mute' : 'warn') + '">' + (h.here ? 'Present' : 'Missed') + '</span></li>').join('') : '<li><span class="sub">The list appears after you connect once.</span></li>';
+}
+function renderSdone(){
+  const d = param || {};
+  $('#dBig').innerHTML = ic(I.check, 44).replace('stroke-width="2"', 'stroke-width="2.6"');
+  $('#dTitle').textContent = d.title || '';
+  $('#dCourse').textContent = d.course || '';
+  $('#dLine').textContent = d.line || '';
+}
+async function enableAlerts(){
+  if (!('Notification' in window)) { toast('This browser cannot show alerts. The Android app can.'); return false; }
+  let p = Notification.permission;
+  if (p === 'default') { try { p = await Notification.requestPermission(); } catch (e) { p = 'denied'; } }
+  if (p !== 'granted') { toast('Alerts are blocked. Allow notifications for this site in your browser settings.'); return false; }
+  cfg.alerts = true; saveCfg(); return true;
+}
+async function notify(title, body, tag){
+  if (!cfg.alerts || !('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    if (reg && reg.showNotification) return await reg.showNotification(title, { body, tag, icon:'icon-192.png', badge:'icon-192.png' });
+    new Notification(title, { body, tag });
+  } catch (e) {}
+}
+// After a refresh: tell the student about classes they missed since they joined.
+function checkMisses(){
+  if (!stu) return;
+  const now = Date.now(); let changed = false;
+  for (const r of courseRows().rows) {
+    const att = new Set(r.hist.filter(h => h.here).map(h => h.sid));
+    for (const s of missedSessions(r.ss, att, stu.joinedAt || 0, now)) {
+      if (stu.notified[s.sid]) continue;
+      stu.notified[s.sid] = 1; changed = true;
+      if (stu.mute[r.key]) continue;
+      const tgt = targetFor(r.key);
+      notify('You missed ' + disp(r.code), 'Recorded ' + dateLong(s.startedAt) + (r.pct == null ? '.' : '. You are at ' + r.pct + '% and your minimum is ' + tgt + '%.'), 'miss-' + s.sid);
+    }
+  }
+  if (changed) saveStu();
+}
+function mkScan(base){
+  const t = Date.now();
+  return Object.assign({ matric:stu.matric, name:stu.name, dept:stu.dept, level:stu.level, uni:stu.uni, did:stu.did, at:t, day:today(t), synced:false }, base);
+}
+async function recordQR(text){
+  const c = parseCode(text);
+  if (!c) return { kind:'invalid' };
+  const chk = await studentCheck(c, Date.now(), stu.keys);
+  if (!chk.ok) return { kind:'fail', msg:chk.msg };
+  const dup = stu.scans.find(s => s.sid === c.sid && s.matric === stu.matric);
+  if (dup) return { kind:'ok', done:{ title:'Already recorded', course:disp(c.course), line:'You scanned this class at ' + fmt(dup.at) + '.' } };
+  stu.keys[c.lid] = c.pk;
+  stu.scans.push(mkScan({ key:c.sid + '_' + stu.matric, kind:'qr', sid:c.sid, course:c.course, lid:c.lid, win:c.win, sig:c.sig, status:'ok' }));
+  saveStu(); const online = isOnline(); sync(false);
+  return { kind:'ok', done:{ title:"You're marked present", course:disp(c.course), line: online ? 'Sending to your lecturer now.' : 'Saved on your phone. It sends when you are back online.' } };
+}
+async function recordPin(pin){
+  if (!/^\d{6}$/.test(pin)) return { kind:'fail', msg:'Type the 6 digits shown on the screen.' };
+  const key = 'p_' + pin + '_' + stu.matric;
+  if (stu.scans.find(s => s.key === key)) return { kind:'ok', done:{ title:'Already sent', course:'Code ' + pin, line:'Your lecturer will confirm it.' } };
+  stu.scans.push(mkScan({ key, kind:'pin', pin, status:'pending' }));
+  saveStu(); const online = isOnline(); sync(false);
+  return { kind:'ok', done:{ title:'Code saved', course:'Code ' + pin, line: online ? 'Your lecturer confirms it in a moment.' : 'It is sent when you are back online and checked by your lecturer.' } };
+}
+let syncing = false;
+async function sync(manual){
+  if (cfg.role === 'lecturer') return lecSync(manual);
+  if (!stu || !stu.matric || syncing) return;
+  if (!isOnline()) { if (manual) toast('You are offline. Everything is saved here and sends later.'); return; }
+  const c = cloud();
+  if (!c) { if (manual) toast('Add your Supabase details in Settings, or use demo storage.'); return; }
+  syncing = true; setSyncing(true); let sent = 0;
+  try {
+    if (!stu.profileSent) {
+      const ex = (await c.query('students', 'matric', stu.matric)).find(r => r.uni === stu.uni);
+      if (ex && ex.pinHash && stu.pinHash && ex.pinHash !== stu.pinHash) { stu.conflict = true; if (manual) toast('This matric number is already registered with a different PIN.'); return; }
+      stu.conflict = false;
+      const oauth = window._oauthData || {};
+      await c.put('students', slug(stu.uni + '_' + stu.matric), {
+        matric:stu.matric, name:stu.name, dept:stu.dept, level:stu.level, uni:stu.uni,
+        pinHash:stu.pinHash || (ex && ex.pinHash) || '',
+        email:stu.email || oauth.email || '',
+        user_id:stu.user_id || oauth.userId || null,
+        auth_provider:stu.auth_provider || oauth.provider || 'local',
+        at:Date.now()
+      });
+      stu.profileSent = true;
+    }
+    for (const s of stu.scans.filter(x => !x.synced)) { const w = Object.assign({}, s); delete w.synced; await c.put('scans', slug(s.key), w); s.synced = true; sent++; }
+    for (const r of await c.query('scans', 'matric', stu.matric)) {
+      const n = normScan(r); if (n.uni !== stu.uni) continue;
+      const loc = stu.scans.find(x => x.key === n.key);
+      if (loc) { if (n.lid) { loc.lid = n.lid; loc.sid = n.sid || loc.sid; loc.course = n.course || loc.course; } if (n.status) loc.status = n.status; }
+      else stu.scans.push(Object.assign(n, { synced:true }));
+    }
+    for (const lid of new Set(stu.scans.filter(s => s.lid && s.status !== 'bad').map(s => s.lid)))
+      for (const r of await c.query('sessions', 'lid', lid)) stu.sessions[r.sid] = normSess(r);
+    checkMisses();
+    if (manual) toast(sent ? sent + (sent === 1 ? ' class sent.' : ' classes sent.') : 'Up to date.');
+  } catch (e) { if (manual) toast('Could not reach the server. It will try again.'); }
+  finally { syncing = false; setSyncing(false); saveStu(); if (view === 'shome') renderShome(); if (view === 'sdetail') renderSdetail(); if (view === 'set') renderSet(); renderNet(); }
+}
+
+/* ---------- student: clear, delete ---------- */
+function wipeStudent(){
+  try { localStorage.removeItem('dey.stu'); localStorage.removeItem('dey.lock'); } catch (e) {}
+  stu = null; cfg.alertAsk = false; saveCfg(); sregMode = 'new'; sregStep = 1; go(roleHome());
+}
+async function doClear(){
+  for (;;) {
+    const unsent = stu ? stu.scans.filter(s => !s.synced).length : 0, canSend = unsent && isOnline() && cloud();
+    const r = await dialog({
+      title:'Clear data on this phone?',
+      body:'<p>This removes your profile and saved classes from this phone.</p><p>' + (unsent ? '<b>' + unsent + (unsent === 1 ? ' scan that has not been sent' : ' scans that have not been sent') + ' will be lost for good.</b> ' : '') + 'Everything already sent stays safe. You can bring it back any time with your matric number and PIN.</p>',
+      ack:unsent ? 'I understand I will lose ' + unsent + (unsent === 1 ? ' unsent scan' : ' unsent scans') : '', yes:'Clear data', danger:true, extra:canSend ? 'Send them first' : ''
+    });
+    if (r === 'extra') { await sync(true); continue; }
+    if (r !== 'yes') return;
+    wipeStudent(); return toast('Data cleared. Restore any time with your matric number and PIN.');
+  }
+}
+async function doDelete(){
+  const r = await dialog({ title:'Delete your account?', body:'<p>This deletes your name, matric number, PIN and all your attendance records from our servers, and clears this phone. It cannot be undone.</p><p>Attendance lists your lecturers already downloaded stay with them.</p>', type:'DELETE', yes:'Delete account', danger:true });
+  if (r !== 'yes') return;
+  const c = cloud();
+  if (!isOnline() || !c) return toast('Connect to the internet to delete your account.');
+  try {
+    for (const s of await c.query('scans', 'matric', stu.matric)) if (!s.uni || s.uni === stu.uni) await c.del('scans', slug(s.key));
+    await c.del('students', slug(stu.uni + '_' + stu.matric));
+  } catch (e) { return toast('Could not delete right now. Try again.'); }
+  wipeStudent(); toast('Your account was deleted.');
+}
+
+/* ---------- camera ---------- */
+const cam = { stream:null, timer:0, busy:false, det:null };
+const cvs = document.createElement('canvas'), ctx = cvs.getContext('2d', { willReadFrequently:true });
+const JSQR = ['https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js', 'https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js'];
+let jsqrP = null;
+const loadScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+function ensureJsQR(){ if (window.jsQR) return Promise.resolve(true); if (!jsqrP) jsqrP = loadScript(JSQR[0]).catch(() => loadScript(JSQR[1])).then(() => !!window.jsQR).catch(() => false); return jsqrP; }
+async function startScan(){
+  if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { toast('No camera here. Type the code instead.'); return pinShow(); }
+  cam.det = null;
+  if ('BarcodeDetector' in window) { try { cam.det = new BarcodeDetector({ formats:['qr_code'] }); } catch (e) {} }
+  if (!cam.det && !(await ensureJsQR())) { toast('The scanner needs a connection the first time. Type the code instead.'); return pinShow(); }
+  try { cam.stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } }, audio:false }); }
+  catch (e) { toast('Camera is blocked. Allow it for this page, or type the code.'); return pinShow(); }
+  const v = $('#cam'); v.srcObject = cam.stream; try { await v.play(); } catch (e) {}
+  $('#scanner').hidden = false;
+  cam.timer = setInterval(async () => {
+    if (cam.busy || !cam.stream || v.readyState < 2 || !v.videoWidth) return;
+    cam.busy = true;
+    try {
+      let text = '';
+      if (cam.det) { const f = await cam.det.detect(v); if (f.length) text = f[0].rawValue; }
+      else { const w = Math.min(640, v.videoWidth), h = Math.round(w * v.videoHeight / v.videoWidth); cvs.width = w; cvs.height = h; ctx.drawImage(v, 0, 0, w, h); const q = window.jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts:'dontInvert' }); if (q) text = q.data; }
+      if (text) {
+        const r = await recordQR(text);
+        if (r.kind === 'ok') { stopScan(); go('sdone', r.done); }
+        else if (r.kind === 'fail') { stopScan(); toast(r.msg); }
+        else { toast('That is not a ' + APP + ' code.'); await new Promise(z => setTimeout(z, 1500)); }
+      }
+    } catch (e) {} finally { cam.busy = false; }
+  }, 200);
+}
+function stopScan(){
+  clearInterval(cam.timer); cam.timer = 0;
+  if (cam.stream) { cam.stream.getTracks().forEach(t => t.stop()); cam.stream = null; }
+  const v = $('#cam'); if (v) v.srcObject = null;
+  $('#scanner').hidden = true;
+}
+function pinShow(){ $('#pinBox').hidden = false; $('#pinIn').focus(); }
+
+/* ---------- lecturer ---------- */
+const STALE = 6 * 3600 * 1000;
+const liveSession = () => lec && lec.sessions.find(s => !s.endedAt && Date.now() - s.startedAt < STALE);
+function closeStale(){
+  if (!lec) return; let ch = false;
+  for (const s of lec.sessions) if (!s.endedAt && Date.now() - s.startedAt >= STALE) { s.endedAt = s.startedAt + 3 * 3600 * 1000; s.pushed = false; ch = true; }
+  if (ch) saveLec();
+}
+const courseByCode = code => lec.courses.find(c => c.code === code);
+function setLregMode(m){
+  lregM = m; const rs = m === 'signin';
+  document.querySelectorAll('#lregForm [data-l="n"]').forEach(e => { e.hidden = rs; });
+  $('#lregH').textContent = rs ? 'Sign in' : 'Lecturer setup';
+  $('#lregP').textContent = rs ? 'Use the email and passphrase you created.' : 'One time. Your account follows you to any phone.';
+  $('#lPassLbl').textContent = rs ? 'Your passphrase' : 'Create a passphrase';
+  $('#lPassHelp').hidden = rs;
+  $('#lregGo').textContent = rs ? 'Sign in' : 'Create account';
+  $('#lregMode').textContent = rs ? 'New here? Create an account' : 'Already have an account? Sign in';
+  clearErrs($('#lregForm'));
+}
+function renderLreg(){ setLregMode(lregM); }
+async function signInLecturer(uni, email, pass){
+  const LK = 'dey.llock', lm = lockedMins(LK);
+  if (lm) return fieldErr('lPass', 'Too many wrong tries. Try again in ' + lm + ' min.');
+  if (!isOnline()) return toast('Connect to the internet to sign in.');
+  const c = cloud(); if (!c) return toast('Add your Supabase details in Settings, or use demo storage.');
+  let rows; try { rows = (await c.query('lecturers', 'email', email)).filter(r => r.uni === uni); } catch (e) { return toast('Could not reach the server. Try again.'); }
+  if (!rows.length) return fieldErr('lEmail', 'No lecturer account for this email at this university.');
+  const r = rows[0], jwk = await unwrapKey(r.wrap, pass);
+  if (!jwk || (await fingerprint(pubFromJwk(jwk))) !== r.lid) { failPin(LK); return fieldErr('lPass', 'That passphrase is not right.'); }
+  save(LK, { n:0, until:0 });
+  lec = { name:r.name, uni, email, lid:r.lid, pub:pubFromJwk(jwk), jwk, wrap:r.wrap, acctSent:true, courses:[], sessions:[], manual:[], cloudScans:[], roster:[], accepted:{} };
+  priv = await importPriv(jwk); $('#lPass').value = ''; lregM = 'new'; saveLec(); go('lhome');
+  await lecSync(false); if (view === 'lhome') renderLhome(); toast('Signed in. Your courses are back.');
+}
+function renderLhome(){
+  $('#lWho').textContent = lec.name + ' · ' + lec.uni;
+  $('#lList').innerHTML = lec.courses.length ? lec.courses.map(c => {
+    const held = lec.sessions.filter(s => s.code === c.code).length;
+    const a = attendance(lec, c, cfg.cutoff);
+    return '<li class="course"><div class="row"><div><span class="cc">' + esc(disp(c.code)) + (c.sample ? ' <span class="chip mute">example</span>' : '') + '</span><span class="sub blk">' + esc(c.title || [c.dept || 'All departments', c.level ? c.level + ' level' : ''].filter(Boolean).join(' · ')) + '</span></div>' +
+      '<button class="iconbtn" type="button" data-act="open" data-id="' + esc(c.id) + '" aria-label="Open attendance">' + ic(I.right, 18) + '</button></div>' +
+      '<div class="sub">' + held + (held === 1 ? ' class held' : ' classes held') + ' · ' + a.rows.length + (a.rows.length === 1 ? ' student' : ' students') + '</div>' +
+      '<button class="btn primary" type="button" data-act="start" data-id="' + esc(c.id) + '">Start class</button></li>';
+  }).join('') : '<li class="empty"><b>No courses yet</b><span>Add a course you teach. You only do this once.</span></li>';
+}
+function renderLcnew(){
+  if (!$('#cLevel').children.length) levelChips('cLevel', true);
+  if (!$('#cDeptWrap').children.length) deptField('cDeptWrap', lec.uni, true, '');
+}
+async function drawLive(force){
+  const live = liveSession(); if (!live || !priv || signing) return;
+  const now = Date.now(), win = Math.floor(now / WIN);
+  if (!force && win === shownWin) return;
+  signing = true;
+  try {
+    const first = shownWin < 0;
+    curCode = await buildCode(priv, lec, live, now); curPin = await pinFor(live.sk, win); shownWin = win;
+    $('#codeText').value = curCode; $('#xPin').textContent = curPin.slice(0, 3) + ' ' + curPin.slice(3);
+    const qr = new QRCodeLib(0, 1); qr.addData(curCode); qr.make();
+    const n = qr.getModuleCount(), q = 2; let d = '';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += 'M' + (c + q) + ' ' + (r + q) + 'h1v1h-1z';
+    const box = $('#xQr');
+    box.innerHTML = '<svg viewBox="0 0 ' + (n + 2 * q) + ' ' + (n + 2 * q) + '" shape-rendering="crispEdges" aria-hidden="true"><rect width="100%" height="100%" fill="#ffffff"/><path d="' + d + '" fill="#000000"/></svg>';
+    if (!first) { box.classList.remove('swap'); void box.offsetWidth; box.classList.add('swap'); }
+  } catch (e) { $('#xQr').innerHTML = '<p class="fail">Could not draw the code. Reload the page.</p>'; }
+  finally { signing = false; }
+}
+function liveCount(){
+  const live = liveSession(); if (!live) return { present:0, review:0 };
+  const who = new Set(); let review = 0;
+  for (const r of lec.cloudScans) if (r.sid === live.id) { if (r.status === 'ok' || lec.accepted[r.key]) who.add(r.matric); else if (r.status === 'review') review++; }
+  for (const m of lec.manual) if (m.sid === live.id) who.add(m.matric);
+  return { present:who.size, review };
+}
+function updateLive(){
+  const s = liveCount(), el = $('#xCount');
+  el.textContent = s.present;
+  if (lastCount >= 0 && s.present !== lastCount) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+  lastCount = s.present;
+  setNote($('#xNote'), '', s.review ? s.review + (s.review === 1 ? ' scan needs' : ' scans need') + ' your look in the course page.' : '');
+}
+function renderLive(){
+  const live = liveSession(); if (!live) return go('lhome');
+  $('#xCourse').textContent = disp(live.code); lastCount = -1; updateLive(); drawLive(true);
+  $('#endIdle').hidden = false; $('#endSure').hidden = true; $('#manForm').hidden = true;
+}
+async function startClass(courseId){
+  const c = lec.courses.find(x => x.id === courseId); if (!c) return;
+  const now = Date.now(), id = rid(4);
+  lec.sessions.forEach(s => { if (!s.endedAt) { s.endedAt = now; s.pushed = false; } });
+  lec.sessions.push({ id, code:c.code, startedAt:now, endedAt:0, sk:await deriveSk(lec.jwk, id), pushed:false });
+  saveLec(); shownWin = -1; getWake(); go('llive'); lecSync(false);
+}
+async function getWake(){ try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
+function endClass(){
+  const live = liveSession(); if (!live) return;
+  live.endedAt = Date.now(); live.pushed = false; saveLec();
+  try { if (wake) { wake.release(); wake = null; } } catch (e) {}
+  const code = live.code; lecSync(false); go('lcourse', courseByCode(code) && courseByCode(code).id);
+}
+function renderCourse(){
+  const c = lec.courses.find(x => x.id === param); if (!c) return go('lhome');
+  const a = attendance(lec, c, cfg.cutoff), low = a.rows.filter(r => r.below).length;
+  $('#kCode').textContent = disp(c.code);
+  $('#kTitle').textContent = [c.title, c.dept || 'All departments', c.level ? c.level + ' level' : ''].filter(Boolean).join(' · ');
+  $('#kHeld').textContent = a.total; $('#kStud').textContent = a.rows.length; $('#kLow').textContent = low; $('#kLowLbl').textContent = 'below ' + cfg.cutoff + '%';
+  $('#kStart').hidden = !!liveSession();
+  $('#kRows').innerHTML = a.rows.length ? a.rows.map(r =>
+    '<li><div class="who"><b>' + esc(r.name || r.matric) + '</b><span class="sub mono">' + esc(r.matric) + '</span></div><div class="num"><span class="chip ' + (a.total ? (r.below ? 'warn' : '') : 'mute') + '">' + (a.total ? r.pct + '%' : '—') + '</span><span class="sub">' + r.n + ' of ' + a.total + '</span></div></li>'
+  ).join('') : '<li><span class="sub">Nobody yet. Students appear after they scan, or when they set up ' + APP + ' with this department and level.</span></li>';
+  $('#kFoot').textContent = (c.list && c.list.length ? 'Showing your class list. ' : 'Only students who use ' + APP + ' are listed. ') + (a.rejected ? a.rejected + (a.rejected === 1 ? ' scan was' : ' scans were') + ' rejected as invalid.' : '');
+  const L = c.list || [];
+  $('#kListN').textContent = L.length ? L.length + (L.length === 1 ? ' student' : ' students') : 'Optional';
+  $('#listClear').hidden = !L.length;
+  const ta = $('#kListIn'); if (document.activeElement !== ta) ta.value = L.map(x => x.matric + (x.name ? ' ' + x.name : '')).join('\n');
+  $('#kReview').innerHTML = a.review.length ? '<div class="card"><div class="row"><h2>Needs your look</h2>' + (a.review.length > 1 ? '<button class="btn sm" type="button" data-act="acceptAll">Count all</button>' : '') + '</div><ul class="rows">' + a.review.map(r => '<li><div class="who"><b>' + esc(r.name || r.matric) + '</b><span class="sub">' + esc(r.reason) + '</span></div><button class="btn sm" type="button" data-act="accept" data-key="' + esc(r.key) + '">Count</button></li>').join('') + '</ul></div>' : '';
+}
+async function lecSync(manual){
+  if (!lec || syncing) return;
+  if (!isOnline()) { if (manual) toast('You are offline. Showing what was last downloaded.'); return; }
+  const c = cloud();
+  if (!c) { if (manual) toast('Add your Supabase details in Settings, or use demo storage.'); return; }
+  syncing = true;
+  try {
+    if (!priv) priv = await importPriv(lec.jwk);
+    // 1. back the account up (the key is locked with the passphrase, so the server never sees it)
+    if (!lec.acctSent && lec.wrap) {
+      const ex = (await c.query('lecturers', 'email', lec.email)).find(r => r.uni === lec.uni);
+      if (ex && ex.lid !== lec.lid) lec.conflict = true;
+      else {
+        const oauth = window._oauthData || {};
+        await c.put('lecturers', slug(lec.uni + '_' + lec.email), {
+          email:lec.email, uni:lec.uni, name:lec.name, lid:lec.lid, pub:lec.pub, wrap:lec.wrap,
+          user_id:lec.user_id || oauth.userId || null,
+          auth_provider:lec.auth_provider || oauth.provider || 'local',
+          at:Date.now()
+        });
+        lec.acctSent = true; lec.conflict = false;
+      }
+    }
+    // 2. classes: take what other phones started, rebuild the typed-code secrets, send ours
+    mergeSessions(lec, await c.query('sessions', 'lid', lec.lid));
+    closeStale();
+    for (const s of lec.sessions) if (!s.sk) s.sk = await deriveSk(lec.jwk, s.id);
+    for (const s of lec.sessions.filter(x => !x.pushed && !x.sample)) {
+      const course = courseByCode(s.code) || {};
+      await c.put('sessions', s.id, { sid:s.id, lid:lec.lid, course:s.code, title:course.title || '', lecturer:lec.name, uni:lec.uni, startedAt:s.startedAt, endedAt:s.endedAt || '' }); s.pushed = true;
+    }
+    // 3. courses, class lists, hand-marked students, decisions: merged with other phones, signed by your key
+    const st = (await c.query('lecstate', 'lid', lec.lid))[0];
+    if (st && await verify(lec.pub, 'state|' + st.json, st.sig)) { try { mergeState(lec, JSON.parse(st.json)); } catch (e) {} }
+    const json = JSON.stringify(stateOf(lec));
+    if (!st || st.json !== json) await c.put('lecstate', lec.lid, { lid:lec.lid, json, sig:await sign(priv, 'state|' + json), at:Date.now() });
+    // 4. scans
+    const map = new Map();
+    for (const r of [].concat(await c.query('scans', 'lid', lec.lid), await c.query('scans', 'day', today()), await c.query('scans', 'day', today(Date.now() - 864e5)))) {
+      if (r.lid && r.lid !== lec.lid) continue;
+      map.set(r.key, normScan(r));
+    }
+    const now = Date.now(), recs = Array.from(map.values());
+    for (const r of recs) {
+      const res = await lecturerCheck(r, lec, now); r.status = res.status; r.reason = res.reason;
+      if (res.sid && !r.lid) { r.lid = lec.lid; r.sid = res.sid; r.course = res.course; await c.put('scans', slug(r.key), Object.assign({}, r, { status:'ok' })); }
+      r.status0 = r.status; r.reason0 = r.reason || '';
+    }
+    applyChecks(recs, code => courseByCode(code));
+    lec.cloudScans = recs.filter(r => r.lid === lec.lid);
+    lec.roster = (await c.query('students', 'uni', lec.uni)).map(r => ({ matric:r.matric, name:r.name, dept:r.dept, level:r.level }));
+    if (manual) toast('Updated.');
+  } catch (e) { if (manual) toast('Could not reach the server. Try again.'); }
+  finally { syncing = false; saveLec(); if (view === 'llive') updateLive(); if (view === 'lcourse') renderCourse(); if (view === 'lhome') renderLhome(); if (view === 'set') renderSet(); }
+}
+function loadSample(){
+  if (!lec) return toast('Set up as a lecturer first.');
+  if (lec.courses.some(c => c.sample)) { lec.courses = lec.courses.filter(c => !c.sample); lec.sessions = lec.sessions.filter(s => !s.sample); lec.manual = lec.manual.filter(m => !m.sample); saveLec(); toast('Example removed.'); return; }
+  const names = ['Adaeze Okafor','Tunde Bakare','Ibrahim Musa','Chinedu Eze','Blessing Udoh','Emeka Nwosu','Ngozi Obi','Seyi Adebayo','Fatima Bello','Ebiere Tamuno','Gift Ekiyor','Samuel Dikio'];
+  const week = 7 * 24 * 3600 * 1000, base = Date.now() - 9 * week, sids = [];
+  lec.courses.push({ id:rid(3), code:'SAMPLE-101', title:'Example course', dept:'', level:'', sample:true });
+  for (let j = 0; j < 8; j++) { const s = { id:rid(4), code:'SAMPLE-101', startedAt:base + j * week, endedAt:base + j * week + 2 * 3600 * 1000, sk:rid(16), pushed:true, sample:true }; lec.sessions.push(s); sids.push(s.id); }
+  names.forEach((n, i) => { const p = [100, 95, 88, 80, 75, 70, 62, 55, 90, 45, 85, 78][i]; sids.forEach((sid, j) => { if (((i + 3) * (j + 5) * 37) % 100 < p) lec.manual.push({ sid, matric:'EX/' + String(i + 1).padStart(3, '0'), name:n, sample:true }); }); });
+  saveLec(); toast('Example course added to your courses.');
+}
+async function saveCSV(){
+  const c = lec.courses.find(x => x.id === param); if (!c) return;
+  const text = toCSV(attendance(lec, c, cfg.cutoff), cfg.cutoff, lec.roster), name = c.code + '-attendance.csv';
+  try { if (window.claude && window.claude.use) { const d = await window.claude.use('downloads'); if (d) { await d.save({ filename:name, data:text }); return; } } } catch (e) { return; }
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type:'text/csv' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+  catch (e) { try { await navigator.clipboard.writeText(text); toast('List copied.'); } catch (er) { toast('Could not save the list.'); } }
+}
+
+/* ---------- settings ---------- */
+function renderSet(){
+  const st = cfg.role === 'student', lc = cfg.role === 'lecturer';
+  $('#roleSwap').textContent = lc ? 'Use ' + APP + ' as a student instead' : 'Use ' + APP + ' as a lecturer instead';
+  if (lc && lec) $('#lecAcct').textContent = (lec.email || 'Your account') + ' · ' + (lec.acctSent ? 'Backed up. Sign in on any phone with your email and passphrase.' : (lec.conflict ? 'This email belongs to a different account. Ask support.' : 'Not backed up yet. Connect to the internet once so your account is saved.'));
+  $('#setAlerts').hidden = !st; $('#setData').hidden = !(st && stu); $('#setLecData').hidden = !(lc && lec);
+  $('#setCutLbl').textContent = st ? 'My minimum attendance (%)' : 'Flag students below (%)';
+  $('#setCutHelp').textContent = st ? 'You can set a different minimum for each class on its page.' : 'Used for the "below" count and the red tags on your course pages.';
+  $('#setCut').value = cfg.cutoff; $('#setOff').checked = !!cfg.fakeOffline;
+  $('#setAlert').checked = !!cfg.alerts && ('Notification' in window) && Notification.permission === 'granted';
+  $('#setAlertHelp').textContent = 'Shows when you open the app. Alerts while the app is closed come with the Android app.';
+  if (stu) {
+    const pend = stu.scans.filter(s => !s.synced).length;
+    $('#dataState').textContent = pend ? pend + (pend === 1 ? ' scan is' : ' scans are') + ' only on this phone. Send ' + (pend === 1 ? 'it' : 'them') + ' before clearing anything.' : (cfg.cloud === 'demo' ? 'Demo mode: nothing leaves this phone.' : 'All your scans are sent and safe on the server.');
+    $('#dataSend').hidden = !pend;
+  }
+  $('#setDemo').checked = cfg.cloud !== 'supabase'; $('#setFb').checked = cfg.cloud === 'supabase'; $('#fbF').hidden = cfg.cloud !== 'supabase';
+  $('#fbP').value = cfg.sbUrl || CONF.supabaseUrl || ''; $('#fbK').value = cfg.sbKey || CONF.supabaseAnonKey || '';
+  $('#sampleWrap').hidden = cfg.role !== 'lecturer' || !lec;
+  const has = lec && lec.courses.some(c => c.sample); $('#sampleWrap button').textContent = has ? 'Remove example course' : 'Load example course';
+  applyTheme();
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const a = b.dataset.act;
+  if (a === 'oauth') return handleOAuth(b.dataset.provider, b.dataset.role);
+  if (a === 'role') { cfg.role = b.dataset.role; saveCfg(); return go(roleHome()); }
+  if (a === 'back') return back();
+  if (a === 'settings') { prev = { view, param }; return go('set'); }
+  if (a === 'home') return go(roleHome());
+  if (a === 'swap') { cfg.role = cfg.role === 'lecturer' ? 'student' : 'lecturer'; saveCfg(); return go(roleHome()); }
+  if (a === 'theme') { cfg.theme = b.dataset.v; saveCfg(); return applyTheme(); }
+  if (a === 'themeToggle') { cfg.theme = effTheme() === 'dark' ? 'light' : 'dark'; saveCfg(); return applyTheme(); }
+  if (a === 'lv') { chosen[b.dataset.g] = b.dataset.v; clearErr($('#' + b.dataset.g)); levelChips(b.dataset.g, b.dataset.g === 'cLevel'); return; }
+  if (a === 'sregMode') return setSregMode(sregMode === 'new' ? 'restore' : 'new');
+  if (a === 'sregEdit') { sregStep = 1; return applySreg(); }
+  if (a === 'forgot') return forgotPin();
+  if (a === 'reveal') { const i = $('#' + b.dataset.for), on = i.type === 'password'; i.type = on ? 'text' : 'password'; b.textContent = on ? 'Hide' : 'Show'; b.setAttribute('aria-pressed', String(on)); return; }
+  if (a === 'conflictFix') { sregMode = 'restore'; sregStep = 1; go('sreg'); $('#sMatric').value = stu.matric; $('#sUni').value = stu.uni === NMU ? 'nmu' : 'other'; applySreg(); return; }
+  if (a === 'scan') return startScan();
+  if (a === 'scanStop') return stopScan();
+  if (a === 'scanPin') { stopScan(); return pinShow(); }
+  if (a === 'pinShow') return pinShow();
+  if (a === 'pinGo') { const r = await recordPin($('#pinIn').value.trim()); if (r.kind === 'ok') { $('#pinIn').value = ''; $('#pinBox').hidden = true; go('sdone', r.done); } else toast(r.msg); return; }
+  if (a === 'sync') return sync(true);
+  if (a === 'sopen') return go('sdetail', b.dataset.key);
+  if (a === 'tgt') { const r = courseRows().rows.find(x => x.key === param); if (!r) return; stu.targets[r.key] = Math.max(50, Math.min(100, targetFor(r.key) + Number(b.dataset.d))); saveStu(); return renderSdetail(); }
+  if (a === 'alertYes') { await enableAlerts(); cfg.alertAsk = true; saveCfg(); return renderShome(); }
+  if (a === 'alertNo') { cfg.alertAsk = true; saveCfg(); return renderShome(); }
+  if (a === 'clearPhone') return doClear();
+  if (a === 'deleteAcct') return doDelete();
+  if (a === 'cnew') return go('lcnew');
+  if (a === 'start') return startClass(b.dataset.id);
+  if (a === 'startCourse') return startClass(param);
+  if (a === 'open') return go('lcourse', b.dataset.id);
+  if (a === 'manShow') { $('#manForm').hidden = !$('#manForm').hidden; return; }
+  if (a === 'fs') { try { await document.documentElement.requestFullscreen(); } catch (er) { toast('Full screen is not available here.'); } return; }
+  if (a === 'endAsk') { const s = liveCount().present; $('#endTxt').textContent = 'End this class? ' + s + (s === 1 ? ' student is' : ' students are') + ' marked present.'; $('#endIdle').hidden = true; $('#endSure').hidden = false; return; }
+  if (a === 'endNo') { $('#endIdle').hidden = false; $('#endSure').hidden = true; return; }
+  if (a === 'endYes') return endClass();
+  if (a === 'lpull') return lecSync(true);
+  if (a === 'accept') { lec.accepted[b.dataset.key] = true; saveLec(); renderCourse(); return lecSync(false); }
+  if (a === 'acceptAll') { const c = lec.courses.find(x => x.id === param); if (!c) return; attendance(lec, c, cfg.cutoff).review.forEach(r => { lec.accepted[r.key] = true; }); saveLec(); renderCourse(); return lecSync(false); }
+  if (a === 'lregMode') return setLregMode(lregM === 'new' ? 'signin' : 'new');
+  if (a === 'listSave') {
+    const c = lec.courses.find(x => x.id === param); if (!c) return;
+    const raw = $('#kListIn').value, list = parseClassList(raw);
+    if (!list.length && raw.trim()) return fieldErr('kListIn', 'No matric numbers found. Put one per line, matric number first.');
+    c.list = list; c.listAt = Date.now(); applyChecks(lec.cloudScans, code => courseByCode(code)); saveLec(); renderCourse();
+    toast(list.length ? list.length + (list.length === 1 ? ' student' : ' students') + ' on the list.' : 'List removed.'); return lecSync(false);
+  }
+  if (a === 'listClear') { const c = lec.courses.find(x => x.id === param); if (!c) return; c.list = []; c.listAt = Date.now(); $('#kListIn').value = ''; applyChecks(lec.cloudScans, code => courseByCode(code)); saveLec(); renderCourse(); toast('List removed.'); return lecSync(false); }
+  if (a === 'csv') return saveCSV();
+  if (a === 'sample') { loadSample(); return renderSet(); }
+  if (a === 'devGo') { if (!stu || !stu.matric) return toast('Set up as a student first.'); const r = await recordQR($('#devCode').value); if (r.kind === 'ok') { $('#devCode').value = ''; cfg.role = 'student'; saveCfg(); go('sdone', r.done); } else toast(r.msg || 'That is not a ' + APP + ' code.'); return; }
+  if (a === 'lecErase') {
+    const safe = !!(lec && lec.acctSent);
+    const r = await dialog({ title:'Sign out of this phone?', body:safe ? '<p>Your courses, class lists and past classes stay safe in your account. Sign in again any time with your email and passphrase.</p>' : '<p><b>Your account is not backed up yet.</b> If you sign out now, your class key and courses are lost for good.</p>', ack:safe ? '' : 'I understand I will lose my account', yes:'Sign out', danger:true });
+    if (r !== 'yes') return;
+    try { localStorage.removeItem('dey.lec'); } catch (er) {} lec = null; priv = null; lregM = safe ? 'signin' : 'new'; go(roleHome()); return toast(safe ? 'Signed out. Your account is safe.' : 'Signed out.');
+  }
+  if (a === 'lecDelete') {
+    const r = await dialog({ title:'Delete your lecturer account?', body:'<p>This deletes your account, your courses and class lists, and your past classes from our servers, and signs you out here. It cannot be undone.</p><p>Students\' own attendance records are theirs and stay with them.</p>', type:'DELETE', yes:'Delete account', danger:true });
+    if (r !== 'yes') return;
+    const c = cloud();
+    if (!isOnline() || !c) return toast('Connect to the internet to delete your account.');
+    try {
+      for (const s of await c.query('sessions', 'lid', lec.lid)) await c.del('sessions', s.sid);
+      await c.del('lecstate', lec.lid);
+      await c.del('lecturers', slug(lec.uni + '_' + lec.email));
+    } catch (er) { return toast('Could not delete right now. Try again.'); }
+    try { localStorage.removeItem('dey.lec'); } catch (er) {} lec = null; priv = null; lregM = 'new'; go(roleHome()); return toast('Your account was deleted.');
+  }
+  if (a === 'eraseAll') {
+    const r = await dialog({ title:'Erase everything on this phone?', body:'<p>Profile, scans, courses, keys and demo storage.</p>', ack:'I understand', yes:'Erase everything', danger:true });
+    if (r !== 'yes') return;
+    ['dey.stu','dey.lec','dey.cfg','dey.cloud','dey.lock'].forEach(k => { try { localStorage.removeItem(k); } catch (er) {} });
+    const th = cfg.theme; stu = null; lec = null; priv = null; cfg = Object.assign({}, DEF, { theme:th }); saveCfg(); sregMode = 'new'; go('welcome'); toast('Erased.'); return;
+  }
+});
+$('#sUni').addEventListener('change', () => { uniSwitch('s', 'sDeptWrap', false); applySreg(); });
+$('#lUni').addEventListener('change', () => { $('#lUniOtherWrap').hidden = $('#lUni').value !== 'other'; });
+$('#sPin').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
+$('#sregForm').addEventListener('submit', async e => {
+  e.preventDefault(); clearErrs(e.target);
+  const uni = uniVal('sUni', 'sUniOther'), matric = normMatric($('#sMatric').value), pin = $('#sPin').value;
+  const taken = () => fieldErr('sMatric', 'This matric number is already registered.', { label:'Restore it', fn:() => { setSregMode('restore'); $('#sPin').focus(); } });
+  if (sregMode === 'restore') {
+    if (!uni) return fieldErr('sUniOther', 'Enter your university.');
+    if (matric.length < 3) return fieldErr('sMatric', 'Enter your matric number.');
+    if (!/^\d{6}$/.test(pin)) return fieldErr('sPin', 'Enter your 6-digit PIN.');
+    return restoreAccount(uni, matric, pin);
+  }
+  if (sregStep === 1) {
+    if (!uni) return fieldErr('sUniOther', 'Enter your university.');
+    if ($('#sName').value.trim().split(/\s+/).filter(Boolean).length < 2) return fieldErr('sName', 'Enter your first and last name.');
+    if (matric.length < 4 || !/\d/.test(matric)) return fieldErr('sMatric', 'Enter your matric number, like 2021/1234.');
+    if (isOnline() && cloud()) { try { if ((await cloud().query('students', 'matric', matric)).find(r => r.uni === uni)) return taken(); } catch (er) {} }
+    sregStep = 2; applySreg(); const t = $('#sDeptWrap select, #sDeptWrap input'); if (t) t.focus(); return;
+  }
+  const name = $('#sName').value.trim(), dept = deptVal('sDeptWrap'), level = chosen.sLevel;
+  if (!dept) return fieldErr($('#sDeptWrap select, #sDeptWrap input'), 'Choose your department.');
+  if (!level) return fieldErr($('#sLevel'), 'Choose your level.');
+  if (!/^\d{6}$/.test(pin)) return fieldErr('sPin', 'Choose a PIN with exactly 6 digits.');
+  if (weakPin(pin)) return fieldErr('sPin', 'Too easy to guess. Avoid 123456 or repeated digits.');
+  const hash = await pinHash(pin, uni + '|' + matric);
+  if (isOnline() && cloud()) {
+    try { const ex = (await cloud().query('students', 'matric', matric)).find(r => r.uni === uni); if (ex) { sregStep = 1; applySreg(); return taken(); } } catch (er) {}
+  }
+  const old = stu || {};
+  stu = freshStu({ uni, name, matric, dept, level, did:old.did || rid(3), pinHash:hash, scans:old.scans || [], keys:old.keys || {}, sessions:old.sessions || {} });
+  $('#sPin').value = ''; sregStep = 1; saveStu(); go('shome'); sync(false);
+});
+$('#lregForm').addEventListener('submit', async e => {
+  e.preventDefault(); clearErrs(e.target);
+  const uni = uniVal('lUni', 'lUniOther'), name = $('#lName').value.trim(), email = $('#lEmail').value.trim().toLowerCase(), pass = $('#lPass').value;
+  if (!uni) return fieldErr('lUniOther', 'Enter your university.');
+  if (lregM === 'new' && name.length < 2) return fieldErr('lName', 'Enter your name.');
+  if (!/^\S+@\S+\.\S+$/.test(email)) return fieldErr('lEmail', 'Enter a valid email address.');
+  if (pass.length < 8) return fieldErr('lPass', lregM === 'new' ? 'Use at least 8 characters.' : 'Enter your passphrase.');
+  if (!(window.crypto && crypto.subtle)) return toast('This needs a secure (https) link.');
+  if (lregM === 'signin') return signInLecturer(uni, email, pass);
+  if (isOnline() && cloud()) {
+    try { if ((await cloud().query('lecturers', 'email', email)).find(r => r.uni === uni)) return fieldErr('lEmail', 'This email already has an account.', { label:'Sign in', fn:() => { setLregMode('signin'); $('#lPass').focus(); } }); } catch (er) {}
+  }
+  const k = await genKeys(), wrap = await wrapKey(k.jwk, pass);
+  lec = { name, uni, email, lid:await fingerprint(k.pub), pub:k.pub, jwk:k.jwk, wrap, acctSent:false, courses:[], sessions:[], manual:[], cloudScans:[], roster:[], accepted:{} };
+  priv = await importPriv(k.jwk); $('#lPass').value = ''; saveLec(); go('lhome'); lecSync(false);
+});
+$('#cnewForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const code = normCourse($('#cCode').value); if (code.length < 3) return toast('Enter the course code, like MEE 301.');
+  if (lec.courses.some(c => c.code === code)) return toast('You already have ' + disp(code) + '.');
+  lec.courses.push({ id:rid(3), code, title:$('#cTitle').value.trim(), dept:deptVal('cDeptWrap'), level:chosen.cLevel });
+  saveLec(); $('#cCode').value = ''; $('#cTitle').value = ''; chosen.cLevel = ''; $('#cLevel').innerHTML = ''; $('#cDeptWrap').innerHTML = ''; go('lhome');
+});
+$('#manForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const live = liveSession(); if (!live) return;
+  const m = normMatric($('#manMatric').value); if (m.length < 3) return toast('Enter a matric number.');
+  lec.manual.push({ sid:live.id, matric:m, name:$('#manName').value.trim() });
+  saveLec(); $('#manMatric').value = ''; $('#manName').value = ''; $('#manForm').hidden = true; updateLive(); toast('Marked present.');
+});
+$('#pinIn').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
+$('#setCut').addEventListener('change', e => { const v = Math.max(1, Math.min(100, Math.round(Number(e.target.value) || 75))); cfg.cutoff = v; e.target.value = v; saveCfg(); });
+$('#setOff').addEventListener('change', e => { cfg.fakeOffline = e.target.checked; saveCfg(); renderNet(); if (isOnline()) sync(false); });
+$('#setAlert').addEventListener('change', async e => {
+  if (e.target.checked) { const ok = await enableAlerts(); e.target.checked = ok; } else { cfg.alerts = false; saveCfg(); }
+});
+$('#dtAlert').addEventListener('change', e => { if (view === 'sdetail' && stu) { stu.mute[param] = !e.target.checked; saveStu(); } });
+document.querySelectorAll('input[name="cloud"]').forEach(r => r.addEventListener('change', e => { cfg.cloud = e.target.value; saveCfg(); renderSet(); }));
+$('#fbP').addEventListener('change', e => { cfg.sbUrl = e.target.value.trim(); saveCfg(); });
+$('#fbK').addEventListener('change', e => { cfg.sbKey = e.target.value.trim(); saveCfg(); });
+
+/* ---------- OAuth handlers ---------- */
+async function handleOAuth(provider, role){
+  if (!supabaseClient) {
+    return toast('Supabase authentication is initializing or offline.');
+  }
+  cfg.oauthRole = role;
+  saveCfg();
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: provider,
+    options: {
+      redirectTo: redirectTo,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent'
+      }
+    }
+  });
+  if (error) toast(error.message || ('Could not initiate ' + provider + ' sign in.'));
+}
+
+async function checkOAuthRedirect(){
+  if (!supabaseClient) return;
+  try {
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
+    if (error) console.warn('Supabase auth session error:', error);
+    if (session && session.user) {
+      await handleAuthSession(session.user);
+    }
+  } catch (e) {
+    console.warn('OAuth check error:', e);
+  }
+}
+
+async function handleAuthSession(user){
+  if (!user) return;
+  const targetRole = cfg.oauthRole || cfg.role || 'student';
+  const email = user.email || '';
+  const fullName = user.user_metadata?.full_name || user.user_metadata?.name || email.split('@')[0];
+  const provider = user.app_metadata?.provider || 'oauth';
+  window._oauthData = { email, userId: user.id, provider, fullName };
+
+  if (targetRole === 'lecturer') {
+    cfg.role = 'lecturer';
+    saveCfg();
+    try {
+      const rows = await SB.query('lecturers', 'email', email);
+      if (rows && rows.length > 0) {
+        const found = rows[0];
+        lec = Object.assign({}, found, {
+          courses: found.courses || [],
+          sessions: found.sessions || [],
+          manual: found.manual || [],
+          cloudScans: found.cloudScans || [],
+          roster: found.roster || [],
+          accepted: found.accepted || {},
+          user_id: user.id,
+          auth_provider: provider
+        });
+        saveLec();
+        go('lhome');
+        lecSync(false);
+        toast('Welcome back, ' + (lec.name || fullName));
+        return;
+      }
+    } catch (e) {}
+
+    go('lreg');
+    const nameEl = $('#lName'), emailEl = $('#lEmail');
+    if (nameEl && !nameEl.value) nameEl.value = fullName;
+    if (emailEl) { emailEl.value = email; emailEl.readOnly = true; }
+    toast('Signed in with ' + provider + '. Choose university & passphrase to complete setup.');
+  } else {
+    cfg.role = 'student';
+    saveCfg();
+    try {
+      let rows = await SB.query('students', 'email', email);
+      if (!rows || !rows.length) {
+        rows = await SB.query('students', 'user_id', user.id);
+      }
+      if (rows && rows.length > 0) {
+        const found = rows[0];
+        stu = Object.assign({}, found, {
+          scans: found.scans || [],
+          keys: found.keys || {},
+          sessions: found.sessions || {},
+          targets: found.targets || {},
+          mute: found.mute || {},
+          notified: found.notified || {},
+          joinedAt: found.at || Date.now(),
+          user_id: user.id,
+          auth_provider: provider
+        });
+        saveStu();
+        go('shome');
+        sync(false);
+        toast('Welcome back, ' + (stu.name || fullName));
+        return;
+      }
+    } catch (e) {}
+
+    go('sreg');
+    const nameEl = $('#sName');
+    if (nameEl && !nameEl.value) nameEl.value = fullName;
+    toast('Signed in with ' + provider + '. Enter your matric number to finish setup.');
+  }
+}
+
+/* ---------- timers ---------- */
+setInterval(() => {
+  if (view !== 'llive' || document.hidden || !liveSession()) return;
+  drawLive(false);
+  const rem = WIN - (Date.now() % WIN);
+  $('#xRot').style.transform = 'scaleX(' + (rem / WIN) + ')';
+}, 250);
+setInterval(() => { if (view === 'llive' && !document.hidden) lecSync(false); }, 6000);
+setInterval(() => { renderNet(); sync(false); }, 20000);
+window.addEventListener('online', () => { renderNet(); sync(false); });
+window.addEventListener('offline', renderNet);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && view === 'llive') { shownWin = -1; getWake(); } if (!document.hidden) sync(false); });
+
+/* ---------- start ---------- */
+(async function init(){
+  applyTheme(); closeStale();
+  if (lec && window.crypto && crypto.subtle) { try { priv = await importPriv(lec.jwk); } catch (e) { priv = null; } }
+  if (!('BarcodeDetector' in window)) setTimeout(ensureJsQR, 2500);
+  try { if ('serviceWorker' in navigator && /^https:|^http:\/\/localhost/.test(location.href)) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+  await checkOAuthRedirect();
+  go(roleHome()); sync(false);
+})();
+})();
+</script>
+
+</body></html>
