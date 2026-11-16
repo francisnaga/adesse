@@ -252,6 +252,7 @@ details.card:not([open]){gap:0}
 .divider::before, .divider::after{content:''; flex:1; border-bottom:1px solid var(--border)}
 .divider:not(:empty)::before{margin-right:10px}
 .divider:not(:empty)::after{margin-left:10px}
+.oauth-btn.lg{height:auto; min-height:52px; font-size:15px; gap:12px; padding:0 20px}
 </style>
 
 <div class="app">
@@ -278,33 +279,34 @@ details.card:not([open]){gap:0}
     <p class="fine">Scans are saved on your phone and sent when you are back online.</p>
   </section>
 
-  <!-- STUDENT SETUP / RESTORE -->
+  <!-- STUDENT SIGN IN (OAuth only) -->
   <section id="v-sreg" class="screen" hidden>
-    <div><h1 id="sregH">Quick setup</h1><p id="sregP" class="muted">One time only. After this, just scan.</p></div>
-    <div class="oauth-grid" id="sOauthWrap">
-      <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="google" data-role="student">
+    <div><h1>Welcome to Adesse</h1><p class="muted">Sign in to track your attendance. It works even when the network does not.</p></div>
+    <div style="display:grid;gap:12px;margin:4px 0">
+      <button class="btn oauth-btn lg" type="button" data-act="oauth" data-provider="google" data-role="student">
         <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.94H1.27v3.15C3.25 21.36 7.32 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.26c-.25-.72-.38-1.49-.38-2.26s.13-1.54.38-2.26V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.25 2.64 1.27 6.59l4.01 3.15c.95-2.84 3.6-4.99 6.72-4.99z"/></svg>
-        <span>Google</span>
+        <span>Continue with Google</span>
       </button>
-      <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="apple" data-role="student">
+      <button class="btn oauth-btn lg" type="button" data-act="oauth" data-provider="apple" data-role="student">
         <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.84c.66-.82 1.11-1.96.99-3.1-.96.04-2.13.64-2.81 1.45-.6.7-.1.13-1.87 1.03-3.04 1.07-.02 2.13-.6 2.79-1.39z"/></svg>
-        <span>Apple</span>
+        <span>Continue with Apple</span>
       </button>
     </div>
-    <div class="divider" id="sDivider"><span>or with matric number</span></div>
-    <form id="sregForm" class="card" autocomplete="off" novalidate>
-      <div class="steps" id="sregSteps" aria-hidden="true"><i class="on"></i><i></i></div>
-      <div id="sSummary" class="summary" hidden><span id="sSummaryTxt"></span><button class="link" type="button" data-act="sregEdit">Edit</button></div>
-      <div class="field" data-s="n1 r"><label for="sUni">University</label><select id="sUni"><option value="nmu">Nigeria Maritime University</option><option value="other">Another university</option></select></div>
-      <div class="field" id="sUniOtherWrap" hidden><label for="sUniOther">University name</label><input id="sUniOther" autocomplete="off" enterkeyhint="next"></div>
-      <div class="field" data-s="n1"><label for="sName">Full name</label><input id="sName" autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="As on your student ID"></div>
-      <div class="field" data-s="n1 r"><label for="sMatric">Matric number</label><input id="sMatric" autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="e.g. 2021/1234"></div>
-      <div class="field" data-s="n2"><label for="sDeptSel">Department</label><div id="sDeptWrap"></div></div>
-      <div class="field" data-s="n2"><span class="fl" id="sLevelLbl">Level</span><div id="sLevel" class="chips" role="group" aria-labelledby="sLevelLbl"></div></div>
-      <div class="field" data-s="n2 r"><label for="sPin" id="sPinLbl">Create a 6-digit PIN</label><div class="pinwrap"><input id="sPin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" enterkeyhint="go" placeholder="••••••"><button type="button" class="reveal" data-act="reveal" data-for="sPin" aria-pressed="false">Show</button></div><p class="fine" id="sPinHelp">You need it to get your attendance back on a new phone. It also stops others using your matric number.</p></div>
-      <button class="btn primary lg" type="submit" id="sregGo">Continue</button>
+    <p class="fine" style="text-align:center">By continuing you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+  </section>
+
+  <!-- STUDENT ONBOARDING (post-OAuth) -->
+  <section id="v-sonboard" class="screen" hidden>
+    <div><h1>Finish setup</h1><p class="muted">Just your student details and you're in.</p></div>
+    <form id="sonboardForm" class="card" autocomplete="off" novalidate>
+      <div class="field"><label for="soUni">University</label><select id="soUni"><option value="nmu">Nigeria Maritime University</option><option value="other">Another university</option></select></div>
+      <div class="field" id="soUniOtherWrap" hidden><label for="soUniOther">University name</label><input id="soUniOther" autocomplete="off" enterkeyhint="next"></div>
+      <div class="field"><label for="soName">Full name</label><input id="soName" autocomplete="name" autocapitalize="words" enterkeyhint="next" placeholder="As on your student ID"></div>
+      <div class="field"><label for="soMatric">Matric number</label><input id="soMatric" autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="next" placeholder="e.g. 2021/1234"></div>
+      <div class="field"><label for="soDeptSel">Department</label><div id="soDeptWrap"></div></div>
+      <div class="field"><span class="fl" id="soLevelLbl">Level</span><div id="soLevel" class="chips" role="group" aria-labelledby="soLevelLbl"></div></div>
+      <button class="btn primary lg" type="submit" id="sonboardGo">Start using Adesse</button>
     </form>
-    <div class="row" style="justify-content:flex-start;gap:16px;flex-wrap:wrap"><button class="link" type="button" data-act="sregMode" id="sregMode">Already registered? Restore</button><button class="link" type="button" data-act="forgot" id="forgotPin" hidden>Forgot your PIN?</button></div>
   </section>
 
   <!-- STUDENT HOME -->
@@ -364,29 +366,31 @@ details.card:not([open]){gap:0}
     <button class="btn primary lg" type="button" data-act="home">Done</button>
   </section>
 
-  <!-- LECTURER SETUP -->
+  <!-- LECTURER SIGN IN (OAuth only) -->
   <section id="v-lreg" class="screen" hidden>
-    <div><h1 id="lregH">Lecturer setup</h1><p id="lregP" class="muted">One time. Your account follows you to any phone.</p></div>
-    <div class="oauth-grid" id="lOauthWrap">
-      <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="google" data-role="lecturer">
+    <div><h1 id="lregH">Lecturer sign in</h1><p id="lregP" class="muted">Your courses follow you to any phone.</p></div>
+    <div style="display:grid;gap:12px;margin:4px 0">
+      <button class="btn oauth-btn lg" type="button" data-act="oauth" data-provider="google" data-role="lecturer">
         <svg class="oauth-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.15z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.94H1.27v3.15C3.25 21.36 7.32 24 12 24z"/><path fill="#FBBC05" d="M5.28 14.26c-.25-.72-.38-1.49-.38-2.26s.13-1.54.38-2.26V6.59H1.27C.46 8.21 0 10.05 0 12s.46 3.79 1.27 5.41l4.01-3.15z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.32 0 3.25 2.64 1.27 6.59l4.01 3.15c.95-2.84 3.6-4.99 6.72-4.99z"/></svg>
-        <span>Google</span>
+        <span>Continue with Google</span>
       </button>
-      <button class="btn oauth-btn" type="button" data-act="oauth" data-provider="apple" data-role="lecturer">
+      <button class="btn oauth-btn lg" type="button" data-act="oauth" data-provider="apple" data-role="lecturer">
         <svg class="oauth-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.84c.66-.82 1.11-1.96.99-3.1-.96.04-2.13.64-2.81 1.45-.6.7-.1.13-1.87 1.03-3.04 1.07-.02 2.13-.6 2.79-1.39z"/></svg>
-        <span>Apple</span>
+        <span>Continue with Apple</span>
       </button>
     </div>
-    <div class="divider" id="lDivider"><span>or with email & passphrase</span></div>
-    <form id="lregForm" class="card" autocomplete="off" novalidate>
-      <div class="field"><label for="lUni">University</label><select id="lUni"><option value="nmu">Nigeria Maritime University</option><option value="other">Another university</option></select></div>
-      <div class="field" id="lUniOtherWrap" hidden><label for="lUniOther">University name</label><input id="lUniOther" autocomplete="off"></div>
-      <div class="field" data-l="n"><label for="lName">Your name</label><input id="lName" autocomplete="name" enterkeyhint="next" placeholder="e.g. Dr. A. Okafor"></div>
-      <div class="field"><label for="lEmail">Email</label><input id="lEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" enterkeyhint="next" placeholder="you@university.edu.ng"></div>
-      <div class="field"><label for="lPass" id="lPassLbl">Create a passphrase</label><div class="pinwrap"><input id="lPass" type="password" autocomplete="off" enterkeyhint="go" placeholder="At least 8 characters"><button type="button" class="reveal" data-act="reveal" data-for="lPass" aria-pressed="false">Show</button></div><p class="fine" id="lPassHelp">It locks your class key. With your email and this passphrase you can sign in on any phone. We cannot recover it for you.</p></div>
-      <button class="btn primary lg" type="submit" id="lregGo">Create account</button>
+    <p class="fine" style="text-align:center">By continuing you agree to our <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+  </section>
+
+  <!-- LECTURER ONBOARDING (post-OAuth) -->
+  <section id="v-lonboard" class="screen" hidden>
+    <div><h1>Lecturer setup</h1><p class="muted">One time. Your account follows you to any phone.</p></div>
+    <form id="lonboardForm" class="card" autocomplete="off" novalidate>
+      <div class="field"><label for="loUni">University</label><select id="loUni"><option value="nmu">Nigeria Maritime University</option><option value="other">Another university</option></select></div>
+      <div class="field" id="loUniOtherWrap" hidden><label for="loUniOther">University name</label><input id="loUniOther" autocomplete="off" enterkeyhint="next"></div>
+      <div class="field"><label for="loName">Your name</label><input id="loName" autocomplete="name" enterkeyhint="go" placeholder="e.g. Dr. A. Okafor"></div>
+      <button class="btn primary lg" type="submit" id="lonboardGo">Create lecturer account</button>
     </form>
-    <button class="link" type="button" data-act="lregMode" id="lregMode">Already have an account? Sign in</button>
   </section>
 
   <!-- LECTURER HOME -->
@@ -2123,17 +2127,27 @@ const SB = {
     const u = (CONF.supabaseUrl || cfg.sbUrl || '').replace(/\/+$/, '');
     return u + '/rest/v1/' + coll;
   },
-  headers(extra){
+  async getToken(){
+    if (supabaseClient) {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session && session.access_token) return session.access_token;
+      } catch(e) {}
+    }
+    return CONF.supabaseAnonKey || cfg.sbKey || '';
+  },
+  async headers(extra){
     const k = CONF.supabaseAnonKey || cfg.sbKey || '';
-    const h = { 'apikey': k, 'Authorization': 'Bearer ' + k, 'Content-Type': 'application/json' };
+    const token = await SB.getToken();
+    const h = { 'apikey': k, 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
     return Object.assign(h, extra);
   },
-  async put(coll, id, obj){
-    const row = Object.assign({}, obj, { id });
+  async put(coll, _id, obj){
+    // PK is already inside obj for all our tables; don't append extra 'id' field
     const res = await fetch(SB.url(coll), {
       method: 'POST',
-      headers: SB.headers({ 'Prefer': 'resolution=merge-duplicates' }),
-      body: JSON.stringify(row)
+      headers: await SB.headers({ 'Prefer': 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify(obj)
     });
     if (!res.ok) {
       const errTxt = await res.text().catch(() => '');
@@ -2143,7 +2157,7 @@ const SB = {
   async query(coll, field, val){
     const res = await fetch(SB.url(coll) + '?' + encodeURIComponent(field) + '=eq.' + encodeURIComponent(val) + '&select=*', {
       method: 'GET',
-      headers: SB.headers()
+      headers: await SB.headers()
     });
     if (!res.ok) {
       const errTxt = await res.text().catch(() => '');
@@ -2151,20 +2165,35 @@ const SB = {
     }
     return await res.json();
   },
-  async del(coll, id){
-    const res = await fetch(SB.url(coll) + '?id=eq.' + encodeURIComponent(id), {
+  async del(coll, pkField, val){
+    const field = pkField || 'id';
+    const res = await fetch(SB.url(coll) + '?' + encodeURIComponent(field) + '=eq.' + encodeURIComponent(val), {
       method: 'DELETE',
-      headers: SB.headers()
+      headers: await SB.headers()
     });
     if (!res.ok && res.status !== 404) {
       const errTxt = await res.text().catch(() => '');
       throw new Error('Supabase ' + res.status + ': ' + errTxt);
     }
+  },
+  async rpc(fn, params){
+    const base = (CONF.supabaseUrl || cfg.sbUrl || '').replace(/\/+$/, '');
+    const res = await fetch(base + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      headers: await SB.headers(),
+      body: JSON.stringify(params || {})
+    });
+    if (!res.ok) {
+      const errTxt = await res.text().catch(() => '');
+      throw new Error('Supabase rpc ' + fn + ' ' + res.status + ': ' + errTxt);
+    }
+    const txt = await res.text();
+    try { return txt ? JSON.parse(txt) : null; } catch(e) { return txt || null; }
   }
 };
 const cloud = () => (cfg.cloud === 'supabase' && (CONF.supabaseUrl || cfg.sbUrl)) ? SB : Demo;
 const normScan = r => Object.assign({}, r, { win:Number(r.win) || 0, at:Number(r.at) || 0 });
-const normSess = r => Object.assign({}, r, { startedAt:Number(r.startedAt) || 0, endedAt:Number(r.endedAt) || 0 });
+const normSess = r => Object.assign({}, r, { startedAt:Number(r.startedAt || r.started_at) || 0, endedAt:Number(r.endedAt || r.ended_at) || 0 });
 
 /* ---------- dialog: a confirmation the person has to mean ---------- */
 function dialog(o){
@@ -2198,14 +2227,15 @@ function go(v, p){
 }
 function back(){
   if (view === 'set') return go(prev.view && prev.view !== 'set' && prev.view !== 'welcome' ? prev.view : roleHome(), prev.param);
-  if (view === 'sreg' && sregMode === 'new' && sregStep === 2) { sregStep = 1; return applySreg(); }
+  if (view === 'sonboard') return go('sreg');
+  if (view === 'lonboard') return go('lreg');
   if (view === 'sreg' || view === 'lreg') return go('welcome');
   if (view === 'lcnew' || view === 'lcourse') return go('lhome');
   go(roleHome());
 }
 function roleHome(){
   if (cfg.role === 'student') return stu && stu.matric ? 'shome' : 'sreg';
-  if (cfg.role === 'lecturer') return lec ? (liveSession() ? 'llive' : 'lhome') : 'lreg';
+  if (cfg.role === 'lecturer') return lec && lec.lid ? (liveSession() ? 'llive' : 'lhome') : 'lreg';
   return 'welcome';
 }
 function render(){
@@ -2213,12 +2243,12 @@ function render(){
   $('#bar').hidden = view === 'welcome';
   const isRoot = view === 'shome' || view === 'lhome' || view === 'llive' || view === 'sdone';
   $('#barL').innerHTML = isRoot ? '<span class="logo">' + LOGO_HTML + '</span>' : '<button class="iconbtn" type="button" data-act="back" aria-label="Back">' + ic(I.left, 18) + '</button>';
-  $('#gear').hidden = view === 'sreg' || view === 'lreg';
+  $('#gear').hidden = view === 'sreg' || view === 'lreg' || view === 'sonboard' || view === 'lonboard';
   document.querySelectorAll('[data-brand]').forEach(e => { e.innerHTML = LOGO_HTML; });
   document.querySelectorAll('[data-app]').forEach(e => { e.textContent = APP; });
   $('#dev').hidden = PROD && location.hash !== '#dev';
   applyTheme(); renderNet();
-  ({ sreg:renderSreg, shome:renderShome, sdetail:renderSdetail, sdone:renderSdone, lreg:renderLreg, lhome:renderLhome, lcnew:renderLcnew, llive:renderLive, lcourse:renderCourse, set:renderSet }[view] || (() => {}))();
+  ({ sreg:renderSreg, shome:renderShome, sdetail:renderSdetail, sdone:renderSdone, sonboard:renderSonboard, lreg:renderLreg, lonboard:renderLonboard, lhome:renderLhome, lcnew:renderLcnew, llive:renderLive, lcourse:renderCourse, set:renderSet }[view] || (() => {}))();
 }
 function renderNet(){
   const on = isOnline(), el = $('#net');
@@ -2227,7 +2257,7 @@ function renderNet(){
 function setSyncing(on){ const b = $('#sSync'); if (!b) return; b.classList.toggle('spin', on); b.innerHTML = on ? ic(I.refresh, 14) + ' Refreshing' : 'Refresh'; }
 
 /* ---------- forms: university, department, level ---------- */
-const chosen = { sLevel:'', cLevel:'' };
+const chosen = { sLevel:'', soLevel:'', cLevel:'' };
 function levelChips(id, withAll){
   const vals = (withAll ? [''] : []).concat(['100','200','300','400','500']);
   $('#' + id).innerHTML = vals.map(v => '<button type="button" class="cb" data-act="lv" data-g="' + id + '" data-v="' + v + '" aria-pressed="' + (chosen[id] === v && (chosen[id] !== '' || withAll) ? 'true' : 'false') + '">' + (v || 'All') + '</button>').join('');
@@ -2246,34 +2276,16 @@ function uniSwitch(prefix, deptWrap, all){
   deptField(deptWrap, other ? 'x' : NMU, all, '');
 }
 
-/* ---------- student: setup and restore ---------- */
-const sregKey = () => sregMode === 'restore' ? 'r' : 'n' + sregStep;
-function applySreg(){
-  const key = sregKey(), rs = sregMode === 'restore', f = $('#sregForm');
-  clearErrs(f);
-  f.querySelectorAll('[data-s]').forEach(e => { e.hidden = !e.dataset.s.split(' ').includes(key); });
-  $('#sUniOtherWrap').hidden = !($('#sUni').value === 'other' && (key === 'n1' || key === 'r'));
-  $('#sregSteps').hidden = rs;
-  f.querySelectorAll('#sregSteps i').forEach((i, ix) => i.classList.toggle('on', ix < sregStep));
-  const sum = $('#sSummary'); sum.hidden = !(sregMode === 'new' && sregStep === 2);
-  if (!sum.hidden) $('#sSummaryTxt').innerHTML = '<b>' + esc($('#sName').value.trim()) + '</b> · ' + esc(normMatric($('#sMatric').value));
-  $('#sregH').textContent = rs ? 'Restore your account' : (sregStep === 1 ? 'Create your account' : 'Almost done');
-  $('#sregP').textContent = rs ? 'Enter your matric number and PIN to get your attendance back.' : (sregStep === 1 ? 'Step 1 of 2. Under a minute, once.' : 'Step 2 of 2. Your class, and a PIN that protects your matric number.');
-  $('#sPinLbl').textContent = rs ? 'Your PIN' : 'Create a 6-digit PIN';
-  $('#sPinHelp').hidden = rs;
-  $('#sregGo').textContent = rs ? 'Restore' : (sregStep === 1 ? 'Continue' : 'Start');
-  $('#sregMode').textContent = rs ? 'New here? Set up instead' : 'Already registered? Restore';
-  $('#forgotPin').hidden = !rs;
-  const sOw = $('#sOauthWrap'), sDiv = $('#sDivider');
-  if (sOw) sOw.hidden = rs || sregStep !== 1;
-  if (sDiv) sDiv.hidden = rs || sregStep !== 1;
+/* ---------- student: setup (OAuth-only flow) ---------- */
+function renderSreg(){ /* OAuth buttons only — no form state to init */ }
+function renderSonboard(){
+  if (!$('#soLevel').children.length) levelChips('soLevel', false);
+  if (!$('#soDeptWrap').children.length) deptField('soDeptWrap', NMU, false, '');
+  const od = window._oauthData || {};
+  const nameEl = $('#soName'); if (nameEl && od.fullName && !nameEl.value) nameEl.value = od.fullName;
 }
-function setSregMode(m){ sregMode = m; sregStep = 1; applySreg(); }
-function renderSreg(){
-  if (!$('#sLevel').children.length) levelChips('sLevel', false);
-  if (!$('#sDeptWrap').children.length) deptField('sDeptWrap', NMU, false, '');
-  applySreg();
-}
+/* kept for legacy/restore flow — still used by wipeStudent reset */
+function setSregMode(m){ /* no-op in OAuth mode */ }
 async function forgotPin(){
   const mail = CONF.supportEmail;
   const r = await dialog({ title:'Forgot your PIN?',
@@ -2431,40 +2443,56 @@ async function sync(manual){
   if (!c) { if (manual) toast('Add your Supabase details in Settings, or use demo storage.'); return; }
   syncing = true; setSyncing(true); let sent = 0;
   try {
-    if (!stu.profileSent) {
-      const ex = (await c.query('students', 'matric', stu.matric)).find(r => r.uni === stu.uni);
-      if (ex && ex.pinHash && stu.pinHash && ex.pinHash !== stu.pinHash) { stu.conflict = true; if (manual) toast('This matric number is already registered with a different PIN.'); return; }
-      stu.conflict = false;
-      const oauth = window._oauthData || {};
-      await c.put('students', slug(stu.uni + '_' + stu.matric), {
-        matric:stu.matric, name:stu.name, dept:stu.dept, level:stu.level, uni:stu.uni,
-        pinHash:stu.pinHash || (ex && ex.pinHash) || '',
-        email:stu.email || oauth.email || '',
-        user_id:stu.user_id || oauth.userId || null,
-        auth_provider:stu.auth_provider || oauth.provider || 'local',
-        at:Date.now()
-      });
-      stu.profileSent = true;
+    // Sync student profile via claim_student RPC (handles insert/update atomically)
+    if (!stu.profileSent && stu.user_id) {
+      try {
+        await SB.rpc('claim_student', {
+          p_uni: stu.uni, p_matric: stu.matric, p_name: stu.name,
+          p_dept: stu.dept, p_level: stu.level,
+          p_email: stu.email || '', p_provider: stu.auth_provider || 'google'
+        });
+        stu.profileSent = true; stu.conflict = false;
+      } catch(e) {
+        const msg = e.message || '';
+        if (msg.includes('matric_taken')) { stu.conflict = true; if (manual) toast('This matric number is already registered to another account. Contact support.'); return; }
+        // Non-fatal: continue with scan sync
+        console.warn('Profile sync failed:', e);
+      }
     }
-    for (const s of stu.scans.filter(x => !x.synced)) { const w = Object.assign({}, s); delete w.synced; await c.put('scans', slug(s.key), w); s.synced = true; sent++; }
-    for (const r of await c.query('scans', 'matric', stu.matric)) {
-      const n = normScan(r); if (n.uni !== stu.uni) continue;
-      const loc = stu.scans.find(x => x.key === n.key);
-      if (loc) { if (n.lid) { loc.lid = n.lid; loc.sid = n.sid || loc.sid; loc.course = n.course || loc.course; } if (n.status) loc.status = n.status; }
-      else stu.scans.push(Object.assign(n, { synced:true }));
+    // Send unsynced scans
+    for (const s of stu.scans.filter(x => !x.synced)) {
+      const w = Object.assign({}, s, { user_id: stu.user_id || null });
+      delete w.synced;
+      try { await c.put('scans', null, w); s.synced = true; sent++; } catch(e) { console.warn('Scan sync failed:', e); }
     }
+    // Pull scans from server
+    if (stu.user_id) {
+      for (const r of await c.query('scans', 'user_id', stu.user_id)) {
+        const n = normScan(r); if (n.uni !== stu.uni) continue;
+        const loc = stu.scans.find(x => x.key === n.key);
+        if (loc) { if (n.lid) { loc.lid = n.lid; loc.sid = n.sid || loc.sid; loc.course = n.course || loc.course; } if (n.status) loc.status = n.status; }
+        else stu.scans.push(Object.assign(n, { synced:true }));
+      }
+    }
+    // Pull session details for attended classes
     for (const lid of new Set(stu.scans.filter(s => s.lid && s.status !== 'bad').map(s => s.lid)))
-      for (const r of await c.query('sessions', 'lid', lid)) stu.sessions[r.sid] = normSess(r);
+      for (const r of await c.query('sessions', 'lid', lid)) {
+        const sess = { sid: r.sid, lid: r.lid, course: r.course, title: r.title, lecturer: r.lecturer, uni: r.uni,
+          startedAt: Number(r.startedAt || r.started_at) || 0, endedAt: Number(r.endedAt || r.ended_at) || 0 };
+        stu.sessions[r.sid] = sess;
+      }
     checkMisses();
     if (manual) toast(sent ? sent + (sent === 1 ? ' class sent.' : ' classes sent.') : 'Up to date.');
-  } catch (e) { if (manual) toast('Could not reach the server. It will try again.'); }
+  } catch (e) { console.warn('sync error:', e); if (manual) toast('Could not reach the server. It will try again.'); }
   finally { syncing = false; setSyncing(false); saveStu(); if (view === 'shome') renderShome(); if (view === 'sdetail') renderSdetail(); if (view === 'set') renderSet(); renderNet(); }
 }
 
 /* ---------- student: clear, delete ---------- */
 function wipeStudent(){
   try { localStorage.removeItem('dey.stu'); localStorage.removeItem('dey.lock'); } catch (e) {}
-  stu = null; cfg.alertAsk = false; saveCfg(); sregMode = 'new'; sregStep = 1; go(roleHome());
+  stu = null; cfg.alertAsk = false; saveCfg();
+  if (supabaseClient) supabaseClient.auth.signOut().catch(() => {});
+  go('welcome');
 }
 async function doClear(){
   for (;;) {
@@ -2480,13 +2508,11 @@ async function doClear(){
   }
 }
 async function doDelete(){
-  const r = await dialog({ title:'Delete your account?', body:'<p>This deletes your name, matric number, PIN and all your attendance records from our servers, and clears this phone. It cannot be undone.</p><p>Attendance lists your lecturers already downloaded stay with them.</p>', type:'DELETE', yes:'Delete account', danger:true });
+  const r = await dialog({ title:'Delete your account?', body:'<p>This deletes your name, matric number and all your attendance records from our servers, and signs you out. It cannot be undone.</p><p>Attendance lists your lecturers already downloaded stay with them.</p>', type:'DELETE', yes:'Delete account', danger:true });
   if (r !== 'yes') return;
-  const c = cloud();
-  if (!isOnline() || !c) return toast('Connect to the internet to delete your account.');
+  if (!isOnline()) return toast('Connect to the internet to delete your account.');
   try {
-    for (const s of await c.query('scans', 'matric', stu.matric)) if (!s.uni || s.uni === stu.uni) await c.del('scans', slug(s.key));
-    await c.del('students', slug(stu.uni + '_' + stu.matric));
+    await SB.rpc('delete_my_account', {});
   } catch (e) { return toast('Could not delete right now. Try again.'); }
   wipeStudent(); toast('Your account was deleted.');
 }
@@ -2540,21 +2566,12 @@ function closeStale(){
   if (ch) saveLec();
 }
 const courseByCode = code => lec.courses.find(c => c.code === code);
-function setLregMode(m){
-  lregM = m; const rs = m === 'signin';
-  document.querySelectorAll('#lregForm [data-l="n"]').forEach(e => { e.hidden = rs; });
-  $('#lregH').textContent = rs ? 'Sign in' : 'Lecturer setup';
-  $('#lregP').textContent = rs ? 'Use the email and passphrase you created.' : 'One time. Your account follows you to any phone.';
-  $('#lPassLbl').textContent = rs ? 'Your passphrase' : 'Create a passphrase';
-  $('#lPassHelp').hidden = rs;
-  $('#lregGo').textContent = rs ? 'Sign in' : 'Create account';
-  $('#lregMode').textContent = rs ? 'New here? Create an account' : 'Already have an account? Sign in';
-  clearErrs($('#lregForm'));
-  const lOw = $('#lOauthWrap'), lDiv = $('#lDivider');
-  if (lOw) lOw.hidden = rs;
-  if (lDiv) lDiv.hidden = rs;
+function setLregMode(m){ /* no-op in OAuth mode */ }
+function renderLreg(){ /* OAuth buttons only */ }
+function renderLonboard(){
+  const od = window._oauthData || {};
+  const nameEl = $('#loName'); if (nameEl && od.fullName && !nameEl.value) nameEl.value = od.fullName;
 }
-function renderLreg(){ setLregMode(lregM); }
 async function signInLecturer(uni, email, pass){
   const LK = 'dey.llock', lm = lockedMins(LK);
   if (lm) return fieldErr('lPass', 'Too many wrong tries. Try again in ' + lm + ' min.');
@@ -2661,18 +2678,16 @@ async function lecSync(manual){
   try {
     if (!priv) priv = await importPriv(lec.jwk);
     // 1. back the account up (the key is locked with the passphrase, so the server never sees it)
-    if (!lec.acctSent && lec.wrap) {
-      const ex = (await c.query('lecturers', 'email', lec.email)).find(r => r.uni === lec.uni);
-      if (ex && ex.lid !== lec.lid) lec.conflict = true;
-      else {
-        const oauth = window._oauthData || {};
-        await c.put('lecturers', slug(lec.uni + '_' + lec.email), {
-          email:lec.email, uni:lec.uni, name:lec.name, lid:lec.lid, pub:lec.pub, wrap:lec.wrap,
-          user_id:lec.user_id || oauth.userId || null,
-          auth_provider:lec.auth_provider || oauth.provider || 'local',
-          at:Date.now()
+    if (!lec.acctSent && lec.user_id && lec.pub && lec.jwk) {
+      try {
+        await SB.rpc('register_lecturer', {
+          p_lid: lec.lid, p_name: lec.name, p_uni: lec.uni, p_pub: lec.pub, p_jwk: lec.jwk
         });
         lec.acctSent = true; lec.conflict = false;
+      } catch(e) {
+        const msg = e.message || '';
+        if (!msg.includes('already')) console.warn('Lecturer register failed:', e);
+        else { lec.acctSent = true; } // already registered — that's fine
       }
     }
     // 2. classes: take what other phones started, rebuild the typed-code secrets, send ours
@@ -2681,13 +2696,13 @@ async function lecSync(manual){
     for (const s of lec.sessions) if (!s.sk) s.sk = await deriveSk(lec.jwk, s.id);
     for (const s of lec.sessions.filter(x => !x.pushed && !x.sample)) {
       const course = courseByCode(s.code) || {};
-      await c.put('sessions', s.id, { sid:s.id, lid:lec.lid, course:s.code, title:course.title || '', lecturer:lec.name, uni:lec.uni, startedAt:s.startedAt, endedAt:s.endedAt || '' }); s.pushed = true;
+      await c.put('sessions', null, { sid:s.id, lid:lec.lid, course:s.code, title:course.title || '', lecturer:lec.name, uni:lec.uni, user_id:lec.user_id || null, startedAt:s.startedAt, endedAt:s.endedAt || 0, started_at:s.startedAt, ended_at:s.endedAt || 0 }); s.pushed = true;
     }
     // 3. courses, class lists, hand-marked students, decisions: merged with other phones, signed by your key
     const st = (await c.query('lecstate', 'lid', lec.lid))[0];
     if (st && await verify(lec.pub, 'state|' + st.json, st.sig)) { try { mergeState(lec, JSON.parse(st.json)); } catch (e) {} }
     const json = JSON.stringify(stateOf(lec));
-    if (!st || st.json !== json) await c.put('lecstate', lec.lid, { lid:lec.lid, json, sig:await sign(priv, 'state|' + json), at:Date.now() });
+    if (!st || st.json !== json) await c.put('lecstate', null, { lid:lec.lid, user_id:lec.user_id || null, json, sig:await sign(priv, 'state|' + json), at:Date.now() });
     // 4. scans
     const map = new Map();
     for (const r of [].concat(await c.query('scans', 'lid', lec.lid), await c.query('scans', 'day', today()), await c.query('scans', 'day', today(Date.now() - 864e5)))) {
@@ -2729,7 +2744,7 @@ async function saveCSV(){
 function renderSet(){
   const st = cfg.role === 'student', lc = cfg.role === 'lecturer';
   $('#roleSwap').textContent = lc ? 'Use ' + APP + ' as a student instead' : 'Use ' + APP + ' as a lecturer instead';
-  if (lc && lec) $('#lecAcct').textContent = (lec.email || 'Your account') + ' · ' + (lec.acctSent ? 'Backed up. Sign in on any phone with your email and passphrase.' : (lec.conflict ? 'This email belongs to a different account. Ask support.' : 'Not backed up yet. Connect to the internet once so your account is saved.'));
+  if (lc && lec) $('#lecAcct').textContent = (lec.email || lec.name || 'Your account') + ' · ' + (lec.auth_provider || 'Google') + ' account' + (lec.acctSent ? ' · synced.' : ' · connecting…');
   $('#setAlerts').hidden = !st; $('#setData').hidden = !(st && stu); $('#setLecData').hidden = !(lc && lec);
   $('#setCutLbl').textContent = st ? 'My minimum attendance (%)' : 'Flag students below (%)';
   $('#setCutHelp').textContent = st ? 'You can set a different minimum for each class on its page.' : 'Used for the "below" count and the red tags on your course pages.';
@@ -2761,11 +2776,9 @@ document.addEventListener('click', async e => {
   if (a === 'theme') { cfg.theme = b.dataset.v; saveCfg(); return applyTheme(); }
   if (a === 'themeToggle') { cfg.theme = effTheme() === 'dark' ? 'light' : 'dark'; saveCfg(); return applyTheme(); }
   if (a === 'lv') { chosen[b.dataset.g] = b.dataset.v; clearErr($('#' + b.dataset.g)); levelChips(b.dataset.g, b.dataset.g === 'cLevel'); return; }
-  if (a === 'sregMode') return setSregMode(sregMode === 'new' ? 'restore' : 'new');
-  if (a === 'sregEdit') { sregStep = 1; return applySreg(); }
   if (a === 'forgot') return forgotPin();
   if (a === 'reveal') { const i = $('#' + b.dataset.for), on = i.type === 'password'; i.type = on ? 'text' : 'password'; b.textContent = on ? 'Hide' : 'Show'; b.setAttribute('aria-pressed', String(on)); return; }
-  if (a === 'conflictFix') { sregMode = 'restore'; sregStep = 1; go('sreg'); $('#sMatric').value = stu.matric; $('#sUni').value = stu.uni === NMU ? 'nmu' : 'other'; applySreg(); return; }
+  if (a === 'conflictFix') { go('sonboard'); return; }
   if (a === 'scan') return startScan();
   if (a === 'scanStop') return stopScan();
   if (a === 'scanPin') { stopScan(); return pinShow(); }
@@ -2790,7 +2803,7 @@ document.addEventListener('click', async e => {
   if (a === 'lpull') return lecSync(true);
   if (a === 'accept') { lec.accepted[b.dataset.key] = true; saveLec(); renderCourse(); return lecSync(false); }
   if (a === 'acceptAll') { const c = lec.courses.find(x => x.id === param); if (!c) return; attendance(lec, c, cfg.cutoff).review.forEach(r => { lec.accepted[r.key] = true; }); saveLec(); renderCourse(); return lecSync(false); }
-  if (a === 'lregMode') return setLregMode(lregM === 'new' ? 'signin' : 'new');
+  /* lregMode removed — OAuth only */
   if (a === 'listSave') {
     const c = lec.courses.find(x => x.id === param); if (!c) return;
     const raw = $('#kListIn').value, list = parseClassList(raw);
@@ -2806,84 +2819,98 @@ document.addEventListener('click', async e => {
     const safe = !!(lec && lec.acctSent);
     const r = await dialog({ title:'Sign out of this phone?', body:safe ? '<p>Your courses, class lists and past classes stay safe in your account. Sign in again any time with your email and passphrase.</p>' : '<p><b>Your account is not backed up yet.</b> If you sign out now, your class key and courses are lost for good.</p>', ack:safe ? '' : 'I understand I will lose my account', yes:'Sign out', danger:true });
     if (r !== 'yes') return;
-    try { localStorage.removeItem('dey.lec'); } catch (er) {} lec = null; priv = null; lregM = safe ? 'signin' : 'new'; go(roleHome()); return toast(safe ? 'Signed out. Your account is safe.' : 'Signed out.');
+    try { localStorage.removeItem('dey.lec'); } catch (er) {} lec = null; priv = null;
+    if (supabaseClient) supabaseClient.auth.signOut().catch(() => {});
+    go('welcome'); return toast('Signed out.');
   }
   if (a === 'lecDelete') {
     const r = await dialog({ title:'Delete your lecturer account?', body:'<p>This deletes your account, your courses and class lists, and your past classes from our servers, and signs you out here. It cannot be undone.</p><p>Students\' own attendance records are theirs and stay with them.</p>', type:'DELETE', yes:'Delete account', danger:true });
     if (r !== 'yes') return;
     const c = cloud();
-    if (!isOnline() || !c) return toast('Connect to the internet to delete your account.');
+    if (!isOnline()) return toast('Connect to the internet to delete your account.');
     try {
-      for (const s of await c.query('sessions', 'lid', lec.lid)) await c.del('sessions', s.sid);
-      await c.del('lecstate', lec.lid);
-      await c.del('lecturers', slug(lec.uni + '_' + lec.email));
+      await SB.rpc('delete_my_account', {});
     } catch (er) { return toast('Could not delete right now. Try again.'); }
-    try { localStorage.removeItem('dey.lec'); } catch (er) {} lec = null; priv = null; lregM = 'new'; go(roleHome()); return toast('Your account was deleted.');
+    try { localStorage.removeItem('dey.lec'); } catch (er) {} lec = null; priv = null;
+    if (supabaseClient) supabaseClient.auth.signOut().catch(() => {});
+    go('welcome'); return toast('Your account was deleted.');
   }
   if (a === 'eraseAll') {
     const r = await dialog({ title:'Erase everything on this phone?', body:'<p>Profile, scans, courses, keys and demo storage.</p>', ack:'I understand', yes:'Erase everything', danger:true });
     if (r !== 'yes') return;
     ['dey.stu','dey.lec','dey.cfg','dey.cloud','dey.lock'].forEach(k => { try { localStorage.removeItem(k); } catch (er) {} });
-    const th = cfg.theme; stu = null; lec = null; priv = null; cfg = Object.assign({}, DEF, { theme:th }); saveCfg(); sregMode = 'new'; go('welcome'); toast('Erased.'); return;
+    const th = cfg.theme; stu = null; lec = null; priv = null; cfg = Object.assign({}, DEF, { theme:th }); saveCfg();
+    if (supabaseClient) supabaseClient.auth.signOut().catch(() => {});
+    go('welcome'); toast('Erased.'); return;
   }
 });
-$('#sUni').addEventListener('change', () => { uniSwitch('s', 'sDeptWrap', false); applySreg(); });
-$('#lUni').addEventListener('change', () => { $('#lUniOtherWrap').hidden = $('#lUni').value !== 'other'; });
-$('#sPin').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
-$('#sregForm').addEventListener('submit', async e => {
+$('#soUni').addEventListener('change', () => { const other = $('#soUni').value === 'other'; $('#soUniOtherWrap').hidden = !other; deptField('soDeptWrap', other ? 'x' : NMU, false, ''); });
+$('#loUni').addEventListener('change', () => { $('#loUniOtherWrap').hidden = $('#loUni').value !== 'other'; });
+/* Student onboarding form (post-OAuth) */
+$('#sonboardForm').addEventListener('submit', async e => {
   e.preventDefault(); clearErrs(e.target);
-  const uni = uniVal('sUni', 'sUniOther'), matric = normMatric($('#sMatric').value), pin = $('#sPin').value;
-  const taken = () => fieldErr('sMatric', 'This matric number is already registered.', { label:'Restore it', fn:() => { setSregMode('restore'); $('#sPin').focus(); } });
-  if (sregMode === 'restore') {
-    if (!uni) return fieldErr('sUniOther', 'Enter your university.');
-    if (matric.length < 3) return fieldErr('sMatric', 'Enter your matric number.');
-    if (!/^\d{6}$/.test(pin)) return fieldErr('sPin', 'Enter your 6-digit PIN.');
-    return restoreAccount(uni, matric, pin);
+  const other = $('#soUni').value === 'other';
+  const uni = other ? $('#soUniOther').value.trim() : NMU;
+  const name = $('#soName').value.trim();
+  const matric = normMatric($('#soMatric').value);
+  const dept = deptVal('soDeptWrap');
+  const level = chosen.soLevel;
+  if (!uni) return fieldErr('#soUniOther', 'Enter your university.');
+  if (name.split(/\s+/).filter(Boolean).length < 2) return fieldErr('soName', 'Enter your first and last name.');
+  if (matric.length < 4 || !/\d/.test(matric)) return fieldErr('soMatric', 'Enter your matric number, like 2021/1234.');
+  if (!dept) return fieldErr($('#soDeptWrap select, #soDeptWrap input'), 'Choose your department.');
+  if (!level) return fieldErr($('#soLevel'), 'Choose your level.');
+  const od = window._oauthData || {};
+  if (!od.userId) return toast('Sign in with Google or Apple first.');
+  const btn = $('#sonboardGo'); btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const result = await SB.rpc('claim_student', {
+      p_uni: uni, p_matric: matric, p_name: name, p_dept: dept, p_level: level,
+      p_email: od.email || '', p_provider: od.provider || 'google'
+    });
+    const existing = stu || {};
+    stu = freshStu({
+      uni, name, matric, dept, level, did: existing.did || rid(3),
+      email: od.email || '', user_id: od.userId, auth_provider: od.provider || 'google',
+      scans: existing.scans || [], keys: existing.keys || {}, sessions: existing.sessions || {},
+      profileSent: true, conflict: false
+    });
+    saveStu(); go('shome'); sync(false);
+    toast('Welcome, ' + name.split(' ')[0] + '!');
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Start using Adesse';
+    const msg = e.message || '';
+    if (msg.includes('matric_taken')) return fieldErr('soMatric', 'This matric number is already registered to another account.');
+    toast('Could not save your profile. Check your connection and try again.');
   }
-  if (sregStep === 1) {
-    if (!uni) return fieldErr('sUniOther', 'Enter your university.');
-    if ($('#sName').value.trim().split(/\s+/).filter(Boolean).length < 2) return fieldErr('sName', 'Enter your first and last name.');
-    if (matric.length < 4 || !/\d/.test(matric)) return fieldErr('sMatric', 'Enter your matric number, like 2021/1234.');
-    if (isOnline() && cloud()) { try { if ((await cloud().query('students', 'matric', matric)).find(r => r.uni === uni)) return taken(); } catch (er) {} }
-    sregStep = 2; applySreg(); const t = $('#sDeptWrap select, #sDeptWrap input'); if (t) t.focus(); return;
-  }
-  const name = $('#sName').value.trim(), dept = deptVal('sDeptWrap'), level = chosen.sLevel;
-  if (!dept) return fieldErr($('#sDeptWrap select, #sDeptWrap input'), 'Choose your department.');
-  if (!level) return fieldErr($('#sLevel'), 'Choose your level.');
-  if (!/^\d{6}$/.test(pin)) return fieldErr('sPin', 'Choose a PIN with exactly 6 digits.');
-  if (weakPin(pin)) return fieldErr('sPin', 'Too easy to guess. Avoid 123456 or repeated digits.');
-  const hash = await pinHash(pin, uni + '|' + matric);
-  if (isOnline() && cloud()) {
-    try { const ex = (await cloud().query('students', 'matric', matric)).find(r => r.uni === uni); if (ex) { sregStep = 1; applySreg(); return taken(); } } catch (er) {}
-  }
-  const old = stu || {};
-  stu = freshStu({ uni, name, matric, dept, level, did:old.did || rid(3), pinHash:hash, scans:old.scans || [], keys:old.keys || {}, sessions:old.sessions || {} });
-  if (window._oauthData) {
-    stu.email = window._oauthData.email;
-    stu.user_id = window._oauthData.userId;
-    stu.auth_provider = window._oauthData.provider;
-  }
-  $('#sPin').value = ''; sregStep = 1; saveStu(); go('shome'); sync(false);
 });
-$('#lregForm').addEventListener('submit', async e => {
+/* Lecturer onboarding form (post-OAuth) */
+$('#lonboardForm').addEventListener('submit', async e => {
   e.preventDefault(); clearErrs(e.target);
-  const uni = uniVal('lUni', 'lUniOther'), name = $('#lName').value.trim(), email = $('#lEmail').value.trim().toLowerCase(), pass = $('#lPass').value;
-  if (!uni) return fieldErr('lUniOther', 'Enter your university.');
-  if (lregM === 'new' && name.length < 2) return fieldErr('lName', 'Enter your name.');
-  if (!/^\S+@\S+\.\S+$/.test(email)) return fieldErr('lEmail', 'Enter a valid email address.');
-  if (pass.length < 8) return fieldErr('lPass', lregM === 'new' ? 'Use at least 8 characters.' : 'Enter your passphrase.');
+  const other = $('#loUni').value === 'other';
+  const uni = other ? $('#loUniOther').value.trim() : NMU;
+  const name = $('#loName').value.trim();
+  if (!uni) return fieldErr('#loUniOther', 'Enter your university.');
+  if (name.length < 2) return fieldErr('loName', 'Enter your name.');
+  const od = window._oauthData || {};
+  if (!od.userId) return toast('Sign in with Google or Apple first.');
   if (!(window.crypto && crypto.subtle)) return toast('This needs a secure (https) link.');
-  if (lregM === 'signin') return signInLecturer(uni, email, pass);
-  if (isOnline() && cloud()) {
-    try { if ((await cloud().query('lecturers', 'email', email)).find(r => r.uni === uni)) return fieldErr('lEmail', 'This email already has an account.', { label:'Sign in', fn:() => { setLregMode('signin'); $('#lPass').focus(); } }); } catch (er) {}
+  const btn = $('#lonboardGo'); btn.disabled = true; btn.textContent = 'Creating account…';
+  try {
+    const k = await genKeys();
+    const lid = await fingerprint(k.pub);
+    await SB.rpc('register_lecturer', { p_lid: lid, p_name: name, p_uni: uni, p_pub: k.pub, p_jwk: k.jwk });
+    lec = { name, uni, email: od.email || '', lid, pub: k.pub, jwk: k.jwk,
+      acctSent: true, conflict: false, user_id: od.userId, auth_provider: od.provider || 'google',
+      courses: [], sessions: [], manual: [], cloudScans: [], roster: [], accepted: {} };
+    priv = await importPriv(k.jwk); saveLec(); go('lhome');
+    toast('Welcome, ' + name.split(' ')[0] + '!');
+    lecSync(false);
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Create lecturer account';
+    toast('Could not create your account. Check your connection and try again.');
+    console.warn('Lecturer onboard error:', e);
   }
-  const k = await genKeys(), wrap = await wrapKey(k.jwk, pass);
-  lec = { name, uni, email, lid:await fingerprint(k.pub), pub:k.pub, jwk:k.jwk, wrap, acctSent:false, courses:[], sessions:[], manual:[], cloudScans:[], roster:[], accepted:{} };
-  if (window._oauthData) {
-    lec.user_id = window._oauthData.userId;
-    lec.auth_provider = window._oauthData.provider;
-  }
-  priv = await importPriv(k.jwk); $('#lPass').value = ''; saveLec(); go('lhome'); lecSync(false);
 });
 $('#cnewForm').addEventListener('submit', e => {
   e.preventDefault();
@@ -2961,73 +2988,63 @@ async function handleAuthSession(user){
   if (!user) return;
   const targetRole = cfg.oauthRole || cfg.role || 'student';
   const email = user.email || '';
-  const fullName = user.user_metadata?.full_name || user.user_metadata?.name || email.split('@')[0];
-  const provider = user.app_metadata?.provider || 'oauth';
+  const meta = user.user_metadata || {};
+  const fullName = meta.full_name || meta.name || email.split('@')[0] || 'User';
+  const provider = (user.app_metadata || {}).provider || 'google';
   window._oauthData = { email, userId: user.id, provider, fullName };
 
   if (targetRole === 'lecturer') {
-    cfg.role = 'lecturer';
-    saveCfg();
+    cfg.role = 'lecturer'; saveCfg();
     try {
-      const rows = await SB.query('lecturers', 'email', email);
+      // Look up existing lecturer by user_id first, then email
+      let rows = await SB.query('lecturers', 'user_id', user.id);
+      if (!rows || !rows.length) rows = await SB.query('lecturers', 'email', email);
       if (rows && rows.length > 0) {
         const found = rows[0];
-        lec = Object.assign({}, found, {
-          courses: found.courses || [],
-          sessions: found.sessions || [],
-          manual: found.manual || [],
-          cloudScans: found.cloudScans || [],
-          roster: found.roster || [],
-          accepted: found.accepted || {},
-          user_id: user.id,
-          auth_provider: provider
-        });
+        // Fetch ECDSA keys from lecturer_keys table
+        let jwk = null;
+        try { const krows = await SB.query('lecturer_keys', 'user_id', found.user_id || user.id); if (krows && krows.length) jwk = krows[0].jwk; } catch(e) {}
+        lec = {
+          name: found.name, uni: found.uni, email: email,
+          lid: found.lid, pub: found.pub, jwk,
+          acctSent: true, conflict: false, user_id: user.id, auth_provider: provider,
+          courses: [], sessions: [], manual: [], cloudScans: [], roster: [], accepted: {}
+        };
+        if (jwk) { try { priv = await importPriv(jwk); } catch(e) { priv = null; } }
         saveLec();
         go('lhome');
         lecSync(false);
-        toast('Welcome back, ' + (lec.name || fullName));
+        toast('Welcome back, ' + (lec.name || fullName) + '!');
         return;
       }
-    } catch (e) {}
-
-    go('lreg');
-    const nameEl = $('#lName'), emailEl = $('#lEmail');
-    if (nameEl && !nameEl.value) nameEl.value = fullName;
-    if (emailEl) { emailEl.value = email; emailEl.readOnly = true; }
-    toast('Signed in with ' + provider + '. Choose university & passphrase to complete setup.');
+    } catch (e) { console.warn('Lecturer lookup failed:', e); }
+    // New lecturer — go to onboarding
+    go('lonboard');
   } else {
-    cfg.role = 'student';
-    saveCfg();
+    cfg.role = 'student'; saveCfg();
     try {
-      let rows = await SB.query('students', 'email', email);
-      if (!rows || !rows.length) {
-        rows = await SB.query('students', 'user_id', user.id);
-      }
+      // Look up existing student by user_id first, then email
+      let rows = await SB.query('students', 'user_id', user.id);
+      if (!rows || !rows.length) rows = await SB.query('students', 'email', email);
       if (rows && rows.length > 0) {
         const found = rows[0];
-        stu = Object.assign({}, found, {
-          scans: found.scans || [],
-          keys: found.keys || {},
-          sessions: found.sessions || {},
-          targets: found.targets || {},
-          mute: found.mute || {},
-          notified: found.notified || {},
-          joinedAt: found.at || Date.now(),
-          user_id: user.id,
-          auth_provider: provider
+        const existing = stu || {};
+        stu = freshStu({
+          uni: found.uni, name: found.name, matric: found.matric,
+          dept: found.dept, level: found.level, did: existing.did || rid(3),
+          email, user_id: user.id, auth_provider: provider,
+          scans: existing.scans || [], keys: existing.keys || {},
+          sessions: existing.sessions || {}, profileSent: true
         });
         saveStu();
         go('shome');
         sync(false);
-        toast('Welcome back, ' + (stu.name || fullName));
+        toast('Welcome back, ' + (stu.name ? stu.name.split(' ')[0] : fullName) + '!');
         return;
       }
-    } catch (e) {}
-
-    go('sreg');
-    const nameEl = $('#sName');
-    if (nameEl && !nameEl.value) nameEl.value = fullName;
-    toast('Signed in with ' + provider + '. Enter your matric number to finish setup.');
+    } catch (e) { console.warn('Student lookup failed:', e); }
+    // New student — go to onboarding
+    go('sonboard');
   }
 }
 
