@@ -336,7 +336,7 @@ details.card:not([open]){gap:0}
   transition:max-height .4s cubic-bezier(0.16,1,0.3,1), opacity .3s cubic-bezier(0.16,1,0.3,1);
   max-height:0; opacity:0; pointer-events:none;
 }
-.auth-signin-wrap.open{max-height:280px; opacity:1; pointer-events:auto}
+.auth-signin-wrap.open{max-height:450px; opacity:1; pointer-events:auto}
 .auth-role-hint{
   display:flex; align-items:center; gap:8px;
   font:500 13px/1.3 var(--font-body); color:var(--muted-foreground); padding:2px 0 2px;
@@ -3496,7 +3496,9 @@ async function handleOAuth(provider, role){
   cfg.oauthRole = role;
   saveCfg();
 
-  const clickedBtn = document.querySelector('[data-act="oauth"][data-provider="' + provider + '"][data-role="' + role + '"]');
+  const clickedBtn = document.querySelector('[data-act="authOauth"][data-provider="' + provider + '"]') ||
+                     document.querySelector('[data-act="oauth"][data-provider="' + provider + '"][data-role="' + role + '"]') ||
+                     document.querySelector('[data-provider="' + provider + '"]');
   const parentGroup = clickedBtn ? clickedBtn.closest('.auth-actions') : null;
   const siblingBtns = parentGroup ? parentGroup.querySelectorAll('.oauth-btn') : document.querySelectorAll('.oauth-btn');
 
