@@ -438,3 +438,79 @@ CREATE INDEX IF NOT EXISTS idx_scans_user_id ON public.scans (user_id);
 CREATE INDEX IF NOT EXISTS idx_scans_open_pin ON public.scans (uni, day) WHERE (lid IS NULL);
 CREATE INDEX IF NOT EXISTS idx_sessions_lid ON public.sessions (lid);
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON public.sessions (user_id);
+
+
+-- ==============================================================================
+-- Schema Privileges & Grants (Crucial for Supabase API access)
+-- ==============================================================================
+
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated, service_role;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated, service_role;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated, service_role;
+
+-- Canonical RPC to submit an attendance scan (guaranteed atomic execution)
+CREATE OR REPLACE FUNCTION public.submit_scan(p_scan jsonb)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS \$\$
+DECLARE
+  me uuid := auth.uid();
+  k text := p_scan->>'key';
+  user_id_val uuid := coalesce(me, nullif(p_scan->>'user_id', '')::uuid);
+BEGIN
+  IF k IS NULL OR k = '' THEN
+    RAISE EXCEPTION 'missing_scan_key' USING errcode = 'P0001';
+  END IF;
+
+  INSERT INTO public.scans (
+    key, user_id, uni, matric, name, dept, level, did,
+    kind, sid, course, lid, win, sig, pin, at, day, status, reason
+  ) VALUES (
+    k,
+    user_id_val,
+    p_scan->>'uni',
+    p_scan->>'matric',
+    p_scan->>'name',
+    p_scan->>'dept',
+    p_scan->>'level',
+    p_scan->>'did',
+    p_scan->>'kind',
+    p_scan->>'sid',
+    p_scan->>'course',
+    p_scan->>'lid',
+    (p_scan->>'win')::bigint,
+    p_scan->>'sig',
+    p_scan->>'pin',
+    (p_scan->>'at')::bigint,
+    p_scan->>'day',
+    coalesce(p_scan->>'status', 'ok'),
+    p_scan->>'reason'
+  )
+  ON CONFLICT (key) DO UPDATE SET
+    status = EXCLUDED.status,
+    reason = coalesce(EXCLUDED.reason, scans.reason),
+    lid = coalesce(EXCLUDED.lid, scans.lid),
+    sid = coalesce(EXCLUDED.sid, scans.sid),
+    course = coalesce(EXCLUDED.course, scans.course);
+
+  RETURN jsonb_build_object('success', true, 'key', k);
+END;
+\$\$;
+
+-- Canonical RPC to get scans for lecturer verification
+CREATE OR REPLACE FUNCTION public.get_lecturer_scans(p_lid text)
+RETURNS SETOF public.scans
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS \$\$
+  SELECT * FROM public.scans
+  WHERE (lid = p_lid)
+     OR (lid IS NULL AND kind = 'pin' AND day >= to_char(now() - interval '1 day', 'YYYY-MM-DD'));
+\$\$;
