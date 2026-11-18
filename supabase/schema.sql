@@ -1,0 +1,440 @@
+-- ==============================================================================
+-- Adesse Database Schema (Supabase / PostgreSQL)
+-- Verified & Audited Live Production Schema
+-- ==============================================================================
+
+-- 1. University email domains for automatic lecturer verification
+CREATE TABLE IF NOT EXISTS public.university_domains (
+  uni text PRIMARY KEY,
+  domain text NOT NULL CHECK (domain = lower(domain))
+);
+ALTER TABLE public.university_domains ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS university_domains_read ON public.university_domains;
+CREATE POLICY university_domains_read ON public.university_domains
+  FOR SELECT TO authenticated USING (true);
+
+-- 2. Students table with hardware device-binding and backup PIN hash
+CREATE TABLE IF NOT EXISTS public.students (
+  user_id uuid PRIMARY KEY DEFAULT auth.uid() REFERENCES auth.users (id) ON DELETE CASCADE,
+  uni text NOT NULL,
+  matric text NOT NULL,
+  name text NOT NULL,
+  dept text NOT NULL,
+  level text NOT NULL,
+  verified boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  email text,
+  auth_provider text DEFAULT 'google',
+  device_id text,
+  pin_hash text,
+  "pinHash" text,
+  CONSTRAINT students_uni_matric_key UNIQUE (uni, matric)
+);
+ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
+
+-- Synchronize pin_hash and "pinHash" for total SDK / frontend backwards compatibility
+CREATE OR REPLACE FUNCTION public.sync_students_pin()
+RETURNS trigger AS $$
+BEGIN
+  IF NEW.pin_hash IS NULL AND NEW."pinHash" IS NOT NULL THEN
+    NEW.pin_hash := NEW."pinHash";
+  ELSIF NEW."pinHash" IS NULL AND NEW.pin_hash IS NOT NULL THEN
+    NEW."pinHash" := NEW.pin_hash;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_sync_students_pin ON public.students;
+CREATE TRIGGER trg_sync_students_pin
+BEFORE INSERT OR UPDATE ON public.students
+FOR EACH ROW EXECUTE FUNCTION public.sync_students_pin();
+
+-- 3. Lecturers table
+CREATE TABLE IF NOT EXISTS public.lecturers (
+  user_id uuid PRIMARY KEY DEFAULT auth.uid() REFERENCES auth.users (id) ON DELETE CASCADE,
+  lid text NOT NULL UNIQUE,
+  name text NOT NULL,
+  uni text NOT NULL,
+  pub text NOT NULL,
+  verified boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  email text,
+  auth_provider text DEFAULT 'google'
+);
+ALTER TABLE public.lecturers ENABLE ROW LEVEL SECURITY;
+
+-- 4. Lecturer cryptographic signing keys (ECDSA P-256 JWK)
+CREATE TABLE IF NOT EXISTS public.lecturer_keys (
+  user_id uuid PRIMARY KEY DEFAULT auth.uid() REFERENCES auth.users (id) ON DELETE CASCADE,
+  jwk jsonb NOT NULL
+);
+ALTER TABLE public.lecturer_keys ENABLE ROW LEVEL SECURITY;
+
+-- 5. Lecturer persistent workspace state
+CREATE TABLE IF NOT EXISTS public.lecturer_state (
+  user_id uuid PRIMARY KEY DEFAULT auth.uid() REFERENCES auth.users (id) ON DELETE CASCADE,
+  state jsonb NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.lecturer_state ENABLE ROW LEVEL SECURITY;
+
+-- 6. Legacy lecstate table
+CREATE TABLE IF NOT EXISTS public.lecstate (
+  lid text PRIMARY KEY,
+  user_id uuid REFERENCES auth.users (id) ON DELETE CASCADE,
+  json text,
+  sig text,
+  at bigint,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.lecstate ENABLE ROW LEVEL SECURITY;
+
+-- 7. Sessions table (with dual timestamp columns for web & native compatibility)
+CREATE TABLE IF NOT EXISTS public.sessions (
+  sid text PRIMARY KEY,
+  user_id uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users (id) ON DELETE CASCADE,
+  lid text NOT NULL,
+  course text NOT NULL,
+  title text,
+  lecturer text,
+  uni text NOT NULL,
+  started_at bigint NOT NULL,
+  ended_at bigint,
+  startedAt bigint,
+  endedAt bigint
+);
+ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE OR REPLACE FUNCTION public.sync_sessions_timestamps()
+RETURNS trigger AS $$
+BEGIN
+  IF NEW."startedAt" IS NOT NULL AND NEW.started_at IS NULL THEN
+    NEW.started_at := NEW."startedAt";
+  ELSIF NEW.started_at IS NOT NULL AND NEW."startedAt" IS NULL THEN
+    NEW."startedAt" := NEW.started_at;
+  END IF;
+  IF NEW."endedAt" IS NOT NULL AND NEW.ended_at IS NULL THEN
+    NEW.ended_at := NEW."endedAt";
+  ELSIF NEW.ended_at IS NOT NULL AND NEW."endedAt" IS NULL THEN
+    NEW."endedAt" := NEW.ended_at;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_sync_sessions_timestamps ON public.sessions;
+CREATE TRIGGER trg_sync_sessions_timestamps
+BEFORE INSERT OR UPDATE ON public.sessions
+FOR EACH ROW EXECUTE FUNCTION public.sync_sessions_timestamps();
+
+-- 8. Attendance scans table
+CREATE TABLE IF NOT EXISTS public.scans (
+  key text PRIMARY KEY,
+  user_id uuid NOT NULL DEFAULT auth.uid() REFERENCES auth.users (id) ON DELETE CASCADE,
+  uni text NOT NULL,
+  matric text NOT NULL,
+  name text,
+  dept text,
+  level text,
+  did text,
+  kind text NOT NULL,
+  sid text,
+  course text,
+  lid text,
+  win bigint,
+  sig text,
+  pin text,
+  at bigint NOT NULL,
+  day text NOT NULL,
+  status text,
+  reason text
+);
+ALTER TABLE public.scans ENABLE ROW LEVEL SECURITY;
+
+-- 9. Matriculation disputes table
+CREATE TABLE IF NOT EXISTS public.matric_disputes (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
+  uni text NOT NULL,
+  matric text NOT NULL,
+  note text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.matric_disputes ENABLE ROW LEVEL SECURITY;
+
+-- ==============================================================================
+-- Row Level Security (RLS) Policies
+-- ==============================================================================
+
+-- Students
+DROP POLICY IF EXISTS students_self ON public.students;
+CREATE POLICY students_self ON public.students FOR SELECT TO authenticated USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS students_roster ON public.students;
+CREATE POLICY students_roster ON public.students FOR SELECT TO authenticated USING (is_verified_lecturer_of(uni));
+
+DROP POLICY IF EXISTS students_insert_own ON public.students;
+CREATE POLICY students_insert_own ON public.students FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS students_update_own ON public.students;
+CREATE POLICY students_update_own ON public.students FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+-- Lecturers
+DROP POLICY IF EXISTS lecturers_read ON public.lecturers;
+CREATE POLICY lecturers_read ON public.lecturers FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS lecturers_insert_own ON public.lecturers;
+CREATE POLICY lecturers_insert_own ON public.lecturers FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS lecturers_update_own ON public.lecturers;
+CREATE POLICY lecturers_update_own ON public.lecturers FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+-- Lecturer Keys & State
+DROP POLICY IF EXISTS lecturer_keys_own ON public.lecturer_keys;
+CREATE POLICY lecturer_keys_own ON public.lecturer_keys FOR SELECT TO authenticated USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS lecturer_keys_insert_own ON public.lecturer_keys;
+CREATE POLICY lecturer_keys_insert_own ON public.lecturer_keys FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS lecturer_keys_update_own ON public.lecturer_keys;
+CREATE POLICY lecturer_keys_update_own ON public.lecturer_keys FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS lecturer_state_own ON public.lecturer_state;
+CREATE POLICY lecturer_state_own ON public.lecturer_state FOR ALL TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+-- Sessions
+DROP POLICY IF EXISTS sessions_read ON public.sessions;
+CREATE POLICY sessions_read ON public.sessions FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS sessions_write_authenticated ON public.sessions;
+CREATE POLICY sessions_write_authenticated ON public.sessions FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()) OR (auth.uid() IS NOT NULL));
+
+DROP POLICY IF EXISTS sessions_update_authenticated ON public.sessions;
+CREATE POLICY sessions_update_authenticated ON public.sessions FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS sessions_delete ON public.sessions;
+CREATE POLICY sessions_delete ON public.sessions FOR DELETE TO authenticated USING (user_id = auth.uid());
+
+-- Scans
+DROP POLICY IF EXISTS scans_read_own ON public.scans;
+CREATE POLICY scans_read_own ON public.scans FOR SELECT TO authenticated USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS scans_read_lecturer ON public.scans;
+CREATE POLICY scans_read_lecturer ON public.scans FOR SELECT TO authenticated
+  USING (((lid IS NOT NULL) AND (lid = my_lid())) OR ((lid IS NULL) AND (kind = 'pin'::text) AND is_verified_lecturer_of(uni)));
+
+DROP POLICY IF EXISTS scans_insert_own ON public.scans;
+CREATE POLICY scans_insert_own ON public.scans FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()) OR (auth.uid() IS NOT NULL));
+
+DROP POLICY IF EXISTS scans_update_any ON public.scans;
+CREATE POLICY scans_update_any ON public.scans FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+-- Disputes & Lecstate
+DROP POLICY IF EXISTS disputes_own ON public.matric_disputes;
+CREATE POLICY disputes_own ON public.matric_disputes FOR ALL TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+DROP POLICY IF EXISTS lecstate_all ON public.lecstate;
+CREATE POLICY lecstate_all ON public.lecstate FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- ==============================================================================
+-- RPC Functions
+-- ==============================================================================
+
+CREATE OR REPLACE FUNCTION public.my_lid()
+RETURNS text LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT lid FROM public.lecturers WHERE user_id = auth.uid();
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_verified_lecturer_of(p_uni text)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.lecturers 
+    WHERE user_id = auth.uid() AND (uni = p_uni OR p_uni IS NULL)
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.email_matches_domain(p_uni text)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.university_domains d
+    WHERE d.uni = p_uni
+      AND (lower(coalesce(auth.jwt() ->> 'email', '')) like '%@' || d.domain
+        or lower(coalesce(auth.jwt() ->> 'email', '')) like '%.' || d.domain)
+  );
+$$;
+
+-- Canonical claim_student (Device Binding + Matric Lock + PIN Hash)
+CREATE OR REPLACE FUNCTION public.claim_student(
+  p_uni text,
+  p_matric text,
+  p_name text,
+  p_dept text,
+  p_level text,
+  p_email text DEFAULT NULL,
+  p_provider text DEFAULT 'google',
+  p_device_id text DEFAULT NULL,
+  p_pin_hash text DEFAULT NULL
+)
+RETURNS public.students
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  me uuid := auth.uid();
+  m  text := upper(regexp_replace(trim(p_matric), '\\s+', '', 'g'));
+  row public.students;
+  user_email text := coalesce(p_email, auth.jwt() ->> 'email', '');
+  dev text := trim(coalesce(p_device_id, ''));
+  ph  text := trim(coalesce(p_pin_hash, ''));
+BEGIN
+  IF me IS NULL THEN 
+    RAISE EXCEPTION 'not_signed_in' USING errcode = 'P0001'; 
+  END IF;
+  
+  -- Check if another user registered this matric in the same university
+  IF EXISTS (SELECT 1 FROM public.students WHERE uni = trim(p_uni) AND matric = m AND user_id <> me) THEN
+    RAISE EXCEPTION 'matric_taken' USING errcode = 'P0001';
+  END IF;
+
+  -- Check if current user already has a student record
+  SELECT * INTO row FROM public.students WHERE user_id = me;
+  IF FOUND THEN
+    -- If device_id is already set on the student, ensure this device matches
+    IF dev <> '' AND row.device_id IS NOT NULL AND row.device_id <> '' AND row.device_id <> dev THEN
+      RAISE EXCEPTION 'device_mismatch' USING errcode = 'P0001';
+    END IF;
+
+    UPDATE public.students 
+    SET name = trim(p_name), 
+        dept = trim(p_dept), 
+        level = p_level,
+        email = coalesce(nullif(user_email, ''), row.email),
+        auth_provider = coalesce(p_provider, row.auth_provider),
+        device_id = coalesce(row.device_id, nullif(dev, '')),
+        pin_hash = coalesce(nullif(ph, ''), row.pin_hash),
+        "pinHash" = coalesce(nullif(ph, ''), row.pin_hash)
+    WHERE user_id = me 
+    RETURNING * INTO row;
+    RETURN row;
+  END IF;
+
+  -- Check if another student has already bound this physical device
+  IF dev <> '' AND EXISTS (SELECT 1 FROM public.students WHERE device_id = dev AND user_id <> me) THEN
+    RAISE EXCEPTION 'device_already_registered' USING errcode = 'P0001';
+  END IF;
+  
+  INSERT INTO public.students (user_id, uni, matric, name, dept, level, verified, email, auth_provider, device_id, pin_hash, "pinHash")
+  VALUES (me, trim(p_uni), m, trim(p_name), trim(p_dept), p_level, true, user_email, p_provider, nullif(dev, ''), nullif(ph, ''), nullif(ph, ''))
+  RETURNING * INTO row;
+  
+  RETURN row;
+END;
+$$;
+
+-- Canonical register_lecturer
+CREATE OR REPLACE FUNCTION public.register_lecturer(
+  p_name text, 
+  p_uni text, 
+  p_lid text, 
+  p_pub text, 
+  p_jwk jsonb,
+  p_email text DEFAULT NULL,
+  p_provider text DEFAULT 'google'
+)
+RETURNS public.lecturers
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  me uuid := auth.uid();
+  row public.lecturers;
+  user_email text := coalesce(p_email, auth.jwt() ->> 'email', '');
+BEGIN
+  IF me IS NULL THEN 
+    RAISE EXCEPTION 'not_signed_in' USING errcode = 'P0001'; 
+  END IF;
+
+  SELECT * INTO row FROM public.lecturers WHERE user_id = me;
+  IF FOUND THEN 
+    UPDATE public.lecturers 
+    SET name = trim(p_name), 
+        uni = trim(p_uni), 
+        pub = coalesce(nullif(p_pub, ''), row.pub),
+        email = coalesce(nullif(user_email, ''), row.email),
+        auth_provider = coalesce(p_provider, row.auth_provider)
+    WHERE user_id = me
+    RETURNING * INTO row;
+    
+    INSERT INTO public.lecturer_keys (user_id, jwk)
+    VALUES (me, p_jwk)
+    ON CONFLICT (user_id) DO UPDATE SET jwk = EXCLUDED.jwk;
+    
+    RETURN row; 
+  END IF;
+
+  INSERT INTO public.lecturers (user_id, lid, name, uni, pub, verified, email, auth_provider)
+  VALUES (me, p_lid, trim(p_name), trim(p_uni), p_pub, true, user_email, p_provider)
+  RETURNING * INTO row;
+
+  INSERT INTO public.lecturer_keys (user_id, jwk) 
+  VALUES (me, p_jwk)
+  ON CONFLICT (user_id) DO UPDATE SET jwk = EXCLUDED.jwk;
+
+  RETURN row;
+END;
+$$;
+
+-- Atomic delete_my_account
+CREATE OR REPLACE FUNCTION public.delete_my_account()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  me uuid := auth.uid();
+BEGIN
+  IF me IS NULL THEN
+    RAISE EXCEPTION 'not_signed_in' USING errcode = 'P0001';
+  END IF;
+
+  DELETE FROM public.students WHERE user_id = me;
+  DELETE FROM public.scans WHERE user_id = me;
+  DELETE FROM public.lecturers WHERE user_id = me;
+  DELETE FROM public.lecturer_keys WHERE user_id = me;
+  DELETE FROM public.lecturer_state WHERE user_id = me;
+  DELETE FROM public.lecstate WHERE user_id = me;
+  DELETE FROM public.sessions WHERE user_id = me;
+  DELETE FROM public.matric_disputes WHERE user_id = me;
+  
+  DELETE FROM auth.users WHERE id = me;
+END;
+$$;
+
+-- Reset student device (admin support function)
+CREATE OR REPLACE FUNCTION public.reset_student_device(p_matric text)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE public.students SET device_id = NULL WHERE matric = upper(regexp_replace(trim(p_matric), '\\s+', '', 'g'));
+  RETURN FOUND;
+END;
+$$;
+
+-- ==============================================================================
+-- Performance Indexes
+-- ==============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_students_matric ON public.students (matric);
+CREATE INDEX IF NOT EXISTS idx_students_device_id ON public.students (device_id);
+CREATE INDEX IF NOT EXISTS idx_students_email ON public.students (email);
+CREATE INDEX IF NOT EXISTS idx_lecturers_email ON public.lecturers (email);
+CREATE INDEX IF NOT EXISTS idx_scans_sid ON public.scans (sid);
+CREATE INDEX IF NOT EXISTS idx_scans_lid ON public.scans (lid);
+CREATE INDEX IF NOT EXISTS idx_scans_user_id ON public.scans (user_id);
+CREATE INDEX IF NOT EXISTS idx_scans_open_pin ON public.scans (uni, day) WHERE (lid IS NULL);
+CREATE INDEX IF NOT EXISTS idx_sessions_lid ON public.sessions (lid);
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON public.sessions (user_id);
