@@ -458,7 +458,7 @@ CREATE OR REPLACE FUNCTION public.submit_scan(p_scan jsonb)
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-AS \$\$
+AS $$
 DECLARE
   me uuid := auth.uid();
   k text := p_scan->>'key';
@@ -501,7 +501,7 @@ BEGIN
 
   RETURN jsonb_build_object('success', true, 'key', k);
 END;
-\$\$;
+$$;
 
 -- Canonical RPC to get scans for lecturer verification
 CREATE OR REPLACE FUNCTION public.get_lecturer_scans(p_lid text)
@@ -509,8 +509,8 @@ RETURNS SETOF public.scans
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
-AS \$\$
+AS $$
   SELECT * FROM public.scans
   WHERE (lid = p_lid)
      OR (lid IS NULL AND kind = 'pin' AND day >= to_char(now() - interval '1 day', 'YYYY-MM-DD'));
-\$\$;
+$$;

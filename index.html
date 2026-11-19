@@ -2782,21 +2782,32 @@ function courseRows(){
     if (s.status === 'bad') continue;
     if (!s.lid) { waiting++; continue; }
     const k = s.lid + '|' + s.course;
-    if (!g.has(k)) g.set(k, { lid:s.lid, code:s.course, sids:new Set() });
+    if (!g.has(k)) g.set(k, { lid:s.lid, code:s.course, sids:new Set(), scans:[] });
     g.get(k).sids.add(s.sid);
+    g.get(k).scans.push(s);
   }
   const rows = Array.from(g.values()).map(r => {
     const ss = Object.values(stu.sessions).filter(x => x.lid === r.lid && x.course === r.code).sort((a, b) => b.startedAt - a.startedAt);
-    const held = ss.length ? ss.length : null, a = r.sids.size;
-    return { key:r.lid + '|' + r.code, lid:r.lid, code:r.code, lecturer:(ss[0] || {}).lecturer || '', title:(ss[0] || {}).title || '', a, held:held == null ? null : Math.max(held, a),
-      pct:held ? Math.round(a / Math.max(held, a) * 100) : null, ss, hist:ss.map(x => ({ sid:x.sid, at:x.startedAt, here:r.sids.has(x.sid) })) };
+    const knownSessionIds = new Set(ss.map(x => x.sid));
+    const extraHist = r.scans.filter(s => s.sid && !knownSessionIds.has(s.sid)).map(s => ({ sid:s.sid, at:s.at, here:true }));
+    const baseHist = ss.map(x => ({ sid:x.sid, at:x.startedAt, here:r.sids.has(x.sid) }));
+    const hist = [...extraHist, ...baseHist].sort((a, b) => b.at - a.at);
+    const a = r.sids.size;
+    const held = Math.max(ss.length, a);
+    const pct = held ? Math.min(100, Math.round(a / held * 100)) : null;
+    return { key:r.lid + '|' + r.code, lid:r.lid, code:r.code, lecturer:(ss[0] || {}).lecturer || '', title:(ss[0] || {}).title || '', a, held:held == null ? null : held,
+      pct, ss, hist };
   });
   rows.sort((x, y) => (x.pct == null ? 101 : x.pct) - (y.pct == null ? 101 : y.pct));
   return { rows, waiting };
 }
 function courseCard(r){
   const tgt = targetFor(r.key), bad = r.pct != null && r.pct < tgt;
-  const miss = r.hist.find(h => !h.here && Date.now() - h.at < 7 * 864e5);
+  const joinedAt = (stu && stu.joinedAt) || 0;
+  // A course with 100% attendance or where student attended all held sessions never shows "Missed"
+  const miss = (r.pct != null && r.pct < 100 && r.a < r.held)
+    ? r.hist.find(h => !h.here && h.at >= joinedAt && (Date.now() - h.at < 7 * 864e5))
+    : null;
   return '<li><button type="button" class="course" data-act="sopen" data-key="' + esc(r.key) + '"><span class="row"><span><span class="cc">' + esc(disp(r.code)) + '</span><span class="sub blk">' + esc([r.lecturer, r.title].filter(Boolean).join(' · ') || ' ') + '</span></span>' +
     (r.pct == null ? '<span class="chip mute">' + r.a + (r.a === 1 ? ' class' : ' classes') + '</span>' : '<span class="chip ' + (bad ? 'warn' : '') + '">' + r.pct + '%</span>') + '</span>' +
     (r.pct == null ? '<span class="sub blk">Connect once to see your percentage.</span>' :
@@ -2865,6 +2876,7 @@ function checkMisses(){
   if (!stu) return;
   const now = Date.now(); let changed = false;
   for (const r of courseRows().rows) {
+    if (r.pct != null && r.pct >= 100) continue;
     const att = new Set(r.hist.filter(h => h.here).map(h => h.sid));
     for (const s of missedSessions(r.ss, att, stu.joinedAt || 0, now)) {
       if (stu.notified[s.sid]) continue;
@@ -2900,14 +2912,15 @@ async function recordPin(pin){
   saveStu(); const online = isOnline(); sync(false);
   return { kind:'ok', done:{ title:'Code saved', course:'Code ' + pin, line: online ? 'Your lecturer confirms it in a moment.' : 'It is sent when you are back online and checked by your lecturer.' } };
 }
-let syncing = false;
+let syncing = false, syncQueued = false;
 async function sync(manual){
   if (cfg.role === 'lecturer') return lecSync(manual);
-  if (!stu || !stu.matric || syncing) return;
+  if (!stu || !stu.matric) return;
+  if (syncing) { syncQueued = true; return; }
   if (!isOnline()) { if (manual) toast('You are offline. Everything is saved here and sends later.'); return; }
   const c = cloud();
   if (!c) { if (manual) toast('Add your Supabase details in Settings, or use demo storage.'); return; }
-  syncing = true; setSyncing(true); let sent = 0;
+  syncing = true; setSyncing(true); let sent = 0, failed = 0;
   try {
     // Sync student profile via claim_student RPC (handles insert/update atomically)
     if (!stu.profileSent && stu.user_id) {
@@ -2938,38 +2951,57 @@ async function sync(manual){
       delete w.synced;
       if (stu.user_id) w.user_id = stu.user_id;
       else delete w.user_id;
+      let ok = false;
       try {
-        let ok = false;
+        await SB.rpc('submit_scan', { p_scan: w });
+        ok = true;
+      } catch(rpcErr) {
         try {
-          await SB.rpc('submit_scan', { p_scan: w });
-          ok = true;
-        } catch(rpcErr) {
           await c.put('scans', null, w);
           ok = true;
+        } catch(putErr) {
+          console.warn('Scan upload error:', putErr);
         }
-        if (ok) { s.synced = true; sent++; }
-      } catch(e) { console.warn('Scan sync failed:', e); }
+      }
+      if (ok) { s.synced = true; sent++; }
+      else { failed++; }
     }
     // Pull scans from server
     if (stu.user_id) {
-      for (const r of await c.query('scans', 'user_id', stu.user_id)) {
-        const n = normScan(r); if (n.uni !== stu.uni) continue;
-        const loc = stu.scans.find(x => x.key === n.key);
-        if (loc) { if (n.lid) { loc.lid = n.lid; loc.sid = n.sid || loc.sid; loc.course = n.course || loc.course; } if (n.status) loc.status = n.status; }
-        else stu.scans.push(Object.assign(n, { synced:true }));
-      }
+      try {
+        for (const r of await c.query('scans', 'user_id', stu.user_id)) {
+          const n = normScan(r); if (n.uni !== stu.uni) continue;
+          const loc = stu.scans.find(x => x.key === n.key);
+          if (loc) { if (n.lid) { loc.lid = n.lid; loc.sid = n.sid || loc.sid; loc.course = n.course || loc.course; } if (n.status) loc.status = n.status; }
+          else stu.scans.push(Object.assign(n, { synced:true }));
+        }
+      } catch(e) { console.warn('Pull scans failed:', e); }
     }
     // Pull session details for attended classes
-    for (const lid of new Set(stu.scans.filter(s => s.lid && s.status !== 'bad').map(s => s.lid)))
-      for (const r of await c.query('sessions', 'lid', lid)) {
-        const sess = { sid: r.sid, lid: r.lid, course: r.course, title: r.title, lecturer: r.lecturer, uni: r.uni,
-          startedAt: Number(r.startedAt || r.started_at) || 0, endedAt: Number(r.endedAt || r.ended_at) || 0 };
-        stu.sessions[r.sid] = sess;
-      }
+    for (const lid of new Set(stu.scans.filter(s => s.lid && s.status !== 'bad').map(s => s.lid))) {
+      try {
+        for (const r of await c.query('sessions', 'lid', lid)) {
+          const sess = { sid: r.sid, lid: r.lid, course: r.course, title: r.title, lecturer: r.lecturer, uni: r.uni,
+            startedAt: Number(r.startedAt || r.started_at) || 0, endedAt: Number(r.endedAt || r.ended_at) || 0 };
+          stu.sessions[r.sid] = sess;
+        }
+      } catch(e) { console.warn('Pull sessions failed:', e); }
+    }
     checkMisses();
-    if (manual) toast(sent ? sent + (sent === 1 ? ' class sent.' : ' classes sent.') : 'Up to date.');
+    if (manual) {
+      if (sent > 0) toast(sent + (sent === 1 ? ' class sent.' : ' classes sent.'));
+      else if (failed > 0) toast('Could not upload ' + failed + ' scan(s). Permissions need to be run in Supabase.');
+      else toast('Up to date.');
+    }
   } catch (e) { console.warn('sync error:', e); if (manual) toast('Could not reach the server. It will try again.'); }
-  finally { syncing = false; setSyncing(false); saveStu(); if (view === 'shome') renderShome(); if (view === 'sdetail') renderSdetail(); if (view === 'set') renderSet(); renderNet(); }
+  finally {
+    syncing = false; setSyncing(false); saveStu();
+    if (syncQueued) {
+      syncQueued = false;
+      setTimeout(() => sync(false), 300);
+    }
+    if (view === 'shome') renderShome(); if (view === 'sdetail') renderSdetail(); if (view === 'set') renderSet(); renderNet();
+  }
 }
 
 /* ---------- student: clear, delete ---------- */
