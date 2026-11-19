@@ -338,14 +338,14 @@ details.card:not([open]){gap:0}
 .auth-panel{
   grid-area:1 / 1;
   display:flex; flex-direction:column; gap:10px; width:100%;
-  transition:opacity .24s cubic-bezier(0.16,1,0.3,1), transform .24s cubic-bezier(0.16,1,0.3,1);
+  transition:opacity .2s ease, transform .2s cubic-bezier(0.2, 0, 0, 1);
   will-change:opacity, transform;
 }
 .auth-panel.hidden-panel{
-  opacity:0; transform:translateY(8px) scale(0.985); pointer-events:none;
+  opacity:0; transform:translateY(4px); pointer-events:none;
 }
 .auth-panel:not(.hidden-panel){
-  opacity:1; transform:translateY(0) scale(1); pointer-events:auto;
+  opacity:1; transform:translateY(0); pointer-events:auto;
 }
 .auth-fine{text-align:center; margin-top:4px; font-size:12px; color:var(--muted-foreground); line-height:1.5}
 .auth-role-hint{
@@ -2191,15 +2191,23 @@ function sessionMsg(sid, course, win){ return sid + '|' + course + '|' + win; }
 async function buildCode(priv, lec, sess, now){
   const win = Math.floor(now / WIN);
   const sig = await sign(priv, sessionMsg(sess.id, sess.code, win));
-  return ['DY1', lec.lid, sess.id, sess.code, win, lec.pub, sig].join('.');
+  const c = courseByCode(sess.code) || {};
+  const lvl = c.level || '';
+  const depts = (c.depts && c.depts.length) ? c.depts.join(',') : (c.dept || '');
+  return ['DY1', lec.lid, sess.id, sess.code, win, lec.pub, sig, b64u.enc(te.encode(lvl)), b64u.enc(te.encode(depts))].join('.');
 }
 function parseCode(text){
   const p = String(text || '').trim().split('.');
-  if (p.length !== 7 || p[0] !== 'DY1') return null;
+  if (p.length < 7 || p[0] !== 'DY1') return null;
   const win = Number(p[4]);
   if (!Number.isInteger(win) || !/^[0-9a-f]{8}$/.test(p[1]) || !/^[0-9a-f]{8}$/.test(p[2]) || !/^[A-Z0-9-]{1,12}$/.test(p[3])) return null;
   if (!/^[A-Za-z0-9_-]+$/.test(p[5]) || !/^[A-Za-z0-9_-]+$/.test(p[6])) return null;
-  return { lid:p[1], sid:p[2], course:p[3], win, pk:p[5], sig:p[6] };
+  let level = '', depts = [];
+  try {
+    if (p[7]) level = new TextDecoder().decode(b64u.dec(p[7]));
+    if (p[8]) depts = new TextDecoder().decode(b64u.dec(p[8])).split(',').filter(Boolean);
+  } catch(e) {}
+  return { lid:p[1], sid:p[2], course:p[3], win, pk:p[5], sig:p[6], level, depts };
 }
 // Runs on the student's phone with no network.
 async function studentCheck(c, now, knownKeys){
@@ -2222,7 +2230,11 @@ async function lecturerCheck(rec, lec, now){
     }
     return { status:'bad', reason:'That code did not match a live class' };
   }
-  const sess = lec.sessions.find(s => s.id === rec.sid);
+  let sess = lec.sessions.find(s => s.id === rec.sid);
+  if (!sess && rec.course) {
+    sess = { id:rec.sid, code:rec.course, startedAt:rec.at - 1800000, endedAt:rec.at + 1800000, sk:'', pushed:true };
+    lec.sessions.push(sess);
+  }
   if (rec.lid !== lec.lid) return { status:'bad', reason:'Signed by a different lecturer' };
   if (!sess) return { status:'bad', reason:'Unknown class' };
   if (rec.course !== sess.code) return { status:'bad', reason:'Course does not match' };
@@ -2241,25 +2253,71 @@ function flagSharedDevices(recs){
     if (m.size > 1) for (const r of list) { r.status = 'review'; r.reason = 'Same phone used for ' + m.size + ' matric numbers'; }
   }
 }
-function audienceMatch(course, st){ return (!course.dept || st.dept === course.dept) && (!course.level || st.level === course.level); }
+function audienceMatch(course, st){
+  if (!st) return false;
+  if (course.level && course.level !== 'ALL' && st.level && st.level !== course.level) return false;
+  const depts = course.depts || (course.dept ? (course.dept === 'All departments' ? [] : [course.dept]) : []);
+  if (!depts.length || depts.includes('ALL')) return true;
+  if (depts.includes('ALL_ENG')) {
+    return NMU_ENG_DEPTS.includes(st.dept);
+  }
+  return depts.includes(st.dept);
+}
 // One course: who came to how many classes. The class list comes from scans, hand-added students and the roster.
 function attendance(lec, course, cutoff){
-  const sess = lec.sessions.filter(s => s.code === course.code);
-  const ids = new Set(sess.map(s => s.id));
-  const total = sess.length;
+  const scans = lec.cloudScans || [];
   const by = new Map();
   const touch = (matric, name) => { if (!by.has(matric)) by.set(matric, { name:name || '', sids:new Set() }); const e = by.get(matric); if (name && !e.name) e.name = name; return e; };
-  const scans = lec.cloudScans || [];
-  for (const r of scans) if (ids.has(r.sid) && (r.status === 'ok' || (lec.accepted || {})[r.key])) touch(r.matric, r.name).sids.add(r.sid);
-  for (const m of (lec.manual || [])) if (ids.has(m.sid)) touch(m.matric, m.name).sids.add(m.sid);
+
+  // 1. First, register all attended sessions from scans and link to course
+  const attendedSids = new Set();
+  const localSess = lec.sessions.filter(s => s.code === course.code);
+  const localIds = new Set(localSess.map(s => s.id));
+
+  for (const r of scans) {
+    if ((localIds.has(r.sid) || r.course === course.code) && (r.status === 'ok' || (lec.accepted || {})[r.key])) {
+      touch(r.matric, r.name).sids.add(r.sid);
+      attendedSids.add(r.sid);
+      if (!localIds.has(r.sid)) {
+        localIds.add(r.sid);
+        if (!lec.sessions.some(s => s.id === r.sid)) {
+          lec.sessions.push({ id:r.sid, code:course.code, startedAt:r.at, endedAt:r.at + 3600000, sk:'', pushed:true });
+        }
+      }
+    }
+  }
+  for (const m of (lec.manual || [])) {
+    if (localIds.has(m.sid)) {
+      touch(m.matric, m.name).sids.add(m.sid);
+      attendedSids.add(m.sid);
+    }
+  }
+
+  // 2. Filter valid sessions:
+  // Must have at least 1 attendee (attendedSids.has(s.id)), OR
+  // be a legitimate class that ran for at least 15 minutes.
+  // Sessions with 0 attendance that were closed in < 15 mins (test clicks) are discarded as ghost sessions.
+  const allCourseSess = lec.sessions.filter(s => s.code === course.code);
+  const realSess = allCourseSess.filter(s => {
+    if (attendedSids.has(s.id)) return true;
+    const dur = (s.endedAt && s.startedAt) ? (s.endedAt - s.startedAt) : 0;
+    return dur >= 15 * 60 * 1000;
+  });
+
+  // Total held classes is the count of real sessions (at least max attendance of any student)
+  const maxAttended = Math.max(0, ...Array.from(by.values()).map(v => v.sids.size));
+  const total = Math.max(realSess.length, maxAttended);
+
   if (course.list && course.list.length) { for (const st of course.list) touch(st.matric, st.name); }
   else for (const st of (lec.roster || [])) if (audienceMatch(course, st)) touch(st.matric, st.name);
+
   const rows = Array.from(by, ([matric, v]) => {
     const n = v.sids.size, pct = total ? Math.round(n / total * 100) : 0;
     return { matric, name:v.name, n, pct, below: total > 0 && pct < cutoff };
-  }).sort((a, b) => a.pct - b.pct || a.matric.localeCompare(b.matric));
-  const review = scans.filter(r => ids.has(r.sid) && r.status === 'review' && !(lec.accepted || {})[r.key]);
-  const rejected = scans.filter(r => ids.has(r.sid) && r.status === 'bad').length;
+  }).sort((a, b) => b.n - a.n || b.pct - a.pct || a.matric.localeCompare(b.matric));
+
+  const review = scans.filter(r => (localIds.has(r.sid) || r.course === course.code) && r.status === 'review' && !(lec.accepted || {})[r.key]);
+  const rejected = scans.filter(r => (localIds.has(r.sid) || r.course === course.code) && r.status === 'bad').length;
   return { total, rows, review, rejected };
 }
 // What a student should do next, in plain words.
@@ -2406,6 +2464,7 @@ const I = {
 /* ---------- small helpers ---------- */
 const NMU = 'Nigeria Maritime University';
 const NMU_DEPTS = ['Civil Engineering','Electrical Engineering','Environmental Management and Pollution Control','Fisheries and Aquaculture','Marine Economics and Finance','Marine Engineering','Marine Geology','Mechanical Engineering','Meteorology and Climate Change','Nautical Science','Petroleum and Gas Engineering','Port Management','Transport Logistics Management'];
+const NMU_ENG_DEPTS = ['Civil Engineering','Petroleum and Gas Engineering','Marine Engineering','Mechanical Engineering','Electrical Engineering'];
 const $ = (s, el) => (el || document).querySelector(s);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const disp = c => String(c).replace(/-/g, ' ');
@@ -2603,10 +2662,14 @@ function go(v, p){
   if (v !== view) prev = { view, param };
   view = v; param = p == null ? null : p;
   const tt = $('#toast'); if (tt) tt.hidden = true;
+  if (v === 'auth') hideAuthSignin();
   if (v !== 'auth' && v !== 'set') cfg.last = v;
   document.body.classList.add('enter'); setTimeout(() => document.body.classList.remove('enter'), 900);
   render();
   window.scrollTo(0, 0);
+  if ((v === 'lhome' || v === 'lcourse') && cfg.role === 'lecturer' && isOnline() && !syncing) {
+    lecSync(false);
+  }
 }
 function back(){
   if (view === 'set') return go(prev.view && prev.view !== 'set' && prev.view !== 'auth' ? prev.view : roleHome(), prev.param);
@@ -2633,6 +2696,7 @@ let authSigninRole = null;
 function showAuthSignin(role){
   authSigninRole = role;
   cfg.oauthRole = role; saveCfg();
+  try { localStorage.setItem('adesse_chosen_role', role); } catch(e) {}
   const pick = $('#authPickWrap');
   const signin = $('#authSigninWrap');
   const hint = $('#authRoleHint');
@@ -2643,6 +2707,7 @@ function showAuthSignin(role){
 function hideAuthSignin(){
   authSigninRole = null;
   cfg.oauthRole = null; saveCfg();
+  try { localStorage.removeItem('adesse_chosen_role'); } catch(e) {}
   const pick = $('#authPickWrap');
   const signin = $('#authSigninWrap');
   if (pick) pick.classList.remove('hidden-panel');
@@ -2657,8 +2722,6 @@ function render(){
   document.querySelectorAll('[data-brand]').forEach(e => { e.innerHTML = LOGO_HTML; });
   document.querySelectorAll('[data-app]').forEach(e => { e.textContent = APP; });
   $('#dev').hidden = PROD && location.hash !== '#dev';
-  // Reset auth screen state when navigating to it fresh
-  if (view === 'auth') { hideAuthSignin(); }
   applyTheme(); renderNet();
   ({ auth:renderAuth, shome:renderShome, sdetail:renderSdetail, sdone:renderSdone, sonboard:renderSonboard, lhome:renderLhome, lcnew:renderLcnew, llive:renderLive, lcourse:renderCourse, lonboard:renderLonboard, set:renderSet }[view] || (() => {}))();
 }
@@ -2673,7 +2736,7 @@ function renderNet(){
 function setSyncing(on){ const b = $('#sSync'); if (!b) return; b.classList.toggle('spin', on); b.innerHTML = on ? ic(I.refresh, 14) + ' Refreshing' : 'Refresh'; }
 
 /* ---------- forms: university, department, level ---------- */
-const chosen = { sLevel:'', soLevel:'', cLevel:'' };
+const chosen = { sLevel:'', soLevel:'', cLevel:'', cDepts:new Set(['ALL_ENG']) };
 function levelChips(id, withAll){
   const vals = (withAll ? [''] : []).concat(['100','200','300','400','500']);
   $('#' + id).innerHTML = vals.map(v => '<button type="button" class="cb" data-act="lv" data-g="' + id + '" data-v="' + v + '" aria-pressed="' + (chosen[id] === v && (chosen[id] !== '' || withAll) ? 'true' : 'false') + '">' + (v || 'All') + '</button>').join('');
@@ -2897,6 +2960,28 @@ async function recordQR(text){
   if (!c) return { kind:'invalid' };
   const chk = await studentCheck(c, Date.now(), stu.keys);
   if (!chk.ok) return { kind:'fail', msg:chk.msg };
+
+  // Strict Level Check
+  if (c.level && c.level !== 'ALL' && stu.level && stu.level !== c.level) {
+    return {
+      kind: 'fail',
+      msg: 'Level mismatch: ' + disp(c.course) + ' is for ' + c.level + ' Level students. Your profile is registered as ' + stu.level + ' Level.'
+    };
+  }
+
+  // Strict Department Check
+  if (c.depts && c.depts.length && !c.depts.includes('ALL')) {
+    const isAllEng = c.depts.includes('ALL_ENG');
+    const isAllowed = isAllEng ? NMU_ENG_DEPTS.includes(stu.dept) : c.depts.includes(stu.dept);
+    if (!isAllowed) {
+      const names = isAllEng ? 'Engineering' : c.depts.map(d => d.replace(/ Engineering$/, '')).join(', ');
+      return {
+        kind: 'fail',
+        msg: 'Department mismatch: ' + disp(c.course) + ' is only open to ' + names + ' students. Your profile is registered under ' + (stu.dept || 'unknown') + '.'
+      };
+    }
+  }
+
   const dup = stu.scans.find(s => s.sid === c.sid && s.matric === stu.matric);
   if (dup) return { kind:'ok', done:{ title:'Already recorded', course:disp(c.course), line:'You scanned this class at ' + fmt(dup.at) + '.' } };
   stu.keys[c.lid] = c.pk;
@@ -3060,7 +3145,15 @@ async function startScan(){
       if (text) {
         const r = await recordQR(text);
         if (r.kind === 'ok') { stopScan(); go('sdone', r.done); }
-        else if (r.kind === 'fail') { stopScan(); toast(r.msg); }
+        else if (r.kind === 'fail') {
+          stopScan();
+          await dialog({
+            title: 'Attendance Rejected',
+            body: '<p>' + esc(r.msg) + '</p><p class="fine" style="margin-top:8px">This course is restricted to specific departments and study levels. If you believe this is an error, please consult your course lecturer.</p>',
+            yes: 'Understood',
+            danger: true
+          });
+        }
         else { toast('That is not a ' + APP + ' code.'); await new Promise(z => setTimeout(z, 1500)); }
       }
     } catch (e) {} finally { cam.busy = false; }
@@ -3107,9 +3200,12 @@ async function signInLecturer(uni, email, pass){
 function renderLhome(){
   $('#lWho').textContent = lec.name + ' · ' + lec.uni;
   $('#lList').innerHTML = lec.courses.length ? lec.courses.map(c => {
-    const held = lec.sessions.filter(s => s.code === c.code).length;
     const a = attendance(lec, c, cfg.cutoff);
-    return '<li class="course"><div class="row"><div><span class="cc">' + esc(disp(c.code)) + (c.sample ? ' <span class="chip mute">example</span>' : '') + '</span><span class="sub blk">' + esc(c.title || [c.dept || 'All departments', c.level ? c.level + ' level' : ''].filter(Boolean).join(' · ')) + '</span></div>' +
+    const held = a.total;
+    const deptsLabel = (c.depts && c.depts.length)
+      ? (c.depts.includes('ALL_ENG') ? 'All Engineering' : c.depts.map(d => d.replace(/ Engineering$/, '')).join(', '))
+      : (c.dept || 'All departments');
+    return '<li class="course"><div class="row"><div><span class="cc">' + esc(disp(c.code)) + (c.sample ? ' <span class="chip mute">example</span>' : '') + '</span><span class="sub blk">' + esc(c.title || [deptsLabel, c.level ? c.level + ' level' : ''].filter(Boolean).join(' · ')) + '</span></div>' +
       '<button class="iconbtn" type="button" data-act="open" data-id="' + esc(c.id) + '" aria-label="Open attendance">' + ic(I.right, 18) + '</button></div>' +
       '<div class="sub">' + held + (held === 1 ? ' class held' : ' classes held') + ' · ' + a.rows.length + (a.rows.length === 1 ? ' student' : ' students') + '</div>' +
       '<button class="btn primary" type="button" data-act="start" data-id="' + esc(c.id) + '">Start class</button></li>';
@@ -3117,7 +3213,36 @@ function renderLhome(){
 }
 function renderLcnew(){
   if (!$('#cLevel').children.length) levelChips('cLevel', true);
-  if (!$('#cDeptWrap').children.length) deptField('cDeptWrap', lec.uni, true, '');
+  renderCourseDeptChips();
+}
+
+function renderCourseDeptChips(){
+  const wrap = $('#cDeptWrap');
+  if (!wrap) return;
+  const set = chosen.cDepts = chosen.cDepts || new Set(['ALL_ENG']);
+  const isAll = set.has('ALL');
+  const isAllEng = set.has('ALL_ENG');
+
+  let html = '<div class="dept-pills-row" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px">';
+  html += '<button type="button" class="cb' + (isAllEng ? ' active' : '') + '" data-act="cdept" data-v="ALL_ENG" aria-pressed="' + (isAllEng ? 'true' : 'false') + '">⚡ All Engineering (5 Depts)</button>';
+  html += '<button type="button" class="cb' + (isAll ? ' active' : '') + '" data-act="cdept" data-v="ALL" aria-pressed="' + (isAll ? 'true' : 'false') + '">🌐 All University</button>';
+  html += '</div>';
+
+  html += '<span class="sub blk" style="margin-bottom:6px; font-size:12px">Or toggle specific engineering departments:</span>';
+  html += '<div class="chips" style="display:flex; flex-wrap:wrap; gap:8px">';
+  const shortNames = {
+    'Marine Engineering': 'Marine',
+    'Mechanical Engineering': 'Mechanical',
+    'Civil Engineering': 'Civil',
+    'Petroleum and Gas Engineering': 'Pet & Gas',
+    'Electrical Engineering': 'Electrical'
+  };
+  for (const dept of NMU_ENG_DEPTS) {
+    const sel = (!isAll && !isAllEng) && set.has(dept);
+    html += '<button type="button" class="cb' + (sel ? ' active' : '') + '" data-act="cdept" data-v="' + esc(dept) + '" aria-pressed="' + (sel ? 'true' : 'false') + '">' + esc(shortNames[dept] || dept) + '</button>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
 }
 async function drawLive(force){
   const live = liveSession(); if (!live || !priv || signing) return;
@@ -3174,7 +3299,10 @@ function renderCourse(){
   const c = lec.courses.find(x => x.id === param); if (!c) return go('lhome');
   const a = attendance(lec, c, cfg.cutoff), low = a.rows.filter(r => r.below).length;
   $('#kCode').textContent = disp(c.code);
-  $('#kTitle').textContent = [c.title, c.dept || 'All departments', c.level ? c.level + ' level' : ''].filter(Boolean).join(' · ');
+  const deptsLabel = (c.depts && c.depts.length)
+    ? (c.depts.includes('ALL_ENG') ? 'All Engineering' : c.depts.includes('ALL') ? 'All departments' : c.depts.map(d => d.replace(/ Engineering$/, '')).join(', '))
+    : (c.dept || 'All departments');
+  $('#kTitle').textContent = [c.title, deptsLabel, c.level ? c.level + ' level' : ''].filter(Boolean).join(' · ');
   $('#kHeld').textContent = a.total; $('#kStud').textContent = a.rows.length; $('#kLow').textContent = low; $('#kLowLbl').textContent = 'below ' + cfg.cutoff + '%';
   $('#kStart').hidden = !!liveSession();
   $('#kRows').innerHTML = a.rows.length ? a.rows.map(r =>
@@ -3405,6 +3533,23 @@ document.addEventListener('click', async e => {
   if (a === 'theme') { cfg.theme = b.dataset.v; saveCfg(); return applyTheme(); }
   // themeToggle removed (button moved out of header)
   if (a === 'lv') { chosen[b.dataset.g] = b.dataset.v; clearErr($('#' + b.dataset.g)); levelChips(b.dataset.g, b.dataset.g === 'cLevel'); return; }
+  if (a === 'cdept') {
+    const v = b.dataset.v;
+    if (!chosen.cDepts) chosen.cDepts = new Set(['ALL_ENG']);
+    if (v === 'ALL' || v === 'ALL_ENG') {
+      chosen.cDepts = new Set([v]);
+    } else {
+      if (chosen.cDepts.has('ALL') || chosen.cDepts.has('ALL_ENG')) {
+        chosen.cDepts = new Set([v]);
+      } else {
+        if (chosen.cDepts.has(v)) chosen.cDepts.delete(v);
+        else chosen.cDepts.add(v);
+        if (!chosen.cDepts.size) chosen.cDepts.add('ALL_ENG');
+      }
+    }
+    renderCourseDeptChips();
+    return;
+  }
   if (a === 'forgot') return forgotPin();
   if (a === 'reveal') { const i = $('#' + b.dataset.for), on = i.type === 'password'; i.type = on ? 'text' : 'password'; b.textContent = on ? 'Hide' : 'Show'; b.setAttribute('aria-pressed', String(on)); return; }
   if (a === 'conflictFix') { go('sonboard'); return; }
@@ -3588,8 +3733,9 @@ $('#cnewForm').addEventListener('submit', e => {
   e.preventDefault();
   const code = normCourse($('#cCode').value); if (code.length < 3) return toast('Enter the course code, like MEE 301.');
   if (lec.courses.some(c => c.code === code)) return toast('You already have ' + disp(code) + '.');
-  lec.courses.push({ id:rid(3), code, title:$('#cTitle').value.trim(), dept:deptVal('cDeptWrap'), level:chosen.cLevel });
-  saveLec(); $('#cCode').value = ''; $('#cTitle').value = ''; chosen.cLevel = ''; $('#cLevel').innerHTML = ''; $('#cDeptWrap').innerHTML = ''; go('lhome');
+  const depts = chosen.cDepts ? Array.from(chosen.cDepts) : ['ALL_ENG'];
+  lec.courses.push({ id:rid(3), code, title:$('#cTitle').value.trim(), dept:'', depts, level:chosen.cLevel });
+  saveLec(); $('#cCode').value = ''; $('#cTitle').value = ''; chosen.cLevel = ''; chosen.cDepts = new Set(['ALL_ENG']); $('#cLevel').innerHTML = ''; $('#cDeptWrap').innerHTML = ''; go('lhome');
 });
 $('#manForm').addEventListener('submit', e => {
   e.preventDefault();
@@ -3745,8 +3891,9 @@ async function checkOAuthRedirect(){
     const { data: { session }, error } = await supabaseClient.auth.getSession();
     if (error) console.warn('Supabase auth session error:', error);
     if (session && session.user) {
-      if ((hasHash || hasQuery) && (authSigninRole || cfg.oauthRole)) {
-        const targetRole = authSigninRole || cfg.oauthRole || 'student';
+      const storedRole = localStorage.getItem('adesse_chosen_role');
+      if ((hasHash || hasQuery) && (authSigninRole || cfg.oauthRole || storedRole)) {
+        const targetRole = authSigninRole || storedRole || cfg.oauthRole || 'student';
         cfg.oauthRole = null; saveCfg();
         await handleAuthSession(session.user, targetRole);
         if (window.history && window.history.replaceState) {
@@ -3766,7 +3913,8 @@ async function checkOAuthRedirect(){
 
 async function handleAuthSession(user, forcedRole){
   if (!user) return;
-  const targetRole = forcedRole || authSigninRole || cfg.oauthRole || cfg.role || 'student';
+  const storedRole = localStorage.getItem('adesse_chosen_role');
+  const targetRole = forcedRole || authSigninRole || storedRole || cfg.oauthRole || cfg.role || 'student';
   const email = user.email || '';
   const meta = user.user_metadata || {};
   const fullName = meta.full_name || meta.name || email.split('@')[0] || 'User';
@@ -3859,7 +4007,14 @@ setInterval(() => {
   const rem = WIN - (Date.now() % WIN);
   $('#xRot').style.transform = 'scaleX(' + (rem / WIN) + ')';
 }, 250);
-setInterval(() => { if (view === 'llive' && !document.hidden) lecSync(false); }, 6000);
+setInterval(() => {
+  if (document.hidden) return;
+  if (view === 'llive') lecSync(false);
+}, 3000);
+setInterval(() => {
+  if (document.hidden) return;
+  if ((view === 'lhome' || view === 'lcourse') && cfg.role === 'lecturer') lecSync(false);
+}, 12000);
 setInterval(() => { renderNet(); sync(false); }, 20000);
 window.addEventListener('online', () => { renderNet(); sync(false); });
 window.addEventListener('offline', renderNet);
