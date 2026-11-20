@@ -141,16 +141,16 @@ input[type="checkbox"]{width:18px; height:18px; accent-color:var(--primary); fle
 .scan:active{transform:scale(.985)}
 .scan small{font:400 14px var(--font-body); opacity:.7; letter-spacing:0}
 .list{list-style:none; margin:0; padding:0; display:grid; gap:12px}
-.course{display:grid; gap:12px; width:100%; text-align:left; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; color:var(--foreground); font:inherit; box-shadow:var(--shadow)}
+.course{display:grid; gap:8px; width:100%; text-align:left; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; color:var(--foreground); font:inherit; box-shadow:var(--shadow-sm)}
 button.course{cursor:pointer; transition:background .15s, transform .1s}
 button.course:hover{background:var(--accent)}
 button.course:active{transform:scale(.99)}
-.course .cc{display:block; font:600 18px/1.15 var(--font-body); letter-spacing:-.02em}
-.meter{position:relative; height:6px; background:var(--secondary); border-radius:999px}
+.course .cc{display:block; font:600 16px/1.15 var(--font-body); letter-spacing:-.02em}
+.meter{position:relative; height:4px; background:var(--secondary); border-radius:999px; overflow:hidden}
 .meter i{position:absolute; inset:0 auto 0 0; border-radius:999px; background:var(--primary); transform-origin:left center}
 .meter i.low{background:var(--destructive)}
 .enter .meter i{animation:grow .7s var(--ease) both}
-.meter b{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--foreground); opacity:.35; border-radius:1px}
+.meter b{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--foreground); opacity:.35; border-radius:1px}
 .note{display:flex; gap:10px; align-items:flex-start; padding:12px 14px; border-radius:var(--radius); border:1px solid var(--border); font-size:14px; background:var(--card)}
 .note svg{flex:none; margin-top:2px}
 .note.bad{border-color:var(--destructive-line); background:var(--destructive-soft); color:var(--destructive)}
@@ -393,24 +393,81 @@ input:not([type="checkbox"]):not([type="radio"]), select{
 .device-lock-pill{display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--muted); border:1px solid var(--border); border-radius:var(--radius); font:400 12px/1.4 var(--font-body); color:var(--muted-foreground)}
 .device-lock-pill svg{flex-shrink:0; color:var(--foreground)}
 
-/* Inkto-inspired Grouped Settings Screen */
-.settings-screen{gap:22px}
-.settings-header{display:grid; gap:4px}
+/* ---------- Claude Mobile App Inspired Grouped Settings ---------- */
+.settings-screen{gap:20px; padding-bottom:36px}
+.settings-header{display:grid; gap:4px; margin-bottom:2px}
+.settings-header h1{font-size:24px; font-weight:700; letter-spacing:-.03em}
+
+.settings-profile-card{
+  display:flex; align-items:center; gap:14px;
+  padding:16px; background:var(--card);
+  border:1px solid var(--border); border-radius:16px;
+  box-shadow:var(--shadow-sm);
+}
+.settings-avatar{
+  width:46px; height:46px; border-radius:12px;
+  background:linear-gradient(135deg, var(--primary), #818cf8);
+  color:#fff; font:600 17px/46px var(--font-body);
+  text-align:center; flex-shrink:0; letter-spacing:-.02em;
+}
+.settings-profile-info{display:grid; gap:2px; min-width:0; flex:1}
+.settings-profile-name{font:600 16px/1.2 var(--font-body); color:var(--foreground); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.settings-profile-sub{font:400 13px/1.3 var(--font-body); color:var(--muted-foreground); word-break:break-word}
+
 .settings-group{display:flex; flex-direction:column; gap:6px}
-.settings-section-title{font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-foreground); padding:0 4px}
-.settings-card{padding:0!important; overflow:hidden; border-radius:14px; background:var(--card); border:1px solid var(--border); box-shadow:var(--shadow)}
-.settings-item{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; gap:12px}
-.card-divider{height:1px; background:var(--border-subtle); margin:0}
-.settings-action-row{display:flex; align-items:center; justify-content:space-between; width:100%; padding:14px 16px; background:transparent; border:none; color:var(--foreground); font:500 15px/1.4 var(--font-body); text-align:left; cursor:pointer; transition:background .15s ease}
-.settings-action-row:hover, .settings-action-row:active{background:var(--surface-variant)}
+.settings-section-title{
+  font-size:11px; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--muted-foreground);
+  padding:0 6px; margin-bottom:2px;
+}
+.settings-card{
+  padding:0!important; overflow:hidden; border-radius:14px;
+  background:var(--card); border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);
+}
+.settings-item{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px; gap:12px;
+}
+.settings-action-row{
+  display:flex; align-items:center; justify-content:space-between;
+  width:100%; padding:12px 14px; background:transparent;
+  border:none; color:var(--foreground); font:inherit;
+  text-align:left; cursor:pointer; transition:background .15s ease;
+}
+.settings-action-row:hover, .settings-action-row:active{background:var(--accent)}
 .settings-action-row.text-danger{color:var(--destructive)}
-.settings-action-row .sub{font-size:13px; color:var(--muted-foreground)}
+
+.settings-item-left{
+  display:flex; align-items:center; gap:12px; min-width:0; flex:1;
+}
+.settings-icon-tile{
+  width:32px; height:32px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.settings-icon-tile svg{width:16px; height:16px}
+.settings-icon-tile.blue{background:rgba(0,96,255,0.12); color:var(--primary)}
+.settings-icon-tile.green{background:rgba(34,197,94,0.12); color:#16a34a}
+.settings-icon-tile.purple{background:rgba(168,85,247,0.12); color:#9333ea}
+.settings-icon-tile.amber{background:rgba(245,158,11,0.12); color:#d97706}
+.settings-icon-tile.gray{background:rgba(120,120,120,0.1); color:var(--muted-foreground)}
+.settings-icon-tile.red{background:rgba(239,68,68,0.12); color:var(--destructive)}
+
+.settings-item-text{display:grid; gap:2px; min-width:0}
+.settings-item-text b{font:500 14px/1.3 var(--font-body); color:var(--foreground)}
+.settings-item-text .sub{font:400 12px/1.3 var(--font-body); color:var(--muted-foreground)}
+
+.card-divider{
+  height:1px; background:var(--border); opacity:.4;
+  margin-left:58px;
+}
 .status-chip{display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:999px; font-size:11px; font-weight:600; letter-spacing:.02em}
 .locked-chip{background:var(--accent); color:var(--primary); border:1px solid var(--border)}
-.threshold-badge{display:inline-flex; align-items:center; gap:4px; background:var(--surface-variant); border:1px solid var(--border); border-radius:8px; padding:4px 10px; font-weight:600}
+.threshold-badge{display:inline-flex; align-items:center; gap:4px; background:var(--accent); border:1px solid var(--border); border-radius:8px; padding:4px 10px; font-weight:600}
 .stepper-input{width:36px; background:transparent; border:none; font-weight:600; font-size:15px; color:var(--foreground); text-align:right; padding:0; outline:none; -moz-appearance:textfield}
 .stepper-input::-webkit-outer-spin-button, .stepper-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
-.chevron-right{color:var(--muted-foreground); font-size:18px; font-weight:400}
+.chevron-right{color:var(--muted-foreground); font-size:18px; font-weight:400; opacity:.6}
 </style>
 
 <div class="app">
@@ -739,39 +796,87 @@ input:not([type="checkbox"]):not([type="radio"]), select{
   </section>
 
   <!-- SETTINGS -->
+  <!-- SETTINGS (Claude Mobile App Inspired) -->
   <section id="v-set" class="screen settings-screen" hidden>
     <div class="settings-header">
       <h1>Settings</h1>
       <p class="sub">Preferences, sync status and security</p>
     </div>
 
-    <!-- Account & Device Security -->
+    <!-- User Profile Card -->
+    <div class="settings-profile-card" id="setProfileCard">
+      <div class="settings-avatar" id="setUserAvatar">--</div>
+      <div class="settings-profile-info">
+        <div class="settings-profile-name" id="setUserTitle">Student Account</div>
+        <div class="settings-profile-sub" id="setUserSub">Connecting…</div>
+      </div>
+      <span class="status-chip locked-chip" id="setLockChip">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Bound</span>
+      </span>
+    </div>
+
+    <!-- Account & Roles -->
     <div class="settings-group" id="setAccountGroup">
-      <span class="settings-section-title">Account &amp; Security</span>
+      <span class="settings-section-title">Account</span>
       <div class="settings-card">
-        <div class="settings-item">
-          <div>
-            <b id="setUserTitle">Student Account</b>
-            <p class="sub" id="setUserSub">Connecting…</p>
-          </div>
-          <span class="status-chip locked-chip" id="setLockChip">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            Locked
-          </span>
-        </div>
-        <div class="card-divider"></div>
         <button id="roleSwap" class="settings-action-row" type="button" data-act="swap">
-          <span>Switch role</span>
+          <div class="settings-item-left">
+            <div class="settings-icon-tile blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l4 4-4 4"/><path d="M20 7H4"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h16"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b id="roleSwapTitle">Switch role</b>
+              <span class="sub" id="roleSwapSub">Switch between student and lecturer</span>
+            </div>
+          </div>
           <span class="chevron-right">›</span>
         </button>
         <div class="card-divider"></div>
         <button class="settings-action-row" type="button" data-act="appSignOut">
-          <div>
-            <b>Sign out</b>
-            <div class="sub">Sign out of this account on this device</div>
+          <div class="settings-item-left">
+            <div class="settings-icon-tile gray">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b>Sign out</b>
+              <span class="sub">Sign out of this account on this device</span>
+            </div>
           </div>
           <span class="chevron-right">›</span>
         </button>
+      </div>
+    </div>
+
+    <!-- Attendance & Alerts -->
+    <div class="settings-group" id="setAttendanceGroup">
+      <span class="settings-section-title">Attendance &amp; Alerts</span>
+      <div class="settings-card">
+        <div class="settings-item">
+          <div class="settings-item-left">
+            <div class="settings-icon-tile green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b id="setCutLbl">Minimum attendance</b>
+              <span class="sub" id="setCutHelp">Warning threshold across courses</span>
+            </div>
+          </div>
+          <div class="threshold-badge"><input id="setCut" type="number" inputmode="numeric" min="1" max="100" class="stepper-input"><span>%</span></div>
+        </div>
+        <div class="card-divider" id="setAlertsDiv"></div>
+        <div class="settings-item" id="setAlerts">
+          <div class="settings-item-left">
+            <div class="settings-icon-tile purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b>Attendance alerts</b>
+              <span class="sub" id="setAlertHelp">Notify when missing a class or dropping below minimum</span>
+            </div>
+          </div>
+          <label class="switch"><input type="checkbox" id="setAlert"><i></i></label>
+        </div>
       </div>
     </div>
 
@@ -780,9 +885,14 @@ input:not([type="checkbox"]):not([type="radio"]), select{
       <span class="settings-section-title">Preferences</span>
       <div class="settings-card">
         <div class="settings-item">
-          <div>
-            <b>Theme</b>
-            <p class="sub">Adaptive system or high-contrast OLED</p>
+          <div class="settings-item-left">
+            <div class="settings-icon-tile amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b>Theme</b>
+              <span class="sub">Adaptive system or high-contrast OLED</span>
+            </div>
           </div>
           <div class="seg" id="themeSeg" role="group" aria-label="Theme">
             <button type="button" data-act="theme" data-v="system">System</button>
@@ -790,31 +900,18 @@ input:not([type="checkbox"]):not([type="radio"]), select{
             <button type="button" data-act="theme" data-v="dark">Dark</button>
           </div>
         </div>
-                <div class="card-divider"></div>
+        <div class="card-divider"></div>
         <div class="settings-item" id="setNetRow">
-          <div>
-            <b>Network</b>
-            <p class="sub" id="net">Checking…</p>
+          <div class="settings-item-left">
+            <div class="settings-icon-tile blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b>Network Status</b>
+              <span class="sub" id="net">Checking…</span>
+            </div>
           </div>
           <span id="netDot" style="width:9px;height:9px;border-radius:50%;background:var(--muted-foreground);flex-shrink:0;transition:background .4s ease"></span>
-        </div>
-        <div class="card-divider" id="setAlertsDiv"></div>
-        <div class="settings-item" id="setAlerts">
-          <label class="switchrow" style="width:100%">
-            <span>
-              <b>Attendance alerts</b>
-              <span class="sub" id="setAlertHelp">Notify when missing a class or dropping below minimum</span>
-            </span>
-            <span class="switch"><input type="checkbox" id="setAlert"><i></i></span>
-          </label>
-        </div>
-        <div class="card-divider"></div>
-        <div class="settings-item" style="gap:14px">
-          <div>
-            <b id="setCutLbl">My minimum attendance</b>
-            <p class="sub" id="setCutHelp">Warning threshold for all courses</p>
-          </div>
-          <div class="threshold-badge"><input id="setCut" type="number" inputmode="numeric" min="1" max="100" class="stepper-input"><span>%</span></div>
         </div>
       </div>
     </div>
@@ -824,17 +921,27 @@ input:not([type="checkbox"]):not([type="radio"]), select{
       <span class="settings-section-title">Data &amp; Cloud Sync</span>
       <div class="settings-card">
         <div class="settings-item">
-          <div>
-            <b>Sync Status</b>
-            <p class="sub" id="dataState">All records synchronized.</p>
+          <div class="settings-item-left">
+            <div class="settings-icon-tile blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><polyline points="12 12 12 16 12 12"/><polyline points="9 13 12 10 15 13"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b>Cloud Sync</b>
+              <span class="sub" id="dataState">All records synchronized.</span>
+            </div>
           </div>
-          <button class="btn sm primary" type="button" data-act="sync" id="dataSend" style="flex-shrink:0">Send scans</button>
+          <button class="btn sm primary" type="button" data-act="sync" id="dataSend" style="flex-shrink:0">Sync now</button>
         </div>
         <div class="card-divider"></div>
         <button class="settings-action-row" type="button" data-act="clearPhone" id="dataClear">
-          <div>
-            <div>Clear data on this phone</div>
-            <span class="sub">Leaves safe copies on the cloud</span>
+          <div class="settings-item-left">
+            <div class="settings-icon-tile gray">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M8 16H3v5"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b>Clear local cache</b>
+              <span class="sub">Clears local device cache; safe cloud copy remains</span>
+            </div>
           </div>
           <span class="chevron-right">›</span>
         </button>
@@ -846,16 +953,26 @@ input:not([type="checkbox"]):not([type="radio"]), select{
       <span class="settings-section-title">Danger Zone</span>
       <div class="settings-card">
         <button class="settings-action-row text-danger" type="button" data-act="deleteAcct" id="btnDeleteStu">
-          <div>
-            <b>Delete my account</b>
-            <div class="sub">Permanently delete profile and attendance history</div>
+          <div class="settings-item-left">
+            <div class="settings-icon-tile red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b style="color:var(--destructive)">Delete my account</b>
+              <span class="sub">Permanently delete profile and attendance history</span>
+            </div>
           </div>
           <span class="chevron-right">›</span>
         </button>
         <button class="settings-action-row text-danger" type="button" data-act="lecDelete" id="btnDeleteLec" hidden>
-          <div>
-            <b>Delete my account</b>
-            <div class="sub">Permanently delete lecturer profile and signing keys</div>
+          <div class="settings-item-left">
+            <div class="settings-icon-tile red">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b style="color:var(--destructive)">Delete my account</b>
+              <span class="sub">Permanently delete lecturer profile and signing keys</span>
+            </div>
           </div>
           <span class="chevron-right">›</span>
         </button>
@@ -2142,7 +2259,7 @@ return __m["index"]})();
 
 // <core>
 const WIN = 15000;   // the QR and the typed code change every 15 s
-const SKEW = 45000;  // allowed clock difference between phones
+const SKEW = 3000;   // strict 3-second boundary tolerance to prevent screenshot reuse
 const te = new TextEncoder();
 const ALG = { name:'ECDSA', namedCurve:'P-256' };
 const SIGALG = { name:'ECDSA', hash:'SHA-256' };
@@ -2211,8 +2328,16 @@ function parseCode(text){
 }
 // Runs on the student's phone with no network.
 async function studentCheck(c, now, knownKeys){
-  const d = now - c.win * WIN;
-  if (d < -SKEW || d > WIN + SKEW) return { ok:false, msg:'That code has expired. Scan the live one on the screen.' };
+  const curWin = Math.floor(now / WIN);
+  const elapsedInCurWin = now % WIN;
+  // If the QR rotated within the last 1.5 seconds, allow window - 1 to handle camera focus delay
+  const isGraceTransition = (c.win === curWin - 1 && elapsedInCurWin < 1500);
+  if (c.win < curWin && !isGraceTransition) {
+    return { ok:false, msg:'That QR code has expired. Please scan the current code on the screen.' };
+  }
+  if (c.win > curWin + 1) {
+    return { ok:false, msg:'Invalid code timestamp. Ensure your device clock is set to automatic.' };
+  }
   let fp; try { fp = await fingerprint(c.pk); } catch (e) { fp = ''; }
   if (fp !== c.lid) return { ok:false, msg:'This code looks damaged. Try again.' };
   const known = knownKeys[c.lid];
@@ -2293,20 +2418,10 @@ function attendance(lec, course, cutoff){
     }
   }
 
-  // 2. Filter valid sessions:
-  // Must have at least 1 attendee (attendedSids.has(s.id)), OR
-  // be a legitimate class that ran for at least 15 minutes.
-  // Sessions with 0 attendance that were closed in < 15 mins (test clicks) are discarded as ghost sessions.
+  // 2. Count held sessions: any session created for this course counts regardless of duration
   const allCourseSess = lec.sessions.filter(s => s.code === course.code);
-  const realSess = allCourseSess.filter(s => {
-    if (attendedSids.has(s.id)) return true;
-    const dur = (s.endedAt && s.startedAt) ? (s.endedAt - s.startedAt) : 0;
-    return dur >= 15 * 60 * 1000;
-  });
-
-  // Total held classes is the count of real sessions (at least max attendance of any student)
   const maxAttended = Math.max(0, ...Array.from(by.values()).map(v => v.sids.size));
-  const total = Math.max(realSess.length, maxAttended);
+  const total = Math.max(allCourseSess.length, maxAttended);
 
   if (course.list && course.list.length) { for (const st of course.list) touch(st.matric, st.name); }
   else for (const st of (lec.roster || [])) if (audienceMatch(course, st)) touch(st.matric, st.name);
@@ -2871,12 +2986,13 @@ function courseCard(r){
   const miss = (r.pct != null && r.pct < 100 && r.a < r.held)
     ? r.hist.find(h => !h.here && h.at >= joinedAt && (Date.now() - h.at < 7 * 864e5))
     : null;
-  return '<li><button type="button" class="course" data-act="sopen" data-key="' + esc(r.key) + '"><span class="row"><span><span class="cc">' + esc(disp(r.code)) + '</span><span class="sub blk">' + esc([r.lecturer, r.title].filter(Boolean).join(' · ') || ' ') + '</span></span>' +
-    (r.pct == null ? '<span class="chip mute">' + r.a + (r.a === 1 ? ' class' : ' classes') + '</span>' : '<span class="chip ' + (bad ? 'warn' : '') + '">' + r.pct + '%</span>') + '</span>' +
-    (r.pct == null ? '<span class="sub blk">Connect once to see your percentage.</span>' :
-      '<span class="meter"><i class="' + (bad ? 'low' : '') + '" style="width:' + r.pct + '%"></i><b style="left:' + tgt + '%"></b></span>' +
-      '<span class="sub blk"><b style="color:var(--foreground);font-weight:600">' + r.a + ' of ' + r.held + '</b> classes attended</span>' +
-      '<span class="sub blk">' + esc(advice(r.a, r.held, tgt)) + '</span>' + (miss ? '<span class="sub blk" style="color:var(--destructive)">Missed ' + esc(dateLong(miss.at)) + '</span>' : '')) + '</button></li>';
+  return '<li><button type="button" class="course" data-act="sopen" data-key="' + esc(r.key) + '">' +
+    '<div class="row"><div><span class="cc">' + esc(disp(r.code)) + '</span><span class="sub blk" style="font-size:13px;line-height:1.2;margin-top:2px">' + esc([r.lecturer, r.title].filter(Boolean).join(' · ') || ' ') + '</span></div>' +
+    (r.pct == null ? '<span class="chip mute">' + r.a + (r.a === 1 ? ' class' : ' classes') + '</span>' : '<span class="chip ' + (bad ? 'warn' : '') + '">' + r.pct + '%</span>') + '</div>' +
+    (r.pct == null ? '<span class="sub blk" style="font-size:12px">Connect once to see your percentage.</span>' :
+      '<span class="meter" style="margin:2px 0"><i class="' + (bad ? 'low' : '') + '" style="width:' + r.pct + '%"></i><b style="left:' + tgt + '%"></b></span>' +
+      '<div class="row" style="font-size:12px;color:var(--muted-foreground)"><span><b style="color:var(--foreground);font-weight:600">' + r.a + ' of ' + r.held + '</b> attended</span><span>' + (miss ? '<span style="color:var(--destructive);font-weight:500">Missed ' + esc(dateLong(miss.at)) + '</span>' : esc(advice(r.a, r.held, tgt))) + '</span></div>') +
+    '</button></li>';
 }
 function renderShome(){
   $('#sHi').textContent = 'Hi, ' + (stu.name.split(' ')[0] || 'there');
@@ -2982,8 +3098,8 @@ async function recordQR(text){
     }
   }
 
-  const dup = stu.scans.find(s => s.sid === c.sid && s.matric === stu.matric);
-  if (dup) return { kind:'ok', done:{ title:'Already recorded', course:disp(c.course), line:'You scanned this class at ' + fmt(dup.at) + '.' } };
+  const dup = stu.scans.find(s => (s.sid === c.sid || (s.course === c.course && Math.abs(s.at - Date.now()) < 2 * 3600 * 1000)) && s.matric === stu.matric);
+  if (dup) return { kind:'dup', course:disp(c.course), at:dup.at, timeStr:fmt(dup.at) };
   stu.keys[c.lid] = c.pk;
   stu.scans.push(mkScan({ key:c.sid + '_' + stu.matric, kind:'qr', sid:c.sid, course:c.course, lid:c.lid, win:c.win, sig:c.sig, status:'ok' }));
   saveStu(); const online = isOnline(); sync(false);
@@ -2992,7 +3108,8 @@ async function recordQR(text){
 async function recordPin(pin){
   if (!/^\d{6}$/.test(pin)) return { kind:'fail', msg:'Type the 6 digits shown on the screen.' };
   const key = 'p_' + pin + '_' + stu.matric;
-  if (stu.scans.find(s => s.key === key)) return { kind:'ok', done:{ title:'Already sent', course:'Code ' + pin, line:'Your lecturer will confirm it.' } };
+  const dup = stu.scans.find(s => (s.key === key || (s.kind === 'pin' && s.pin === pin && Math.abs(s.at - Date.now()) < 3600000)) && s.matric === stu.matric);
+  if (dup) return { kind:'dup', course:'Code ' + pin, at:dup.at, timeStr:fmt(dup.at) };
   stu.scans.push(mkScan({ key, kind:'pin', pin, status:'pending' }));
   saveStu(); const online = isOnline(); sync(false);
   return { kind:'ok', done:{ title:'Code saved', course:'Code ' + pin, line: online ? 'Your lecturer confirms it in a moment.' : 'It is sent when you are back online and checked by your lecturer.' } };
@@ -3145,11 +3262,20 @@ async function startScan(){
       if (text) {
         const r = await recordQR(text);
         if (r.kind === 'ok') { stopScan(); go('sdone', r.done); }
+        else if (r.kind === 'dup') {
+          stopScan();
+          await dialog({
+            title: 'Already Marked Present',
+            body: '<p>You already recorded your attendance for <b>' + esc(r.course) + '</b> today at ' + esc(r.timeStr) + '.</p><p class="fine" style="margin-top:8px">Your attendance has been recorded and safely verified. Multiple scans for the same class are not required.</p>',
+            yes: 'Done'
+          });
+          go('shome');
+        }
         else if (r.kind === 'fail') {
           stopScan();
           await dialog({
             title: 'Attendance Rejected',
-            body: '<p>' + esc(r.msg) + '</p><p class="fine" style="margin-top:8px">This course is restricted to specific departments and study levels. If you believe this is an error, please consult your course lecturer.</p>',
+            body: '<p>' + esc(r.msg) + '</p><p class="fine" style="margin-top:8px">Please ensure you are scanning the live, current QR code from the classroom display.</p>',
             yes: 'Understood',
             danger: true
           });
@@ -3205,10 +3331,10 @@ function renderLhome(){
     const deptsLabel = (c.depts && c.depts.length)
       ? (c.depts.includes('ALL_ENG') ? 'All Engineering' : c.depts.map(d => d.replace(/ Engineering$/, '')).join(', '))
       : (c.dept || 'All departments');
-    return '<li class="course"><div class="row"><div><span class="cc">' + esc(disp(c.code)) + (c.sample ? ' <span class="chip mute">example</span>' : '') + '</span><span class="sub blk">' + esc(c.title || [deptsLabel, c.level ? c.level + ' level' : ''].filter(Boolean).join(' · ')) + '</span></div>' +
+    return '<li class="course"><div class="row"><div><span class="cc">' + esc(disp(c.code)) + (c.sample ? ' <span class="chip mute">example</span>' : '') + '</span><span class="sub blk" style="font-size:13px;line-height:1.2;margin-top:2px">' + esc(c.title || [deptsLabel, c.level ? c.level + ' level' : ''].filter(Boolean).join(' · ')) + '</span></div>' +
       '<button class="iconbtn" type="button" data-act="open" data-id="' + esc(c.id) + '" aria-label="Open attendance">' + ic(I.right, 18) + '</button></div>' +
-      '<div class="sub">' + held + (held === 1 ? ' class held' : ' classes held') + ' · ' + a.rows.length + (a.rows.length === 1 ? ' student' : ' students') + '</div>' +
-      '<button class="btn primary" type="button" data-act="start" data-id="' + esc(c.id) + '">Start class</button></li>';
+      '<div class="row" style="margin-top:2px;align-items:center"><span class="sub" style="font-size:13px;font-weight:500">' + held + (held === 1 ? ' class held' : ' classes held') + ' · ' + a.rows.length + (a.rows.length === 1 ? ' student' : ' students') + '</span>' +
+      '<button class="btn primary sm" type="button" data-act="start" data-id="' + esc(c.id) + '" style="padding:4px 14px;min-height:30px;font-size:13px">Start class</button></div></li>';
   }).join('') : '<li class="empty"><b>No courses yet</b><span>Add a course you teach. You only do this once.</span></li>';
 }
 function renderLcnew(){
@@ -3400,11 +3526,18 @@ async function saveCSV(){
 /* ---------- settings ---------- */
 function renderSet(){
   const st = cfg.role === 'student', lc = cfg.role === 'lecturer';
-  $('#roleSwap').innerHTML = '<span>' + (lc ? 'Use ' + APP + ' as a student instead' : 'Use ' + APP + ' as a lecturer instead') + '</span><span class="chevron-right">›</span>';
+  const name = st ? ((stu && stu.name) || 'Student') : ((lec && lec.name) || 'Lecturer');
+  const initials = name.split(/\s+/).filter(Boolean).map(p => p[0].toUpperCase()).slice(0, 2).join('') || (st ? 'ST' : 'LC');
+  const avatarEl = $('#setUserAvatar');
+  if (avatarEl) avatarEl.textContent = initials;
+
+  const roleTitleEl = $('#roleSwapTitle'), roleSubEl = $('#roleSwapSub');
+  if (roleTitleEl) roleTitleEl.textContent = lc ? 'Switch to Student' : 'Switch to Lecturer';
+  if (roleSubEl) roleSubEl.textContent = lc ? 'Use Adesse as a student for attendance' : 'Use Adesse as a lecturer to host classes';
   
   if (st) {
     $('#setUserTitle').textContent = (stu && stu.name) ? stu.name : 'Student Account';
-    $('#setUserSub').textContent = (stu && stu.matric) ? (stu.matric + (stu.email ? ' · ' + stu.email : '') + ' · NMU') : 'Device locked to student attendance';
+    $('#setUserSub').textContent = (stu && stu.matric) ? (stu.matric + ' · ' + (stu.dept || 'Engineering') + (stu.level ? ' · ' + stu.level + 'L' : '')) : 'Device locked to student attendance';
     $('#setLockChip').hidden = !(stu && stu.matric);
     $('#btnDeleteStu').hidden = !stu;
     $('#btnDeleteLec').hidden = true;
@@ -3413,7 +3546,7 @@ function renderSet(){
     if ($('#setAlertsDiv')) $('#setAlertsDiv').hidden = false;
   } else {
     $('#setUserTitle').textContent = (lec && lec.name) ? lec.name : 'Lecturer Account';
-    $('#setUserSub').textContent = (lec && lec.email) ? (lec.email + ' · Faculty') : 'Authorized lecturer profile';
+    $('#setUserSub').textContent = (lec && lec.email) ? (lec.email + ' · ' + (lec.uni || 'Faculty')) : 'Authorized lecturer profile';
     $('#setLockChip').hidden = true;
     $('#btnDeleteStu').hidden = true;
     $('#btnDeleteLec').hidden = !lec;
@@ -3422,7 +3555,7 @@ function renderSet(){
     if ($('#setAlertsDiv')) $('#setAlertsDiv').hidden = true;
   }
 
-  $('#setCutLbl').textContent = st ? 'My minimum attendance' : 'Flag students below';
+  $('#setCutLbl').textContent = st ? 'Minimum attendance' : 'Flag students below';
   $('#setCutHelp').textContent = st ? 'Warning threshold across all courses' : 'Used for the "below" count and red tags on your course pages.';
   $('#setCut').value = cfg.cutoff;
   $('#setOff').checked = !!cfg.fakeOffline;
@@ -3431,7 +3564,7 @@ function renderSet(){
   
   if (stu) {
     const pend = stu.scans.filter(s => !s.synced).length;
-    $('#dataState').textContent = pend ? pend + (pend === 1 ? ' scan is' : ' scans are') + ' only on this phone. Send ' + (pend === 1 ? 'it' : 'them') + ' to back up.' : (cfg.cloud === 'demo' ? 'Demo mode: data remains on device.' : 'All attendance scans are synced and backed up.');
+    $('#dataState').textContent = pend ? pend + (pend === 1 ? ' scan is' : ' scans are') + ' only on this phone. Tap to sync.' : (cfg.cloud === 'demo' ? 'Demo mode: data remains on device.' : 'All attendance scans are synced and backed up.');
     $('#dataSend').hidden = !pend;
   }
   
@@ -3558,7 +3691,23 @@ document.addEventListener('click', async e => {
   if (a === 'scanStop') return stopScan();
   if (a === 'scanPin') { stopScan(); return pinShow(); }
   if (a === 'pinShow') return pinShow();
-  if (a === 'pinGo') { const r = await recordPin($('#pinIn').value.trim()); if (r.kind === 'ok') { $('#pinIn').value = ''; $('#pinBox').hidden = true; go('sdone', r.done); } else toast(r.msg); return; }
+  if (a === 'pinGo') {
+    const r = await recordPin($('#pinIn').value.trim());
+    if (r.kind === 'ok') {
+      $('#pinIn').value = ''; $('#pinBox').hidden = true; go('sdone', r.done);
+    } else if (r.kind === 'dup') {
+      $('#pinIn').value = ''; $('#pinBox').hidden = true;
+      await dialog({
+        title: 'Already Marked Present',
+        body: '<p>You already entered attendance code <b>' + esc(r.course) + '</b> today at ' + esc(r.timeStr) + '.</p>',
+        yes: 'Done'
+      });
+      go('shome');
+    } else {
+      toast(r.msg);
+    }
+    return;
+  }
   if (a === 'sync') return sync(true);
   if (a === 'sopen') return go('sdetail', b.dataset.key);
   if (a === 'tgt') { const r = courseRows().rows.find(x => x.key === param); if (!r) return; stu.targets[r.key] = Math.max(50, Math.min(100, targetFor(r.key) + Number(b.dataset.d))); saveStu(); return renderSdetail(); }
