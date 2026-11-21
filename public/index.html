@@ -2365,20 +2365,17 @@ async function lecturerCheck(rec, lec, now){
   }
   if (rec.lid !== lec.lid) return { status:'bad', reason:'Signed by a different lecturer' };
   if (!sess) return { status:'bad', reason:'Unknown class' };
-  if (rec.course !== sess.code) return { status:'bad', reason:'Course does not match' };
-  // If session has no sk (created synthetically from cloud), skip ECDSA — the QR sig is from our own public key, so just verify the sig directly
-  if (!sess.sk || sess.sk === '') {
-    // Synthetic session (cross-device) — verify ECDSA against rec.pk if available, else lec.pub
-    // rec.pk is the public key embedded in the QR when the student scanned — always correct
-    const pubToUse = rec.pk || lec.pub;
-    if (!pubToUse) return { status:'ok', reason:'' }; // no key to verify — trust it (lid already matched)
-    if (!(await verify(pubToUse, sessionMsg(rec.sid, rec.course, rec.win), rec.sig))) return { status:'bad', reason:'Invalid signature' };
-    return { status:'ok', reason:'' };
+  if (normCourse(rec.course) !== normCourse(sess.code)) return { status:'bad', reason:'Course does not match' };
+  
+  // Verify ECDSA signature against rec.pk (from QR scan) or lec.pub
+  const pubToUse = rec.pk || lec.pub;
+  if (pubToUse) {
+    const sigOk = await verify(pubToUse, sessionMsg(rec.sid, rec.course, rec.win), rec.sig);
+    if (!sigOk) return { status:'bad', reason:'Invalid signature' };
   }
-  if (!(await verify(lec.pub, sessionMsg(rec.sid, rec.course, rec.win), rec.sig))) return { status:'bad', reason:'Invalid signature' };
   const wt = rec.win * WIN;
   // Allow 2 windows before startedAt to handle race where student scans just as class starts
-  if (wt < sess.startedAt - 2 * WIN || wt > (sess.endedAt || now) + WIN) return { status:'bad', reason:'Code was not live during this class' };
+  if (wt < sess.startedAt - 2 * WIN || (sess.endedAt && wt > sess.endedAt + 2 * WIN)) return { status:'bad', reason:'Code was not live during this class' };
   const d = rec.at - wt;
   if (d < -SKEW || d > WIN + SKEW) return { status:'review', reason:'Scan time does not match the code time' };
   return { status:'ok', reason:'' };
@@ -2409,11 +2406,13 @@ function attendance(lec, course, cutoff){
 
   // 1. First, register all attended sessions from scans and link to course
   const attendedSids = new Set();
-  const localSess = lec.sessions.filter(s => s.code === course.code);
+  const cCodeNorm = normCourse(course.code);
+  const localSess = lec.sessions.filter(s => normCourse(s.code) === cCodeNorm);
   const localIds = new Set(localSess.map(s => s.id));
 
   for (const r of scans) {
-    if ((localIds.has(r.sid) || r.course === course.code) && (r.status === 'ok' || (lec.accepted || {})[r.key])) {
+    const rCourseNorm = normCourse(r.course);
+    if ((localIds.has(r.sid) || (rCourseNorm && rCourseNorm === cCodeNorm)) && (r.status === 'ok' || (lec.accepted || {})[r.key])) {
       touch(r.matric, r.name).sids.add(r.sid);
       attendedSids.add(r.sid);
       if (!localIds.has(r.sid)) {
@@ -2432,7 +2431,7 @@ function attendance(lec, course, cutoff){
   }
 
   // 2. Count held sessions: any session created for this course counts regardless of duration
-  const allCourseSess = lec.sessions.filter(s => s.code === course.code);
+  const allCourseSess = lec.sessions.filter(s => normCourse(s.code) === cCodeNorm);
   const maxAttended = Math.max(0, ...Array.from(by.values()).map(v => v.sids.size));
   const total = Math.max(allCourseSess.length, maxAttended);
 
@@ -2444,8 +2443,8 @@ function attendance(lec, course, cutoff){
     return { matric, name:v.name, n, pct, below: total > 0 && pct < cutoff };
   }).sort((a, b) => b.n - a.n || b.pct - a.pct || a.matric.localeCompare(b.matric));
 
-  const review = scans.filter(r => (localIds.has(r.sid) || r.course === course.code) && r.status === 'review' && !(lec.accepted || {})[r.key]);
-  const rejected = scans.filter(r => (localIds.has(r.sid) || r.course === course.code) && r.status === 'bad').length;
+  const review = scans.filter(r => (localIds.has(r.sid) || normCourse(r.course) === cCodeNorm) && r.status === 'review' && !(lec.accepted || {})[r.key]);
+  const rejected = scans.filter(r => (localIds.has(r.sid) || normCourse(r.course) === cCodeNorm) && r.status === 'bad').length;
   return { total, rows, review, rejected };
 }
 // What a student should do next, in plain words.
@@ -2978,7 +2977,7 @@ function courseRows(){
     g.get(k).scans.push(s);
   }
   const rows = Array.from(g.values()).map(r => {
-    const ss = Object.values(stu.sessions).filter(x => x.lid === r.lid && x.course === r.code).sort((a, b) => b.startedAt - a.startedAt);
+    const ss = Object.values(stu.sessions).filter(x => x.lid === r.lid && normCourse(x.course) === normCourse(r.code)).sort((a, b) => b.startedAt - a.startedAt);
     const knownSessionIds = new Set(ss.map(x => x.sid));
     const extraHist = r.scans.filter(s => s.sid && !knownSessionIds.has(s.sid)).map(s => ({ sid:s.sid, at:s.at, here:true }));
     const baseHist = ss.map(x => ({ sid:x.sid, at:x.startedAt, here:r.sids.has(x.sid) }));
@@ -3112,12 +3111,9 @@ async function recordQR(text){
   }
 
   const TWO_HOURS = 2 * 3600 * 1000;
-  // Dedup: same session ID, same course in last 2h (any method — QR or PIN)
+  // Dedup: same session ID only — same course in a new class is VALID, not a dup
   const dup = stu.scans.find(s =>
-    s.matric === stu.matric && (
-      s.sid === c.sid ||
-      (s.course === c.course && Math.abs(s.at - Date.now()) < TWO_HOURS)
-    )
+    s.matric === stu.matric && s.sid === c.sid
   );
   if (dup) return { kind:'dup', course:disp(c.course), at:dup.at, timeStr:fmt(dup.at) };
   stu.keys[c.lid] = c.pk;
@@ -3423,12 +3419,13 @@ async function drawLive(force){
 function liveCount(){
   const live = liveSession(); if (!live) return { present:0, review:0 };
   const who = new Set(); let review = 0;
+  const liveCodeNorm = normCourse(live.code);
   for (const r of lec.cloudScans) {
     // Match by session ID (same device) OR by course code (cross-device scan for same live class)
     const matchesSid = r.sid === live.id;
-    const matchesCourse = r.course === live.code && r.at >= live.startedAt - 2 * WIN && r.at <= (live.endedAt || Date.now()) + WIN;
+    const matchesCourse = (normCourse(r.course) === liveCodeNorm) && r.at >= live.startedAt - 2 * WIN && r.at <= (live.endedAt || Date.now()) + WIN;
     if (matchesSid || matchesCourse) {
-      if (r.status === 'ok' || lec.accepted[r.key]) who.add(r.matric);
+      if (r.status === 'ok' || (lec.accepted || {})[r.key]) who.add(r.matric);
       else if (r.status === 'review') review++;
     }
   }
@@ -3488,8 +3485,9 @@ async function lecSync(manual){
   if (!c) { if (manual) toast('Add your Supabase details in Settings, or use demo storage.'); return; }
   syncing = true;
   try {
-    if (!priv) priv = await importPriv(lec.jwk);
-    // 1. back the account up (the key is locked with the passphrase, so the server never sees it)
+    try { if (!priv && lec.jwk) priv = await importPriv(lec.jwk); } catch(e) { console.warn('importPriv error:', e); }
+
+    // 1. back the account up
     if (!lec.acctSent && lec.user_id && lec.pub && lec.jwk) {
       try {
         await SB.rpc('register_lecturer', {
@@ -3499,36 +3497,46 @@ async function lecSync(manual){
       } catch(e) {
         const msg = e.message || '';
         if (!msg.includes('already')) console.warn('Lecturer register failed:', e);
-        else { lec.acctSent = true; } // already registered — that's fine
+        else { lec.acctSent = true; }
       }
     }
+
     // 2. classes: take what other phones started, rebuild the typed-code secrets, send ours
-    mergeSessions(lec, await c.query('sessions', 'lid', lec.lid));
-    closeStale();
-    for (const s of lec.sessions) if (!s.sk) s.sk = await deriveSk(lec.jwk, s.id);
-    // Reconcile: check which sessions are actually in the cloud (some marked pushed=true may have failed silently)
-    let cloudSids = new Set();
     try {
-      const sidRows = await SB.rpc('get_session_sids', { p_lid: lec.lid });
-      if (Array.isArray(sidRows)) sidRows.forEach(r => cloudSids.add(r.sid));
-    } catch(e) { console.warn('get_session_sids failed:', e); }
-    // Mark missing sessions as unpushed so they get re-uploaded below
-    for (const s of lec.sessions) {
-      if (s.pushed && !s.sample && !cloudSids.has(s.id)) s.pushed = false;
-    }
-    for (const s of lec.sessions.filter(x => !x.pushed && !x.sample)) {
-      const course = courseByCode(s.code) || {};
+      mergeSessions(lec, await c.query('sessions', 'lid', lec.lid));
+      closeStale();
+      for (const s of lec.sessions) if (!s.sk && lec.jwk) { try { s.sk = await deriveSk(lec.jwk, s.id); } catch(e){} }
+      // Reconcile: check which sessions are actually in the cloud (some marked pushed=true may have failed silently)
+      let cloudSids = new Set();
       try {
-        await c.put('sessions', null, { sid:s.id, lid:lec.lid, course:s.code, title:course.title || '', lecturer:lec.name, uni:lec.uni, user_id:lec.user_id || null, startedAt:s.startedAt, endedAt:s.endedAt || 0, started_at:s.startedAt, ended_at:s.endedAt || 0 });
-        s.pushed = true;
-      } catch(e) { console.warn('Session push failed:', s.id, e); }
-    }
-    // 3. courses, class lists, hand-marked students, decisions: merged with other phones, signed by your key
-    const st = (await c.query('lecstate', 'lid', lec.lid))[0];
-    if (st && await verify(lec.pub, 'state|' + st.json, st.sig)) { try { mergeState(lec, JSON.parse(st.json)); } catch (e) {} }
-    const json = JSON.stringify(stateOf(lec));
-    if (!st || st.json !== json) await c.put('lecstate', null, { lid:lec.lid, user_id:lec.user_id || null, json, sig:await sign(priv, 'state|' + json), at:Date.now() });
-    // 4. scans: pull via RPC or REST query
+        const sidRows = await SB.rpc('get_session_sids', { p_lid: lec.lid });
+        if (Array.isArray(sidRows)) sidRows.forEach(r => cloudSids.add(r.sid));
+      } catch(e) { console.warn('get_session_sids failed:', e); }
+      // Mark missing sessions as unpushed so they get re-uploaded below
+      for (const s of lec.sessions) {
+        if (s.pushed && !s.sample && !cloudSids.has(s.id)) s.pushed = false;
+      }
+      for (const s of lec.sessions.filter(x => !x.pushed && !x.sample)) {
+        const course = courseByCode(s.code) || {};
+        try {
+          await c.put('sessions', null, { sid:s.id, lid:lec.lid, course:s.code, title:course.title || '', lecturer:lec.name, uni:lec.uni, user_id:lec.user_id || null, startedAt:s.startedAt, endedAt:s.endedAt || 0, started_at:s.startedAt, ended_at:s.endedAt || 0 });
+          s.pushed = true;
+        } catch(e) { console.warn('Session push failed:', s.id, e); }
+      }
+    } catch(sessErr) { console.warn('Sessions sync error:', sessErr); }
+
+    // 3. courses, class lists, hand-marked students, decisions
+    try {
+      const st = (await c.query('lecstate', 'lid', lec.lid))[0];
+      if (st && await verify(lec.pub, 'state|' + st.json, st.sig)) { try { mergeState(lec, JSON.parse(st.json)); } catch (e) {} }
+      const json = JSON.stringify(stateOf(lec));
+      if (!st || st.json !== json) {
+        const sig = priv ? await sign(priv, 'state|' + json) : '';
+        await c.put('lecstate', null, { lid:lec.lid, user_id:lec.user_id || null, json, sig, at:Date.now() });
+      }
+    } catch(stErr) { console.warn('Lecstate sync error:', stErr); }
+
+    // 4. scans: ALWAYS pull scans
     const map = new Map();
     let scanRows = [];
     try {
@@ -3562,10 +3570,20 @@ async function lecSync(manual){
     }
     applyChecks(recs, code => courseByCode(code));
     lec.cloudScans = recs.filter(r => r.lid === lec.lid);
-    lec.roster = (await c.query('students', 'uni', lec.uni)).map(r => ({ matric:r.matric, name:r.name, dept:r.dept, level:r.level }));
+    try {
+      lec.roster = (await c.query('students', 'uni', lec.uni)).map(r => ({ matric:r.matric, name:r.name, dept:r.dept, level:r.level }));
+    } catch(rostErr) { console.warn('Roster query failed:', rostErr); }
     if (manual) toast('Updated.');
-  } catch (e) { if (manual) toast('Could not reach the server. Try again.'); }
-  finally { syncing = false; saveLec(); if (view === 'llive') updateLive(); if (view === 'lcourse') renderCourse(); if (view === 'lhome') renderLhome(); if (view === 'set') renderSet(); }
+  } catch (e) {
+    console.warn('lecSync general error:', e);
+    if (manual) toast('Could not reach the server. Try again.');
+  } finally {
+    syncing = false; saveLec();
+    if (view === 'llive') updateLive();
+    if (view === 'lcourse') renderCourse();
+    if (view === 'lhome') renderLhome();
+    if (view === 'set') renderSet();
+  }
 }
 function loadSample(){
   if (!lec) return toast('Set up as a lecturer first.');
@@ -4161,11 +4179,15 @@ async function handleAuthSession(user, forcedRole){
         const found = rows[0];
         let jwk = null;
         try { const krows = await SB.query('lecturer_keys', 'user_id', found.user_id || user.id); if (krows && krows.length) jwk = krows[0].jwk; } catch(e) {}
+        // Always use the cloud pub key — it matches the original signing key on the phone
+        // If we have a local lec with the SAME lid, merge sessions/courses to avoid losing data
+        const existing = lec && lec.lid === found.lid ? lec : null;
         lec = {
           name: found.name, uni: found.uni, email: email,
           lid: found.lid, pub: found.pub, jwk,
           acctSent: true, conflict: false, user_id: user.id, auth_provider: provider,
-          courses: [], sessions: [], manual: [], cloudScans: [], roster: [], accepted: {}
+          courses: (existing && existing.courses) || [], sessions: (existing && existing.sessions) || [],
+          manual: (existing && existing.manual) || [], cloudScans: [], roster: [], accepted: (existing && existing.accepted) || {}
         };
         if (jwk) { try { priv = await importPriv(jwk); } catch(e) { priv = null; } }
         saveLec();
