@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Adesse</string>
-    <string name="title_activity_main">Adesse</string>
+    <string name="app_name">Muster</string>
+    <string name="title_activity_main">Muster</string>
     <string name="package_name">com.adesse.app</string>
     <string name="custom_url_scheme">com.adesse.app</string>
     <string name="default_web_client_id">483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com</string>

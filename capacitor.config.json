@@ -1,6 +1,6 @@
 {
   "appId": "com.adesse.app",
-  "appName": "Adesse",
+  "appName": "Muster",
   "webDir": "www",
   "bundledWebRuntime": false,
   "server": {

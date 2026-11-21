@@ -4,8 +4,6 @@ Thumbs.db
 desktop.ini
 
 # Environment variables
-.env
-.env.local
 .env.*.local
 
 # Dependency directories
@@ -26,7 +24,7 @@ android/.gradle/
 android/capacitor-cordova-android-plugins/build/
 
 # IDE and Editor files
-.vscode/
 .idea/
 *.swp
 *.swo
+config.bat

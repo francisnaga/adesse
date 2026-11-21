@@ -1,4 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="8" fill="#0a0a0a"/>
-  <path fill="#ffffff" fill-rule="evenodd" d="M8.5 4h8.0a4.5 4.5 0 0 1 4.5 4.5v8.0a4.5 4.5 0 0 1 -4.5 4.5h-8.0a4.5 4.5 0 0 1 -4.5 -4.5v-8.0a4.5 4.5 0 0 1 4.5 -4.5zM15.5 11h8.0a4.5 4.5 0 0 1 4.5 4.5v8.0a4.5 4.5 0 0 1 -4.5 4.5h-8.0a4.5 4.5 0 0 1 -4.5 -4.5v-8.0a4.5 4.5 0 0 1 4.5 -4.5z"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><style>path{fill:#000}@media (prefers-color-scheme:dark){path{fill:#fff}}</style><g transform="translate(-3.191 -3.191) scale(0.73314)"><path d="M7.08 28.92 L34.98 28.92 L25.23 65.31 L59.08 74.38 L59.08 80.92 L7.08 80.92Z"/><path d="M38.69 15.08 L88.92 28.54 L75.46 78.77 L59.08 74.38 L59.08 28.92 L34.98 28.92Z"/></g></svg>

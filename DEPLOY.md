@@ -1,6 +1,6 @@
-# Adesse: Deployment & Operations Guide
+# Muster: Deployment & Operations Guide
 
-Adesse is an offline-first attendance platform built for higher education, featuring encrypted rotating QR codes, offline local fallback, Supabase backend synchronization, and Google + Apple OAuth authentication.
+Muster is an offline-first attendance platform built for higher education, featuring encrypted rotating QR codes, offline local fallback, Supabase backend synchronization, and Google + Apple OAuth authentication.
 
 ---
 
@@ -24,7 +24,7 @@ Your `config.js` is automatically configured with:
 
 ## 2. Vercel Deployment & Environment Variables
 
-Adesse includes a pre-configured `vercel.json` and a build script (`build-config.js`) that automatically compiles `config.js` from your Vercel Environment Variables upon each deployment.
+Muster includes a pre-configured `vercel.json` and a build script (`build-config.js`) that automatically compiles `config.js` from your Vercel Environment Variables upon each deployment.
 
 ### Setting Up Environment Variables in Vercel:
 When importing your project at [vercel.com/new](https://vercel.com/new) (or under **Project Settings > Environment Variables**), add:
@@ -87,17 +87,17 @@ To activate Google & Apple one-click sign-in in your Supabase Dashboard:
 
 ## 4. Mobile Apps (iPhone & Android)
 
-Adesse is engineered to work across all platforms:
+Muster is engineered to work across all platforms:
 
 ### Option 1: Instant PWA (Zero App Store friction)
 - **iPhone / iOS Safari:** Open your deployed URL, tap the **Share** button, and tap **"Add to Home Screen"**. It launches full-screen with native safe-area insets, app icon, and standalone offline caching.
 - **Android Chrome:** Open the URL, tap the browser menu (or the install banner), and tap **"Install App"**.
 
 ### Option 2: Native App Store & Google Play Build (Capacitor)
-To package Adesse into native `.apk` / `.aab` (Google Play) and Xcode project (iOS App Store):
+To package Muster into native `.apk` / `.aab` (Google Play) and Xcode project (iOS App Store):
 ```bash
 npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/ios
-npx cap init Adesse com.adesse.app --web-dir .
+npx cap init Muster com.adesse.app --web-dir .
 npx cap add android
 npx cap add ios
 npx cap sync

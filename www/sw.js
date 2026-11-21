@@ -1,4 +1,4 @@
-const CACHE_NAME = 'adesse-v3';
+const CACHE_NAME = 'muster-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -6,12 +6,20 @@ const ASSETS = [
   './privacy.html',
   './terms.html',
   './delete-account.html',
+  './site.webmanifest',
   './manifest.webmanifest',
+  './favicon.svg',
+  './favicon.ico',
+  './favicon-16x16.png',
+  './favicon-32x32.png',
+  './favicon-48x48.png',
+  './safari-pinned-tab.svg',
+  './og-image-1200x630.png',
   './icon-192.png',
   './icon-512.png',
+  './icon-maskable-192.png',
+  './icon-maskable-512.png',
   './apple-touch-icon.png',
-  './favicon.png',
-  './icon.svg',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap'
 ];
 

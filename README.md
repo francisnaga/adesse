@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="icon-192.png" alt="Adesse Logo" width="100" height="100" style="border-radius: 22px;">
+  <img src="icon-192.png" alt="Muster Logo" width="100" height="100" style="border-radius: 22px;">
 </p>
 
-<h1 align="center">Adesse</h1>
+<h1 align="center">Muster</h1>
 
 <p align="center">
   <strong>Attendance without the paper.</strong><br>
@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/francisnaga/adesse"><img src="https://img.shields.io/badge/GitHub-francisnaga%2Fadesse-blue?logo=github" alt="GitHub Repo"></a>
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://github.com/francisnaga/adesse"><img src="https://img.shields.io/badge/GitHub-francisnaga%2Fadesse-black?logo=github" alt="GitHub Repo"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-black.svg" alt="License: MIT"></a>
   <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ECF8E?logo=supabase" alt="Supabase"></a>
   <a href="https://web.dev/progressive-web-apps/"><img src="https://img.shields.io/badge/PWA-iOS%20%26%20Android-black?logo=pwa" alt="PWA"></a>
 </p>
@@ -20,7 +20,7 @@
 
 ## Overview
 
-**Adesse** is a modern, privacy-focused, offline-resilient attendance platform designed specifically for tertiary institutions. Lecturers project rotating, cryptographically signed QR codes during class. Students scan the code using their phone camera—even without cellular data or Wi-Fi in lecture halls—and attendance scans are cryptographically verified locally and automatically synchronized with **Supabase** once internet connectivity resumes.
+**Muster** is a modern, privacy-focused, offline-resilient attendance platform designed specifically for tertiary institutions. Lecturers project rotating, cryptographically signed QR codes during class. Students scan the code using their phone camera—even without cellular data or Wi-Fi in lecture halls—and attendance scans are cryptographically verified locally and automatically synchronized with **Supabase** once internet connectivity resumes.
 
 ---
 
@@ -60,7 +60,7 @@ When deploying to [Vercel](https://vercel.com), configure the following environm
 | `SUPABASE_URL` | Your Supabase Project REST URL | `https://xbgolunipyuhyparskmu.supabase.co` |
 | `SUPABASE_ANON_KEY` | Public anonymous API key from Supabase API settings | `eyJhbGciOi...` |
 | `SUPPORT_EMAIL` | Contact email displayed for account recovery & privacy requests | `efobifrancis53@gmail.com` |
-| `APP_NAME` | Display name of the application | `Adesse` |
+| `APP_NAME` | Display name of the application | `Muster` |
 
 > **How it works on Vercel:** Vercel automatically runs `npm run build` (`node build-config.js`) during deployment, generating the production `config.js` directly from your environment variables. If no environment variables are set, the project safely defaults to the pre-configured project credentials.
 

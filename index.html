@@ -1,42 +1,53 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Adesse"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg" type="image/svg+xml"><link rel="apple-touch-icon" href="icon-192.png"></head><body>
-<title>Adesse</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<meta name="theme-color" content="#ffffff">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Muster">
+<title>Muster</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="favicon-16x16.png" type="image/png" sizes="16x16">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="mask-icon" href="safari-pinned-tab.svg" color="#000000">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta property="og:image" content="og-image-1200x630.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
 <style>
-/* Design system: shadcn/ui "neutral" tokens. Black and white, one border colour, one radius, no accent hue.
-   Colour is reserved for meaning: red = below your minimum, a small green dot = online. Light and dark are first-class. */
+/* Design system: shadcn/ui "neutral" black and white tokens. Flat, clean, no accent hue.
+   Red is reserved strictly for destructive actions, absent, and below-minimum attendance. */
 :root{
-  --background:#F3F4F7; --foreground:#111112; --card:#ffffff;
-  --surface-variant:#EAECEF;
-  --primary:#0060FF; --primary-foreground:#ffffff; --primary-hover:#0050D6;
-  --secondary:#EAECEF; --muted:#EAECEF; --muted-foreground:#5A5A62; --accent:rgba(0,96,255,.08); --accent-foreground:#0060FF;
-  --destructive:#EF4444; --destructive-solid:#DC2626; --destructive-soft:rgba(239,68,68,.08); --destructive-line:rgba(239,68,68,.25);
-  --border:#D5D9E2; --border-subtle:#E4E7EE; --input:#D5D9E2; --ring:rgba(0,96,255,.25);
-  --ok:#22C55E; --radius:12px; --shadow:0 1px 3px rgba(17,17,18,.05), 0 1px 2px rgba(17,17,18,.03);
+  --background:#FFFFFF; --foreground:#000000; --card:#FFFFFF;
+  --surface-variant:#F5F5F5;
+  --primary:#000000; --primary-foreground:#FFFFFF; --primary-hover:#262626;
+  --secondary:#F5F5F5; --muted:#F5F5F5; --muted-foreground:#737373; --accent:rgba(0,0,0,.06); --accent-foreground:#000000;
+  --destructive:#D91F1F; --destructive-solid:#DC2626; --destructive-soft:rgba(217,31,31,.08); --destructive-line:rgba(217,31,31,.25);
+  --border:#E5E5E5; --border-subtle:#F0F0F0; --input:#E5E5E5; --ring:rgba(0,0,0,.25);
+  --ok:#000000; --radius:12px; --shadow:0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.02);
   --font-body:'Inter',system-ui,-apple-system,'SF Pro Text','Segoe UI',Roboto,sans-serif;
   --font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --ease:cubic-bezier(.16,1,.3,1);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --background:#141413; --foreground:#F5F5F0; --card:#1F1F1E;
-    --surface-variant:#282826;
-    --primary:#5AA8FF; --primary-foreground:#001A3D; --primary-hover:#7AB8FF;
-    --secondary:#282826; --muted:#282826; --muted-foreground:#9C9B94; --accent:rgba(90,168,255,.14); --accent-foreground:#5AA8FF;
-    --destructive:#F87171; --destructive-solid:#DC2626; --destructive-soft:rgba(248,113,113,.12); --destructive-line:rgba(248,113,113,.3);
-    --border:#333330; --border-subtle:#262624; --input:#333330; --ring:rgba(90,168,255,.35);
-    --ok:#4ADE80; --shadow:none; color-scheme:dark;
+    --background:#000000; --foreground:#FFFFFF; --card:#0F0F0F;
+    --surface-variant:#1A1A1A;
+    --primary:#FFFFFF; --primary-foreground:#000000; --primary-hover:#E5E5E5;
+    --secondary:#1F1F1F; --muted:#1F1F1F; --muted-foreground:#A3A3A3; --accent:rgba(255,255,255,.1); --accent-foreground:#FFFFFF;
+    --destructive:#EF4444; --destructive-solid:#DC2626; --destructive-soft:rgba(239,68,68,.12); --destructive-line:rgba(239,68,68,.3);
+    --border:#262626; --border-subtle:#1F1F1F; --input:#262626; --ring:rgba(255,255,255,.3);
+    --ok:#FFFFFF; --shadow:none; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --background:#141413; --foreground:#F5F5F0; --card:#1F1F1E;
-  --surface-variant:#282826;
-  --primary:#5AA8FF; --primary-foreground:#001A3D; --primary-hover:#7AB8FF;
-  --secondary:#282826; --muted:#282826; --muted-foreground:#9C9B94; --accent:rgba(90,168,255,.14); --accent-foreground:#5AA8FF;
-  --destructive:#F87171; --destructive-solid:#DC2626; --destructive-soft:rgba(248,113,113,.12); --destructive-line:rgba(248,113,113,.3);
-  --border:#333330; --border-subtle:#262624; --input:#333330; --ring:rgba(90,168,255,.35);
-  --ok:#4ADE80; --shadow:none; color-scheme:dark;
+  --background:#000000; --foreground:#FFFFFF; --card:#0F0F0F;
+  --surface-variant:#1A1A1A;
+  --primary:#FFFFFF; --primary-foreground:#000000; --primary-hover:#E5E5E5;
+  --secondary:#1F1F1F; --muted:#1F1F1F; --muted-foreground:#A3A3A3; --accent:rgba(255,255,255,.1); --accent-foreground:#FFFFFF;
+  --destructive:#EF4444; --destructive-solid:#DC2626; --destructive-soft:rgba(239,68,68,.12); --destructive-line:rgba(239,68,68,.3);
+  --border:#262626; --border-subtle:#1F1F1F; --input:#262626; --ring:rgba(255,255,255,.3);
+  --ok:#FFFFFF; --shadow:none; color-scheme:dark;
 }
 *{box-sizing:border-box}
 /* NUCLEAR: ALL app screens are invisible by default. render() removes [hidden] from exactly one. */
@@ -78,10 +89,10 @@ body{
 @keyframes swap{from{opacity:.15}to{opacity:1}}
 .bar{display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:44px}
 .bar .r{display:flex; align-items:center; gap:8px}
-.logo{display:inline-flex; align-items:center; gap:8px; font:600 20px/1 var(--font-body); letter-spacing:-.04em; color:var(--foreground)}
-.logo .lm{width:26px; height:26px; flex:none}
-.hero .logo{font-size:34px; gap:12px}
-.hero .logo .lm{width:42px; height:42px}
+.logo{display:inline-flex; align-items:center; gap:10px; font:600 20px/1 var(--font-body); letter-spacing:-.04em; color:var(--foreground)}
+.logo .lm{height:22px; width:auto; aspect-ratio:81.84/65.84; flex:none}
+.hero .logo{font-size:32px; gap:12px}
+.hero .logo .lm{height:32px; width:auto; aspect-ratio:81.84/65.84}
 .iconbtn{width:44px; height:44px; border-radius:8px; border:1px solid var(--border); background:var(--background); display:grid; place-items:center; color:var(--foreground); cursor:pointer; flex:none; transition:background .15s, transform .1s}
 .iconbtn:hover{background:var(--accent)}
 .iconbtn:active{transform:scale(.95)}
@@ -309,7 +320,7 @@ details.card:not([open]){gap:0}
 }
 .oauth-spinner{width:18px; height:18px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:oauthSpin .65s linear infinite; flex-shrink:0; display:inline-block}
 @keyframes oauthSpin{to{transform:rotate(360deg)}}
-.oauth-loading-bar{position:fixed; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, #0060FF, #5AA8FF, #0060FF); background-size:200% 100%; animation:oauthShimmer 1.5s infinite linear; z-index:99999}
+.oauth-loading-bar{position:fixed; top:0; left:0; right:0; height:2px; background:var(--foreground); z-index:99999}
 @keyframes oauthShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
 /* Auth screen — single morphing screen (role-pick → sign-in, no separate pages) */
@@ -447,12 +458,9 @@ input:not([type="checkbox"]):not([type="radio"]), select{
   flex-shrink:0;
 }
 .settings-icon-tile svg{width:16px; height:16px}
-.settings-icon-tile.blue{background:rgba(0,96,255,0.12); color:var(--primary)}
-.settings-icon-tile.green{background:rgba(34,197,94,0.12); color:#16a34a}
-.settings-icon-tile.purple{background:rgba(168,85,247,0.12); color:#9333ea}
-.settings-icon-tile.amber{background:rgba(245,158,11,0.12); color:#d97706}
-.settings-icon-tile.gray{background:rgba(120,120,120,0.1); color:var(--muted-foreground)}
-.settings-icon-tile.red{background:rgba(239,68,68,0.12); color:var(--destructive)}
+.settings-icon-tile{background:var(--secondary); color:var(--foreground)}
+.settings-icon-tile.blue, .settings-icon-tile.green, .settings-icon-tile.purple, .settings-icon-tile.amber, .settings-icon-tile.gray{background:var(--secondary); color:var(--foreground)}
+.settings-icon-tile.red{background:var(--destructive-soft); color:var(--destructive)}
 
 .settings-item-text{display:grid; gap:2px; min-width:0}
 .settings-item-text b{font:500 14px/1.3 var(--font-body); color:var(--foreground)}
@@ -730,7 +738,7 @@ input:not([type="checkbox"]):not([type="radio"]), select{
       <div class="field"><label for="cTitle">Title (optional)</label><input id="cTitle" placeholder="e.g. Marine Engines"></div>
       <div class="field"><label for="cDeptSel">Who takes it? Department</label><div id="cDeptWrap"></div></div>
       <div class="field"><span class="fl">Level</span><div id="cLevel" class="chips"></div></div>
-      <p class="fine">Students from this department and level who set up Adesse show as absent if they never scan.</p>
+      <p class="fine">Students from this department and level who set up <span data-app></span> show as absent if they never scan.</p>
       <button class="btn primary lg" type="submit">Save course</button>
     </form>
   </section>
@@ -2273,10 +2281,10 @@ function hexBytes(h){ const a = new Uint8Array(h.length / 2); for (let i = 0; i 
 function normCourse(s){ return String(s || '').toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,12); }
 function normMatric(s){ return String(s || '').toUpperCase().replace(/\s+/g,'').replace(/[^A-Z0-9\/\-]/g,'').slice(0,24); }
 function getDeviceId(){
-  let id = localStorage.getItem('adesse_device_id');
+  let id = localStorage.getItem('muster_device_id') || localStorage.getItem('adesse_device_id');
   if (!id) {
     id = 'dev_' + rid(16);
-    localStorage.setItem('adesse_device_id', id);
+    localStorage.setItem('muster_device_id', id);
   }
   return id;
 }
@@ -2575,9 +2583,10 @@ function applyChecks(recs, courseOf){
 // </core>
 
 /* ---------- brand and icons ---------- */
-const APP = 'Adesse';
-const MARK_D = 'M8.5 4h8.0a4.5 4.5 0 0 1 4.5 4.5v8.0a4.5 4.5 0 0 1 -4.5 4.5h-8.0a4.5 4.5 0 0 1 -4.5 -4.5v-8.0a4.5 4.5 0 0 1 4.5 -4.5zM15.5 11h8.0a4.5 4.5 0 0 1 4.5 4.5v8.0a4.5 4.5 0 0 1 -4.5 4.5h-8.0a4.5 4.5 0 0 1 -4.5 -4.5v-8.0a4.5 4.5 0 0 1 4.5 -4.5z';
-const LOGO_HTML = '<svg class="lm" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="' + MARK_D + '"/></svg><span>' + APP.toLowerCase() + '</span>';
+const APP_NAME = 'Muster';
+const APP = APP_NAME;
+const MARK_SVG = '<svg class="lm" viewBox="7.08 15.08 81.84 65.84" fill="currentColor" role="img" aria-label="' + APP_NAME + '"><path d="M7.08 28.92 L34.98 28.92 L25.23 65.31 L59.08 74.38 L59.08 80.92 L7.08 80.92Z"/><path d="M38.69 15.08 L88.92 28.54 L75.46 78.77 L59.08 74.38 L59.08 28.92 L34.98 28.92Z"/></svg>';
+const LOGO_HTML = MARK_SVG + '<span>' + APP_NAME.toLowerCase() + '</span>';
 const ic = (p, s) => '<svg width="' + (s || 18) + '" height="' + (s || 18) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
 const I = {
   sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
@@ -2642,13 +2651,13 @@ document.addEventListener('change', e => { if (e.target.getAttribute && e.target
 const weakPin = p => /^(\d)\1{5}$/.test(p) || '0123456789012345'.includes(p) || '9876543210987654'.includes(p) || ['121212','112233','696969','123123'].includes(p);
 
 /* ---------- state ---------- */
-const CONF = window.ADESSE_CONFIG || {};
+const CONF = window.MUSTER_CONFIG || window.ADESSE_CONFIG || {};
 const PROD = !!(CONF.supabaseUrl && CONF.supabaseAnonKey);
 let supabaseClient = null;
-if (window.supabase && (CONF.supabaseUrl || window.ADESSE_CONFIG?.supabaseUrl)) {
+if (window.supabase && (CONF.supabaseUrl || window.MUSTER_CONFIG?.supabaseUrl || window.ADESSE_CONFIG?.supabaseUrl)) {
   try {
-    const sUrl = CONF.supabaseUrl || window.ADESSE_CONFIG.supabaseUrl;
-    const sKey = CONF.supabaseAnonKey || window.ADESSE_CONFIG.supabaseAnonKey;
+    const sUrl = CONF.supabaseUrl || window.MUSTER_CONFIG?.supabaseUrl || window.ADESSE_CONFIG?.supabaseUrl;
+    const sKey = CONF.supabaseAnonKey || window.MUSTER_CONFIG?.supabaseAnonKey || window.ADESSE_CONFIG?.supabaseAnonKey;
     supabaseClient = window.supabase.createClient(sUrl, sKey, {
       auth: { persistSession: true, autoRefreshToken: true }
     });
@@ -2823,7 +2832,7 @@ let authSigninRole = null;
 function showAuthSignin(role){
   authSigninRole = role;
   cfg.oauthRole = role; saveCfg();
-  try { localStorage.setItem('adesse_chosen_role', role); } catch(e) {}
+  try { localStorage.setItem('muster_chosen_role', role); localStorage.setItem('adesse_chosen_role', role); } catch(e) {}
   const pick = $('#authPickWrap');
   const signin = $('#authSigninWrap');
   const hint = $('#authRoleHint');
@@ -2834,7 +2843,7 @@ function showAuthSignin(role){
 function hideAuthSignin(){
   authSigninRole = null;
   cfg.oauthRole = null; saveCfg();
-  try { localStorage.removeItem('adesse_chosen_role'); } catch(e) {}
+  try { localStorage.removeItem('muster_chosen_role'); localStorage.removeItem('adesse_chosen_role'); } catch(e) {}
   const pick = $('#authPickWrap');
   const signin = $('#authSigninWrap');
   if (pick) pick.classList.remove('hidden-panel');
@@ -3613,7 +3622,7 @@ function renderSet(){
 
   const roleTitleEl = $('#roleSwapTitle'), roleSubEl = $('#roleSwapSub');
   if (roleTitleEl) roleTitleEl.textContent = lc ? 'Switch to Student' : 'Switch to Lecturer';
-  if (roleSubEl) roleSubEl.textContent = lc ? 'Use Adesse as a student for attendance' : 'Use Adesse as a lecturer to host classes';
+  if (roleSubEl) roleSubEl.textContent = lc ? 'Use ' + APP + ' as a student for attendance' : 'Use ' + APP + ' as a lecturer to host classes';
   
   if (st) {
     $('#setUserTitle').textContent = (stu && stu.name) ? stu.name : 'Student Account';
@@ -3687,7 +3696,7 @@ document.addEventListener('click', async e => {
     if (step === 2) {
       const matric = normMatric($('#soMatric').value);
       if (matric.length < 4 || !/\d/.test(matric)) return fieldErr('soMatric', 'Enter your valid matric number (e.g. 2021/1234).');
-      const boundMatric = localStorage.getItem('adesse_bound_matric');
+      const boundMatric = localStorage.getItem('muster_bound_matric') || localStorage.getItem('adesse_bound_matric');
       if (boundMatric && boundMatric !== matric) {
         return fieldErr('soMatric', 'This device is already locked to student ' + boundMatric + '. Shared devices are blocked to prevent proxy check-ins.');
       }
@@ -3862,7 +3871,7 @@ document.addEventListener('click', async e => {
   if (a === 'eraseAll') {
     const r = await dialog({ title:'Erase everything on this phone?', body:'<p>Profile, scans, courses, keys and demo storage.</p>', ack:'I understand', yes:'Erase everything', danger:true });
     if (r !== 'yes') return;
-    ['dey.stu','dey.lec','dey.cfg','dey.cloud','dey.lock','adesse_bound_matric','adesse_device_id'].forEach(k => { try { localStorage.removeItem(k); } catch (er) {} });
+    ['dey.stu','dey.lec','dey.cfg','dey.cloud','dey.lock','muster_bound_matric','muster_device_id','muster_chosen_role','adesse_bound_matric','adesse_device_id','adesse_chosen_role'].forEach(k => { try { localStorage.removeItem(k); } catch (er) {} });
     const th = cfg.theme; stu = null; lec = null; priv = null; cfg = Object.assign({}, DEF, { theme:th }); saveCfg();
     if (supabaseClient) supabaseClient.auth.signOut().catch(() => {});
     go('auth'); toast('Erased.'); return;
@@ -3901,7 +3910,7 @@ $('#sonboardForm').addEventListener('submit', async e => {
   }
 
   const currentDev = getDeviceId();
-  const boundMatric = localStorage.getItem('adesse_bound_matric');
+  const boundMatric = localStorage.getItem('muster_bound_matric') || localStorage.getItem('adesse_bound_matric');
   if (boundMatric && boundMatric !== matric) {
     updateSoStep(2);
     return fieldErr('soMatric', 'This device is already locked to student ' + boundMatric + '. Shared devices are blocked.');
@@ -3918,6 +3927,8 @@ $('#sonboardForm').addEventListener('submit', async e => {
       p_email: od.email || '', p_provider: od.provider || 'google',
       p_device_id: currentDev, p_pin_hash: h
     });
+    localStorage.setItem('muster_bound_matric', matric);
+    localStorage.setItem('muster_device_id', currentDev);
     localStorage.setItem('adesse_bound_matric', matric);
     localStorage.setItem('adesse_device_id', currentDev);
     stu = freshStu({
@@ -4057,7 +4068,7 @@ async function handleOAuth(provider, role){
 
   const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
   const googlePlugin = window.Capacitor?.Plugins?.GoogleSignIn;
-  const webClientId = (window.ADESSE_CONFIG && window.ADESSE_CONFIG.googleClientId) || '483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com';
+  const webClientId = CONF.googleClientId || (window.MUSTER_CONFIG && window.MUSTER_CONFIG.googleClientId) || (window.ADESSE_CONFIG && window.ADESSE_CONFIG.googleClientId) || '483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com';
 
   // 1. Native Android Google Sign-In with Credential Manager account chooser bottom sheet
   if (provider === 'google' && isNative && googlePlugin) {
@@ -4140,7 +4151,7 @@ async function checkOAuthRedirect(){
     const { data: { session }, error } = await supabaseClient.auth.getSession();
     if (error) console.warn('Supabase auth session error:', error);
     if (session && session.user) {
-      const storedRole = localStorage.getItem('adesse_chosen_role');
+      const storedRole = localStorage.getItem('muster_chosen_role') || localStorage.getItem('adesse_chosen_role');
       if ((hasHash || hasQuery) && (authSigninRole || cfg.oauthRole || storedRole)) {
         const targetRole = authSigninRole || storedRole || cfg.oauthRole || 'student';
         cfg.oauthRole = null; saveCfg();
@@ -4162,7 +4173,7 @@ async function checkOAuthRedirect(){
 
 async function handleAuthSession(user, forcedRole){
   if (!user) return;
-  const storedRole = localStorage.getItem('adesse_chosen_role');
+  const storedRole = localStorage.getItem('muster_chosen_role') || localStorage.getItem('adesse_chosen_role');
   const targetRole = forcedRole || authSigninRole || storedRole || cfg.oauthRole || cfg.role || 'student';
   const email = user.email || '';
   const meta = user.user_metadata || {};
@@ -4206,7 +4217,7 @@ async function handleAuthSession(user, forcedRole){
       if (rows && rows.length > 0) {
         const found = rows[0];
         const currentDev = getDeviceId();
-        const boundMatric = localStorage.getItem('adesse_bound_matric');
+        const boundMatric = localStorage.getItem('muster_bound_matric') || localStorage.getItem('adesse_bound_matric');
 
         // Check 1: Is this physical phone already bound to another student?
         if (boundMatric && boundMatric !== found.matric) {
@@ -4231,6 +4242,8 @@ async function handleAuthSession(user, forcedRole){
             await SB.put('students', { user_id: user.id, device_id: currentDev }, 'user_id');
           } catch(e) {}
         }
+        localStorage.setItem('muster_bound_matric', found.matric);
+        localStorage.setItem('muster_device_id', currentDev);
         localStorage.setItem('adesse_bound_matric', found.matric);
         localStorage.setItem('adesse_device_id', currentDev);
 
@@ -4298,7 +4311,7 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && vi
 
   // Pre-initialize native Google Sign-In
   if (window.Capacitor?.Plugins?.GoogleSignIn) {
-    const webClientId = (window.ADESSE_CONFIG && window.ADESSE_CONFIG.googleClientId) || '483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com';
+    const webClientId = CONF.googleClientId || (window.MUSTER_CONFIG && window.MUSTER_CONFIG.googleClientId) || (window.ADESSE_CONFIG && window.ADESSE_CONFIG.googleClientId) || '483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com';
     window.Capacitor.Plugins.GoogleSignIn.initialize({ clientId: webClientId }).catch(() => {});
   }
 

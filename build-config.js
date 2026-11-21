@@ -14,12 +14,12 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY ||
                         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhiZ29sdW5pcHl1aHlwYXJza211Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MjI1NzYsImV4cCI6MjExMDM5ODU3Nn0.1jrk7apaQw-ds4FNgZZhmvaKgQZoK69HIi1c6WTTz8o';
 
 const supportEmail = process.env.SUPPORT_EMAIL || 'efobifrancis53@gmail.com';
-const appName = process.env.APP_NAME || 'Adesse';
+const appName = process.env.APP_NAME || 'Muster';
 const googleClientId = process.env.GOOGLE_CLIENT_ID || '483287071794-ovfunsnva28icu5u9bmfqt0oa7acbnsq.apps.googleusercontent.com';
 
-const configContent = `// Auto-generated configuration for Adesse
+const configContent = `// Auto-generated configuration for Muster
 // Generated at build time from environment variables
-window.ADESSE_CONFIG = {
+window.MUSTER_CONFIG = window.ADESSE_CONFIG = {
   supabaseUrl: ${JSON.stringify(supabaseUrl)},
   supabaseAnonKey: ${JSON.stringify(supabaseAnonKey)},
   supportEmail: ${JSON.stringify(supportEmail)},
@@ -36,16 +36,26 @@ console.log('✓ Successfully generated root config.js');
 const filesToCopy = [
   'index.html',
   'config.js',
+  'site.webmanifest',
   'manifest.webmanifest',
   'sw.js',
   'privacy.html',
   'terms.html',
   'delete-account.html',
+  'favicon.svg',
+  'favicon.ico',
+  'favicon-16x16.png',
+  'favicon-32x32.png',
+  'favicon-48x48.png',
+  'safari-pinned-tab.svg',
+  'og-image-1200x630.png',
+  'apple-touch-icon.png',
   'icon-192.png',
   'icon-512.png',
-  'apple-touch-icon.png',
-  'favicon.png',
-  'icon.svg'
+  'icon-maskable-192.png',
+  'icon-maskable-512.png',
+  'icon.svg',
+  'head-snippet.html'
 ];
 
 function syncDirectory(targetDirName) {
