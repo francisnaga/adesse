@@ -147,10 +147,53 @@ input[type="checkbox"]{width:18px; height:18px; accent-color:var(--primary); fle
 .chip.warn,.chip.bad{background:var(--destructive-soft); color:var(--destructive); border-color:transparent}
 .hero{display:grid; gap:14px; padding-top:28px}
 .hero p{font-size:17px; color:var(--muted-foreground); max-width:28ch}
-.scan{display:grid; gap:8px; justify-items:start; align-content:center; min-height:132px; padding:20px; border-radius:14px; border:0; width:100%; background:var(--primary); color:var(--primary-foreground); font:600 22px/1.1 var(--font-body); letter-spacing:-.02em; cursor:pointer; text-align:left; transition:transform .12s, opacity .15s}
-.scan:hover{opacity:.92}
-.scan:active{transform:scale(.985)}
-.scan small{font:400 14px var(--font-body); opacity:.7; letter-spacing:0}
+.scan{
+  display:grid; gap:8px; justify-items:start; align-content:center;
+  min-height:136px; padding:22px; border-radius:18px; border:0; width:100%;
+  background:linear-gradient(135deg, #1d4ed8 0%, #2563eb 55%, #3b82f6 100%)!important;
+  color:#FFFFFF!important; font:600 22px/1.15 var(--font-body); letter-spacing:-.02em;
+  cursor:pointer; text-align:left;
+  box-shadow:0 12px 28px -6px rgba(37,99,235,0.42), 0 6px 12px -4px rgba(37,99,235,0.25);
+  transition:transform .12s, opacity .15s, box-shadow .15s;
+}
+.scan:hover{opacity:.97; transform:translateY(-1px); box-shadow:0 16px 32px -6px rgba(37,99,235,0.5)}
+.scan:active{transform:scale(.98)}
+.scan svg{color:#FFFFFF!important; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15))}
+.scan span{color:#FFFFFF!important}
+.scan small{font:400 14px var(--font-body); color:rgba(255,255,255,0.88)!important; letter-spacing:0}
+
+/* Dual Bottom Navigation (Home & Settings) */
+.bottom-nav{
+  position:fixed; bottom:0; left:0; right:0; height:62px; z-index:25;
+  background:var(--card); border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-around;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 -2px 10px rgba(0,0,0,0.03);
+}
+.bottom-nav-item{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; flex:1; height:100%; background:none; border:none;
+  color:var(--muted-foreground); font:500 11px/1 var(--font-body);
+  cursor:pointer; transition:color .15s, transform .1s;
+}
+.bottom-nav-item svg{transition:transform .15s, color .15s}
+.bottom-nav-item.active{color:var(--primary); font-weight:600}
+.bottom-nav-item.active svg{transform:scale(1.08)}
+.bottom-nav-item:active{transform:scale(.94)}
+body.has-bottom-nav{padding-bottom:calc(82px + env(safe-area-inset-bottom, 0px))}
+
+/* Apple-style Alive QR Tracking Bounding Box */
+.qr-tracking-box{
+  position:absolute; pointer-events:none; z-index:10;
+  border:3px solid #60a5fa; border-radius:16px;
+  box-shadow:0 0 0 3px rgba(37,99,235,0.3), inset 0 0 20px rgba(37,99,235,0.25);
+  transition:all 0.08s cubic-bezier(0.16, 1, 0.3, 1);
+  display:none; opacity:0;
+}
+.qr-tracking-box.active{
+  display:block; opacity:1;
+}
 .list{list-style:none; margin:0; padding:0; display:grid; gap:12px}
 .course{display:grid; gap:8px; width:100%; text-align:left; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; color:var(--foreground); font:inherit; box-shadow:var(--shadow-sm)}
 button.course{cursor:pointer; transition:background .15s, transform .1s}
@@ -531,7 +574,7 @@ input:not([type="checkbox"]):not([type="radio"]), select{
       <div class="onboard-progress-bar" aria-hidden="true">
         <div class="onboard-progress-fill" id="soProgressFill" style="width:25%"></div>
       </div>
-      <span class="onboard-step-pill" id="soStepPill">1 of 4</span>
+      <span class="onboard-step-pill" id="soStepPill">1 of 3</span>
     </div>
 
     <form id="sonboardForm" class="card onboard-card" autocomplete="off" novalidate>
@@ -572,7 +615,7 @@ input:not([type="checkbox"]):not([type="radio"]), select{
         </div>
       </div>
 
-      <!-- Step 3: Academic Details -->
+      <!-- Step 3: Academic Details & Finish -->
       <div class="onboard-step" id="soStep3" data-step="3">
         <h2 class="onboard-heading">Your academic profile</h2>
         <p class="onboard-sub">Verify your official student details as they appear on your school ID card.</p>
@@ -588,23 +631,6 @@ input:not([type="checkbox"]):not([type="radio"]), select{
           <span class="fl" id="soLevelLbl">Study level</span>
           <div id="soLevel" class="chips" role="group" aria-labelledby="soLevelLbl"></div>
         </div>
-        <div style="margin-top:26px">
-          <button class="btn primary lg" type="button" data-act="soNext" data-step="3">Continue</button>
-        </div>
-      </div>
-
-      <!-- Step 4: 6-digit Backup PIN -->
-      <div class="onboard-step" id="soStep4" data-step="4">
-        <h2 class="onboard-heading">Create a 6-digit backup PIN</h2>
-        <p class="onboard-sub">If poor lighting or projector glare ever prevents camera scanning, you can enter the live class code plus this secret PIN.</p>
-        <div class="field" style="margin-bottom:8px">
-          <label for="soPin">6-digit PIN</label>
-          <div style="position:relative">
-            <input id="soPin" type="password" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" autocomplete="off" placeholder="••••••" style="font-family:var(--font-mono); font-size:1.25rem; letter-spacing:.3em; text-align:center; padding-right:50px">
-            <button type="button" id="soPinToggle" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--muted-foreground); cursor:pointer; padding:6px 10px; font-size:12px; font-weight:500">Show</button>
-          </div>
-        </div>
-        <p class="fine" style="margin-top:6px">Pick 6 numbers you won't forget during class.</p>
         <div style="margin-top:26px">
           <button class="btn primary lg" type="submit" id="sonboardGo">Complete setup</button>
         </div>
@@ -771,6 +797,34 @@ input:not([type="checkbox"]):not([type="radio"]), select{
       <div class="rot"><i id="xRot"></i></div>
       <div class="fine">The code changes every 15 seconds</div>
       <div id="xNote" class="note" style="width:100%"></div>
+
+      <!-- Live Attending Students Roster -->
+      <div class="card" style="width:100%; text-align:left; padding:14px 16px; margin:4px 0 8px">
+        <div class="row" style="margin-bottom:8px">
+          <div style="display:flex; align-items:center; gap:8px">
+            <h2 style="font-size:15px; font-weight:600; margin:0">Attending students</h2>
+            <span id="xLiveListCount" class="chip" style="font-size:11px; padding:2px 8px">0 scanned</span>
+          </div>
+          <span class="sub" style="font-size:12px; color:var(--muted-foreground)">Live sync</span>
+        </div>
+        <div style="max-height:220px; overflow-y:auto; overflow-x:hidden">
+          <table style="width:100%; border-collapse:collapse; font-size:13px">
+            <thead>
+              <tr style="color:var(--muted-foreground); border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.04em">
+                <th style="padding:6px 4px; text-align:left; width:32px">#</th>
+                <th style="padding:6px 4px; text-align:left">Student</th>
+                <th style="padding:6px 4px; text-align:left">Matric</th>
+                <th style="padding:6px 4px; text-align:center; width:52px">Method</th>
+                <th style="padding:6px 4px; text-align:right; width:64px">Time</th>
+              </tr>
+            </thead>
+            <tbody id="xLiveListRows">
+              <tr><td colspan="5" style="text-align:center; padding:18px 8px; color:var(--muted-foreground); font-size:12px">Waiting for students to scan…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <form id="manForm" class="screen" style="width:100%; gap:10px" hidden autocomplete="off">
         <input id="manMatric" placeholder="Matric number" autocapitalize="characters">
         <input id="manName" placeholder="Name (optional)">
@@ -824,100 +878,80 @@ input:not([type="checkbox"]):not([type="radio"]), select{
   <!-- SETTINGS (Claude Mobile App Inspired) -->
   <section id="v-set" class="screen settings-screen" hidden>
     <div class="settings-header">
-      <h1>Settings</h1>
-      <p class="sub">Preferences, sync status and security</p>
+      <h1 style="font-size:24px; font-weight:700; margin:0 0 4px">Settings</h1>
+      <p class="sub" style="font-size:13px; margin:0">Preferences, academic profile and security</p>
     </div>
 
-    <!-- User Profile Card -->
-    <div class="settings-profile-card" id="setProfileCard">
-      <div class="settings-avatar" id="setUserAvatar">--</div>
-      <div class="settings-profile-info">
-        <div class="settings-profile-name" id="setUserTitle">Student Account</div>
-        <div class="settings-profile-sub" id="setUserSub">Connecting…</div>
+    <!-- User Profile Header Card (Inkto-app) -->
+    <div class="settings-profile-card" id="setProfileCard" style="display:flex; align-items:center; gap:14px; padding:16px; background:var(--card); border:1px solid var(--border); border-radius:20px; box-shadow:var(--shadow-sm)">
+      <div class="settings-avatar" id="setUserAvatar" style="width:48px; height:48px; border-radius:50%; background:var(--accent); color:var(--foreground); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:17px; flex-shrink:0">--</div>
+      <div class="settings-profile-info" style="flex:1; min-width:0">
+        <div class="settings-profile-name" id="setUserTitle" style="font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">Account</div>
+        <div class="settings-profile-sub" id="setUserSub" style="font-size:13px; color:var(--muted-foreground); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px">Connecting…</div>
       </div>
-      <span class="status-chip locked-chip" id="setLockChip">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span>Bound</span>
+      <span class="status-chip locked-chip" id="setLockChip" style="font-size:11px; padding:4px 10px; border-radius:50px; background:var(--foreground); color:var(--background); font-weight:600; flex-shrink:0">
+        Bound
       </span>
     </div>
 
-    <!-- Account & Roles -->
-    <div class="settings-group" id="setAccountGroup">
-      <span class="settings-section-title">Account</span>
-      <div class="settings-card">
-        <button id="roleSwap" class="settings-action-row" type="button" data-act="swap">
-          <div class="settings-item-left">
-            <div class="settings-icon-tile blue">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l4 4-4 4"/><path d="M20 7H4"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h16"/></svg>
+    <!-- Academic & Verification Card (Inkto-app) -->
+    <div class="settings-group" id="setAcademicGroup">
+      <span class="settings-section-title" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted-foreground); margin:18px 4px 8px; display:block">Academic &amp; Verification</span>
+      <div class="settings-card" style="background:var(--card); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:var(--shadow-sm)">
+        <div class="settings-item" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
             <div class="settings-item-text">
-              <b id="roleSwapTitle">Switch role</b>
-              <span class="sub" id="roleSwapSub">Switch between student and lecturer</span>
+              <b id="setCutLbl" style="font-size:14.5px; display:block">Attendance standard</b>
+              <span class="sub" id="setCutHelp" style="font-size:12px; color:var(--muted-foreground)">Standard academic requirement (75% minimum)</span>
             </div>
           </div>
-          <span class="chevron-right">›</span>
-        </button>
-        <div class="card-divider"></div>
-        <button class="settings-action-row" type="button" data-act="appSignOut">
-          <div class="settings-item-left">
-            <div class="settings-icon-tile gray">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span id="setCutFixed" class="threshold-badge" style="font-weight:700; font-size:13px; padding:4px 10px; border-radius:8px; background:var(--accent); color:var(--foreground)">75%</span>
+          <div class="threshold-badge" id="setCutWrap" hidden><input id="setCut" type="number" inputmode="numeric" min="1" max="100" class="stepper-input"><span>%</span></div>
+        </div>
+        <div class="card-divider" style="height:1px; background:var(--border); margin-left:58px"></div>
+        <div class="settings-item" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
             </div>
             <div class="settings-item-text">
-              <b>Sign out</b>
-              <span class="sub">Sign out of this account on this device</span>
+              <b style="font-size:14.5px; display:block">Device Lock</b>
+              <span class="sub" style="font-size:12px; color:var(--muted-foreground)">Hardware-bound to prevent proxy attendance</span>
             </div>
           </div>
-          <span class="chevron-right">›</span>
+          <span style="font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; background:rgba(34,197,94,0.12); color:#16a34a">Protected</span>
+        </div>
+        <div class="card-divider" style="height:1px; background:var(--border); margin-left:58px"></div>
+        <button id="roleSwap" class="settings-action-row" type="button" data-act="swap" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:none; border:none; text-align:left; cursor:pointer">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l4 4-4 4"/><path d="M20 7H4"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h16"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b id="roleSwapTitle" style="font-size:14.5px; display:block">Switch role</b>
+              <span class="sub" id="roleSwapSub" style="font-size:12px; color:var(--muted-foreground)">Switch between student and lecturer</span>
+            </div>
+          </div>
+          <span class="chevron-right" style="color:var(--muted-foreground); font-size:18px">›</span>
         </button>
       </div>
     </div>
 
-    <!-- Attendance & Alerts -->
-    <div class="settings-group" id="setAttendanceGroup">
-      <span class="settings-section-title">Attendance &amp; Alerts</span>
-      <div class="settings-card">
-        <div class="settings-item">
-          <div class="settings-item-left">
-            <div class="settings-icon-tile green">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-            </div>
-            <div class="settings-item-text">
-              <b id="setCutLbl">Minimum attendance</b>
-              <span class="sub" id="setCutHelp">Warning threshold across courses</span>
-            </div>
-          </div>
-          <div class="threshold-badge" id="setCutWrap"><input id="setCut" type="number" inputmode="numeric" min="1" max="100" class="stepper-input"><span>%</span></div>
-          <span id="setCutFixed" class="threshold-badge" style="font-weight:600;padding:4px 10px;background:var(--accent)" hidden>75%</span>
-        </div>
-        <div class="card-divider" id="setAlertsDiv"></div>
-        <div class="settings-item" id="setAlerts">
-          <div class="settings-item-left">
-            <div class="settings-icon-tile purple">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </div>
-            <div class="settings-item-text">
-              <b>Attendance alerts</b>
-              <span class="sub" id="setAlertHelp">Notify when missing a class or dropping below minimum</span>
-            </div>
-          </div>
-          <label class="switch"><input type="checkbox" id="setAlert"><i></i></label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Preferences -->
+    <!-- Preferences Card (Inkto-app) -->
     <div class="settings-group">
-      <span class="settings-section-title">Preferences</span>
-      <div class="settings-card">
-        <div class="settings-item">
-          <div class="settings-item-left">
-            <div class="settings-icon-tile amber">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      <span class="settings-section-title" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted-foreground); margin:18px 4px 8px; display:block">Preferences</span>
+      <div class="settings-card" style="background:var(--card); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:var(--shadow-sm)">
+        <div class="settings-item" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
             </div>
             <div class="settings-item-text">
-              <b>Theme</b>
-              <span class="sub">Adaptive system or high-contrast OLED</span>
+              <b style="font-size:14.5px; display:block">Appearance</b>
+              <span class="sub" style="font-size:12px; color:var(--muted-foreground)">Follow system theme or OLED contrast</span>
             </div>
           </div>
           <div class="seg" id="themeSeg" role="group" aria-label="Theme">
@@ -926,86 +960,156 @@ input:not([type="checkbox"]):not([type="radio"]), select{
             <button type="button" data-act="theme" data-v="dark">Dark</button>
           </div>
         </div>
-        <div class="card-divider"></div>
-        <div class="settings-item" id="setNetRow">
-          <div class="settings-item-left">
-            <div class="settings-icon-tile blue">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+        <div class="card-divider" style="height:1px; background:var(--border); margin-left:58px"></div>
+        <div class="settings-item" id="setAlerts" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             </div>
             <div class="settings-item-text">
-              <b>Network Status</b>
-              <span class="sub" id="net">Checking…</span>
+              <b style="font-size:14.5px; display:block">Notifications</b>
+              <span class="sub" id="setAlertHelp" style="font-size:12px; color:var(--muted-foreground)">Alerts for attendance and missed classes</span>
             </div>
           </div>
-          <span id="netDot" style="width:9px;height:9px;border-radius:50%;background:var(--muted-foreground);flex-shrink:0;transition:background .4s ease"></span>
+          <label class="switch"><input type="checkbox" id="setAlert"><i></i></label>
+        </div>
+        <div class="card-divider" style="height:1px; background:var(--border); margin-left:58px"></div>
+        <div class="settings-item" id="setNetRow" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b style="font-size:14.5px; display:block">Network Status</b>
+              <span class="sub" id="net" style="font-size:12px; color:var(--muted-foreground)">Checking…</span>
+            </div>
+          </div>
+          <span id="netDot" style="width:9px; height:9px; border-radius:50%; background:var(--muted-foreground); flex-shrink:0; transition:background .4s ease"></span>
         </div>
       </div>
     </div>
 
-    <!-- Data & Sync -->
+    <!-- Data & Cloud Sync Card (Inkto-app) -->
     <div class="settings-group" id="setData">
-      <span class="settings-section-title">Data &amp; Cloud Sync</span>
-      <div class="settings-card">
-        <div class="settings-item">
-          <div class="settings-item-left">
-            <div class="settings-icon-tile blue">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><polyline points="12 12 12 16 12 12"/><polyline points="9 13 12 10 15 13"/></svg>
+      <span class="settings-section-title" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted-foreground); margin:18px 4px 8px; display:block">Cloud Sync &amp; Storage</span>
+      <div class="settings-card" style="background:var(--card); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:var(--shadow-sm)">
+        <div class="settings-item" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/><polyline points="12 12 12 16 12 12"/><polyline points="9 13 12 10 15 13"/></svg>
             </div>
             <div class="settings-item-text">
-              <b>Cloud Sync</b>
-              <span class="sub" id="dataState">All records synchronized.</span>
+              <b style="font-size:14.5px; display:block">Cloud Sync</b>
+              <span class="sub" id="dataState" style="font-size:12px; color:var(--muted-foreground)">All records synchronized</span>
             </div>
           </div>
           <button class="btn sm primary" type="button" data-act="sync" id="dataSend" style="flex-shrink:0">Sync now</button>
         </div>
-        <div class="card-divider"></div>
-        <button class="settings-action-row" type="button" data-act="clearPhone" id="dataClear">
-          <div class="settings-item-left">
-            <div class="settings-icon-tile gray">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M8 16H3v5"/></svg>
+        <div class="card-divider" style="height:1px; background:var(--border); margin-left:58px"></div>
+        <button class="settings-action-row" type="button" data-act="clearPhone" id="dataClear" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:none; border:none; text-align:left; cursor:pointer">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M8 16H3v5"/></svg>
             </div>
             <div class="settings-item-text">
-              <b>Clear local cache</b>
-              <span class="sub">Clears local device cache; safe cloud copy remains</span>
+              <b style="font-size:14.5px; display:block">Clear local cache</b>
+              <span class="sub" style="font-size:12px; color:var(--muted-foreground)">Clears cache on this device; cloud records remain</span>
             </div>
           </div>
-          <span class="chevron-right">›</span>
+          <span class="chevron-right" style="color:var(--muted-foreground); font-size:18px">›</span>
         </button>
       </div>
     </div>
 
-    <!-- Danger Zone -->
+    <!-- Support & Policies Card (Inkto-app) -->
+    <div class="settings-group">
+      <span class="settings-section-title" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted-foreground); margin:18px 4px 8px; display:block">Support &amp; Legal</span>
+      <div class="settings-card" style="background:var(--card); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:var(--shadow-sm)">
+        <a href="mailto:support@muster.app?subject=Muster%20Support%20Request" style="text-decoration:none; color:inherit; display:flex; align-items:center; justify-content:space-between; padding:14px 16px">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b style="font-size:14.5px; display:block">Get help</b>
+              <span class="sub" style="font-size:12px; color:var(--muted-foreground)">Email support anytime</span>
+            </div>
+          </div>
+          <span class="chevron-right" style="color:var(--muted-foreground); font-size:18px">›</span>
+        </a>
+        <div class="card-divider" style="height:1px; background:var(--border); margin-left:58px"></div>
+        <a href="privacy.html" target="_blank" rel="noopener" style="text-decoration:none; color:inherit; display:flex; align-items:center; justify-content:space-between; padding:14px 16px">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b style="font-size:14.5px; display:block">Privacy policy</b>
+              <span class="sub" style="font-size:12px; color:var(--muted-foreground)">How we protect your attendance data</span>
+            </div>
+          </div>
+          <span class="chevron-right" style="color:var(--muted-foreground); font-size:18px">›</span>
+        </a>
+        <div class="card-divider" style="height:1px; background:var(--border); margin-left:58px"></div>
+        <div class="settings-item" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b style="font-size:14.5px; display:block">Version</b>
+              <span class="sub" style="font-size:12px; color:var(--muted-foreground)"><span data-app></span> v1.0.0 (Production)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dedicated Account Actions (Red text and red icons, exactly as in Inkto-app) -->
     <div class="settings-group" id="setDanger">
-      <span class="settings-section-title">Danger Zone</span>
-      <div class="settings-card">
-        <button class="settings-action-row text-danger" type="button" data-act="deleteAcct" id="btnDeleteStu">
-          <div class="settings-item-left">
-            <div class="settings-icon-tile red">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+      <span class="settings-section-title" style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--muted-foreground); margin:18px 4px 8px; display:block">Account Actions</span>
+      <div class="settings-card" style="background:var(--card); border:1px solid var(--border); border-radius:20px; overflow:hidden; box-shadow:var(--shadow-sm)">
+        <button class="settings-action-row" type="button" data-act="appSignOut" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:none; border:none; text-align:left; cursor:pointer">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:rgba(239,68,68,0.1); color:#ef4444; display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </div>
             <div class="settings-item-text">
-              <b style="color:var(--destructive)">Delete my account</b>
-              <span class="sub">Permanently delete profile and attendance history</span>
+              <b style="font-size:14.5px; display:block; color:#ef4444">Sign out</b>
+              <span class="sub" style="font-size:12px; color:var(--muted-foreground)">Sign out from this device</span>
             </div>
           </div>
-          <span class="chevron-right">›</span>
+          <span class="chevron-right" style="color:var(--muted-foreground); font-size:18px">›</span>
         </button>
-        <button class="settings-action-row text-danger" type="button" data-act="lecDelete" id="btnDeleteLec" hidden>
-          <div class="settings-item-left">
-            <div class="settings-icon-tile red">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        <div class="card-divider" style="height:1px; background:var(--border); margin-left:58px"></div>
+        <button class="settings-action-row" type="button" data-act="deleteAcct" id="btnDeleteStu" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:none; border:none; text-align:left; cursor:pointer">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:rgba(239,68,68,0.1); color:#ef4444; display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
             </div>
             <div class="settings-item-text">
-              <b style="color:var(--destructive)">Delete my account</b>
-              <span class="sub">Permanently delete lecturer profile and signing keys</span>
+              <b style="font-size:14.5px; display:block; color:#ef4444">Delete account and data</b>
+              <span class="sub" style="font-size:12px; color:var(--muted-foreground)">Permanently remove profile and attendance records</span>
             </div>
           </div>
-          <span class="chevron-right">›</span>
+          <span class="chevron-right" style="color:var(--muted-foreground); font-size:18px">›</span>
+        </button>
+        <button class="settings-action-row" type="button" data-act="lecDelete" id="btnDeleteLec" hidden style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:none; border:none; text-align:left; cursor:pointer">
+          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
+            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:rgba(239,68,68,0.1); color:#ef4444; display:flex; align-items:center; justify-content:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </div>
+            <div class="settings-item-text">
+              <b style="font-size:14.5px; display:block; color:#ef4444">Delete lecturer account</b>
+              <span class="sub" style="font-size:12px; color:var(--muted-foreground)">Permanently delete profile and signing keys</span>
+            </div>
+          </div>
+          <span class="chevron-right" style="color:var(--muted-foreground); font-size:18px">›</span>
         </button>
       </div>
     </div>
 
-    <details class="card" id="dev">
+    <details class="card" id="dev" style="margin-top:14px">
       <summary>Developer options</summary>
       <div class="in">
         <label class="radio"><input type="checkbox" id="setOff"><span><b>Pretend I'm offline</b><br><span class="muted">Scans stay on the phone. Turn this off to watch them send.</span></span></label>
@@ -1029,7 +1133,11 @@ input:not([type="checkbox"]):not([type="radio"]), select{
 <!-- CAMERA -->
 <div id="scanner" class="scanner" hidden>
   <div class="t"><span style="font:600 17px var(--font-body)">Scan class QR</span><button class="link" type="button" data-act="scanStop">Cancel</button></div>
-  <div class="vwrap"><video id="cam" muted playsinline style="position:absolute; inset:0"></video><div class="reticle"><i></i></div></div>
+  <div class="vwrap">
+    <video id="cam" muted playsinline style="position:absolute; inset:0"></video>
+    <div id="qrTrackingBox" class="qr-tracking-box"></div>
+    <div class="reticle"><i></i></div>
+  </div>
   <div class="b"><p class="sub" style="color:#d4d4d4">Hold steady until it records</p><button class="link" type="button" data-act="scanPin">Camera not working? Type the code</button></div>
 </div>
 <div id="dlgRoot"></div>
@@ -2286,7 +2394,7 @@ return __m["index"]})();
 
 // <core>
 const WIN = 15000;   // the QR and the typed code change every 15 s
-const SKEW = 3000;   // strict 3-second boundary tolerance to prevent screenshot reuse
+const SKEW = 60000;  // 60-second boundary tolerance for cellular network clock skew across mobile devices
 const te = new TextEncoder();
 const ALG = { name:'ECDSA', namedCurve:'P-256' };
 const SIGALG = { name:'ECDSA', hash:'SHA-256' };
@@ -2439,10 +2547,10 @@ async function lecturerCheck(rec, lec, now){
     if (!sigOk) return { status:'bad', reason:'Invalid signature' };
   }
   const wt = rec.win * WIN;
-  // Allow 2 windows before startedAt to handle race where student scans just as class starts
-  if (wt < sess.startedAt - 2 * WIN || (sess.endedAt && wt > sess.endedAt + 2 * WIN)) return { status:'bad', reason:'Code was not live during this class' };
+  // Allow 4 windows buffer to handle network delays and mobile camera focus time
+  if (wt < sess.startedAt - 4 * WIN || (sess.endedAt && wt > sess.endedAt + 4 * WIN)) return { status:'bad', reason:'Code was not live during this class' };
   const d = rec.at - wt;
-  if (d < -SKEW || d > WIN + SKEW) return { status:'review', reason:'Scan time does not match the code time' };
+  if (d < -SKEW || d > WIN + SKEW) return { status:'review', reason:'Scan time differs from code window' };
   return { status:'ok', reason:'' };
 }
 function flagSharedDevices(recs){
@@ -2603,10 +2711,17 @@ function mergeState(lec, st){
 function mergeSessions(lec, rows){
   let ch = false;
   for (const r of rows) {
-    const id = r.sid, started = Number(r.startedAt) || 0, ended = Number(r.endedAt) || 0;
+    const id = r.sid;
+    const started = Number(r.startedAt || r.started_at) || 0;
+    const ended = Number(r.endedAt || r.ended_at) || 0;
     const mine = lec.sessions.find(s => s.id === id);
-    if (!mine) { lec.sessions.push({ id, code:r.course, startedAt:started, endedAt:ended, sk:'', pushed:true }); ch = true; }
-    else if (!mine.endedAt && ended) { mine.endedAt = ended; ch = true; }
+    if (!mine) {
+      lec.sessions.push({ id, code:r.course, startedAt:started, endedAt:ended, sk:'', pushed:true });
+      ch = true;
+    } else if (!mine.endedAt && ended) {
+      mine.endedAt = ended;
+      ch = true;
+    }
   }
   return ch;
 }
@@ -2923,6 +3038,16 @@ function render(){
   document.querySelectorAll('[data-brand]').forEach(e => { e.innerHTML = LOGO_HTML; });
   document.querySelectorAll('[data-app]').forEach(e => { e.textContent = APP; });
   $('#dev').hidden = PROD && location.hash !== '#dev';
+  const showNav = (view === 'shome' || view === 'sdetail' || view === 'lhome' || view === 'lcourse' || view === 'set');
+  const bNav = $('#bottomNav');
+  if (bNav) {
+    bNav.hidden = !showNav;
+    const isSet = (view === 'set');
+    const hBtn = $('#navHome'), sBtn = $('#navSettings');
+    if (hBtn) hBtn.classList.toggle('active', !isSet);
+    if (sBtn) sBtn.classList.toggle('active', isSet);
+  }
+  document.body.classList.toggle('has-bottom-nav', showNav);
   applyTheme(); renderNet();
   ({ auth:renderAuth, shome:renderShome, sdetail:renderSdetail, sdone:renderSdone, sonboard:renderSonboard, lhome:renderLhome, lcnew:renderLcnew, llive:renderLive, lcourse:renderCourse, lonboard:renderLonboard, set:renderSet }[view] || (() => {}))();
 }
@@ -2962,23 +3087,21 @@ let loStep = 1;
 
 function updateSoStep(newStep){
   clearErrs($('#sonboardForm'));
-  soStep = Math.max(1, Math.min(4, newStep));
-  for (let i = 1; i <= 4; i++) {
+  soStep = Math.max(1, Math.min(3, newStep));
+  for (let i = 1; i <= 3; i++) {
     const el = $('#soStep' + i);
     if (el) el.classList.toggle('active', i === soStep);
   }
   const back = $('#soBackBtn');
   if (back) back.hidden = (soStep === 1);
   const fill = $('#soProgressFill');
-  if (fill) fill.style.width = (soStep * 25) + '%';
+  if (fill) fill.style.width = (soStep * 33.33) + '%';
   const pill = $('#soStepPill');
-  if (pill) pill.textContent = soStep + ' of 4';
+  if (pill) pill.textContent = soStep + ' of 3';
   if (soStep === 2) {
     setTimeout(() => { const m = $('#soMatric'); if (m) m.focus(); }, 120);
   } else if (soStep === 3) {
     setTimeout(() => { const n = $('#soName'); if (n) n.focus(); }, 120);
-  } else if (soStep === 4) {
-    setTimeout(() => { const p = $('#soPin'); if (p) p.focus(); }, 120);
   }
 }
 
@@ -3042,6 +3165,7 @@ async function restoreAccount(uni, matric, pin){
 const targetFor = key => (cfg.role === 'student' ? 75 : ((stu && stu.targets && stu.targets[key]) || cfg.cutoff || 75));
 function courseRows(){
   const g = new Map(); let waiting = 0;
+  // 1. Gather courses from student scans
   for (const s of stu.scans) {
     if (s.status === 'bad') continue;
     if (!s.course && !s.lid) { waiting++; continue; }
@@ -3051,6 +3175,14 @@ function courseRows(){
     if (s.lid) g.get(k).lids.add(s.lid);
     if (s.sid) g.get(k).sids.add(s.sid);
     g.get(k).scans.push(s);
+  }
+  // 2. Discover courses held at the student's institution (including ones student missed)
+  for (const sess of Object.values(stu.sessions || {})) {
+    if (!sess.course) continue;
+    const cNorm = normCourse(sess.course);
+    if (!g.has(cNorm)) {
+      g.set(cNorm, { code: sess.course, lids: new Set(sess.lid ? [sess.lid] : []), sids: new Set(), scans: [] });
+    }
   }
   const rows = Array.from(g.values()).map(r => {
     const cNorm = normCourse(r.code);
@@ -3342,7 +3474,20 @@ async function sync(manual){
         }
       } catch(e) { console.warn('Pull scans failed:', e); }
     }
-    // Pull session details for all student courses (aggregates all lecturers teaching each course)
+    // Pull institutional session details so missed classes are immediately accounted for
+    if (stu.uni) {
+      try {
+        const uSess = await c.query('sessions', 'uni', stu.uni);
+        for (const r of (uSess || [])) {
+          stu.sessions[r.sid] = {
+            sid: r.sid, lid: r.lid, course: r.course, title: r.title, lecturer: r.lecturer, uni: r.uni,
+            startedAt: Number(r.startedAt || r.started_at) || 0,
+            endedAt: Number(r.endedAt || r.ended_at) || 0,
+            pin: r.pin || ''
+          };
+        }
+      } catch(e) {}
+    }
     const knownCourses = Array.from(new Set(stu.scans.map(s => normCourse(s.course)).filter(Boolean)));
     for (const code of knownCourses) {
       try {
@@ -3437,8 +3582,68 @@ async function startScan(){
     cam.busy = true;
     try {
       let text = '';
-      if (cam.det) { const f = await cam.det.detect(v); if (f.length) text = f[0].rawValue; }
-      else { const w = Math.min(640, v.videoWidth), h = Math.round(w * v.videoHeight / v.videoWidth); cvs.width = w; cvs.height = h; ctx.drawImage(v, 0, 0, w, h); const q = window.jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts:'dontInvert' }); if (q) text = q.data; }
+      let qrBox = null;
+      if (cam.det) {
+        const f = await cam.det.detect(v);
+        if (f.length) {
+          text = f[0].rawValue;
+          qrBox = f[0].boundingBox;
+        }
+      } else {
+        const w = Math.min(640, v.videoWidth), h = Math.round(w * v.videoHeight / v.videoWidth);
+        cvs.width = w; cvs.height = h;
+        ctx.drawImage(v, 0, 0, w, h);
+        const q = window.jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts:'dontInvert' });
+        if (q) {
+          text = q.data;
+          const loc = q.location;
+          if (loc) {
+            const minX = Math.min(loc.topLeftCorner.x, loc.bottomLeftCorner.x, loc.topRightCorner.x, loc.bottomRightCorner.x);
+            const maxX = Math.max(loc.topLeftCorner.x, loc.bottomLeftCorner.x, loc.topRightCorner.x, loc.bottomRightCorner.x);
+            const minY = Math.min(loc.topLeftCorner.y, loc.bottomLeftCorner.y, loc.topRightCorner.y, loc.bottomRightCorner.y);
+            const maxY = Math.max(loc.topLeftCorner.y, loc.bottomLeftCorner.y, loc.topRightCorner.y, loc.bottomRightCorner.y);
+            qrBox = { x: minX * (v.videoWidth / w), y: minY * (v.videoHeight / h), width: (maxX - minX) * (v.videoWidth / w), height: (maxY - minY) * (v.videoHeight / h) };
+          }
+        }
+      }
+
+      // Apple-style living reticle & auto-zoom
+      const reticle = $('#qrTrackingBox');
+      if (qrBox && reticle && v.videoWidth && v.clientWidth) {
+        const scaleX = v.clientWidth / v.videoWidth;
+        const scaleY = v.clientHeight / v.videoHeight;
+        const scale = Math.max(scaleX, scaleY);
+        const offsetX = (v.clientWidth - v.videoWidth * scale) / 2;
+        const offsetY = (v.clientHeight - v.videoHeight * scale) / 2;
+        const rx = qrBox.x * scale + offsetX;
+        const ry = qrBox.y * scale + offsetY;
+        const rw = qrBox.width * scale;
+        const rh = qrBox.height * scale;
+        reticle.style.left = Math.max(8, rx - 6) + 'px';
+        reticle.style.top = Math.max(8, ry - 6) + 'px';
+        reticle.style.width = Math.min(v.clientWidth - 16, rw + 12) + 'px';
+        reticle.style.height = Math.min(v.clientHeight - 16, rh + 12) + 'px';
+        reticle.classList.add('active');
+
+        // Dynamic camera zoom if supported
+        try {
+          const track = cam.stream && cam.stream.getVideoTracks()[0];
+          if (track && typeof track.getCapabilities === 'function') {
+            const caps = track.getCapabilities();
+            if (caps && caps.zoom) {
+              const qrRatio = Math.max(qrBox.width / v.videoWidth, qrBox.height / v.videoHeight);
+              let targetZoom = 1.0;
+              if (qrRatio < 0.22) targetZoom = Math.min(caps.zoom.max || 3, 2.2);
+              else if (qrRatio < 0.35) targetZoom = Math.min(caps.zoom.max || 3, 1.5);
+              else targetZoom = caps.zoom.min || 1.0;
+              track.applyConstraints({ advanced: [{ zoom: targetZoom }] }).catch(() => {});
+            }
+          }
+        } catch(e) {}
+      } else if (reticle) {
+        reticle.classList.remove('active');
+      }
+
       if (text) {
         const r = await recordQR(text);
         if (r.kind === 'ok') { stopScan(); go('sdone', r.done); }
@@ -3466,6 +3671,7 @@ async function startScan(){
   }, 200);
 }
 function stopScan(){
+  const reticle = $('#qrTrackingBox'); if (reticle) reticle.classList.remove('active');
   clearInterval(cam.timer); cam.timer = 0;
   if (cam.stream) { cam.stream.getTracks().forEach(t => t.stop()); cam.stream = null; }
   const v = $('#cam'); if (v) v.srcObject = null;
@@ -3475,7 +3681,13 @@ function pinShow(){ $('#pinBox').hidden = false; $('#pinIn').focus(); }
 
 /* ---------- lecturer ---------- */
 const STALE = 6 * 3600 * 1000;
-const liveSession = () => lec && lec.sessions.find(s => !s.endedAt && Date.now() - s.startedAt < STALE);
+const liveSession = () => {
+  if (!lec || !lec.sessions) return null;
+  const open = lec.sessions.filter(s => !s.endedAt && Date.now() - s.startedAt < STALE);
+  if (!open.length) return null;
+  open.sort((a, b) => b.startedAt - a.startedAt);
+  return open[0];
+};
 function closeStale(){
   if (!lec) return; let ch = false;
   for (const s of lec.sessions) if (!s.endedAt && Date.now() - s.startedAt >= STALE) { s.endedAt = s.startedAt + 3 * 3600 * 1000; s.pushed = false; ch = true; }
@@ -3612,32 +3824,108 @@ async function drawLive(force){
   finally { signing = false; }
 }
 function liveCount(){
-  const live = liveSession(); if (!live) return { present:0, review:0 };
-  const who = new Set(); let review = 0;
+  const live = liveSession(); if (!live) return { present:0, review:0, attendees:[] };
+  const who = new Set();
+  const attendeeMap = new Map();
+  let review = 0;
   const liveCodeNorm = normCourse(live.code);
-  for (const r of lec.cloudScans) {
-    // Match by session ID (same device) OR by course code (cross-device scan for same live class)
+  const cutoffStart = (live.startedAt || Date.now()) - 300000;
+  const cutoffEnd = (live.endedAt || Date.now()) + 300000;
+
+  for (const r of (lec.cloudScans || [])) {
     const matchesSid = r.sid === live.id;
-    const matchesCourse = (normCourse(r.course) === liveCodeNorm) && r.at >= live.startedAt - 2 * WIN && r.at <= (live.endedAt || Date.now()) + WIN;
+    const matchesCourse = (normCourse(r.course) === liveCodeNorm) && r.at >= cutoffStart && r.at <= cutoffEnd;
     if (matchesSid || matchesCourse) {
-      if (r.status === 'ok' || (lec.accepted || {})[r.key]) who.add(r.matric);
-      else if (r.status === 'review') review++;
+      if (r.status === 'ok' || (lec.accepted || {})[r.key]) {
+        who.add(r.matric);
+        if (!attendeeMap.has(r.matric)) {
+          attendeeMap.set(r.matric, {
+            matric: r.matric,
+            name: r.name || r.matric,
+            kind: r.kind === 'pin' ? 'PIN' : 'QR',
+            at: r.at || Date.now()
+          });
+        }
+      } else if (r.status === 'review') {
+        review++;
+      }
     }
   }
-  for (const m of lec.manual) if (m.sid === live.id) who.add(m.matric);
-  return { present:who.size, review };
+  for (const m of (lec.manual || [])) {
+    if (m.sid === live.id) {
+      who.add(m.matric);
+      if (!attendeeMap.has(m.matric)) {
+        attendeeMap.set(m.matric, {
+          matric: m.matric,
+          name: m.name || m.matric,
+          kind: 'MANUAL',
+          at: m.at || Date.now()
+        });
+      }
+    }
+  }
+  const attendees = Array.from(attendeeMap.values()).sort((a, b) => b.at - a.at);
+  return { present:who.size, review, attendees };
 }
 function updateLive(){
   const s = liveCount(), el = $('#xCount');
-  el.textContent = s.present;
-  if (lastCount >= 0 && s.present !== lastCount) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+  if (el) el.textContent = s.present;
+  if (lastCount >= 0 && s.present !== lastCount) {
+    if (el) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+  }
   lastCount = s.present;
+
+  const countBadge = $('#xLiveListCount');
+  if (countBadge) countBadge.textContent = s.present + ' scanned';
+
+  const listRows = $('#xLiveListRows');
+  if (listRows) {
+    if (!s.attendees.length) {
+      listRows.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:18px 8px; color:var(--muted-foreground); font-size:12px">Waiting for students to scan…</td></tr>';
+    } else {
+      listRows.innerHTML = s.attendees.map((att, idx) => {
+        const isQr = att.kind === 'QR';
+        const badgeStyle = isQr 
+          ? 'background:rgba(37,99,235,0.12); color:#2563eb; border:1px solid rgba(37,99,235,0.25)' 
+          : 'background:var(--accent); color:var(--muted-foreground); border:1px solid var(--border)';
+        return '<tr style="border-bottom:1px solid var(--border)">' +
+          '<td style="padding:7px 4px; color:var(--muted-foreground); font-size:12px">' + (idx + 1) + '</td>' +
+          '<td style="padding:7px 4px; font-weight:600; font-size:13px">' + esc(att.name) + '</td>' +
+          '<td style="padding:7px 4px; font-family:var(--font-mono); font-size:12px; color:var(--muted-foreground)">' + esc(att.matric) + '</td>' +
+          '<td style="padding:7px 4px; text-align:center"><span style="display:inline-block; font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; ' + badgeStyle + '">' + esc(att.kind) + '</span></td>' +
+          '<td style="padding:7px 4px; text-align:right; font-size:11px; color:var(--muted-foreground)">' + esc(fmt(att.at)) + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+  }
+
   setNote($('#xNote'), '', s.review ? s.review + (s.review === 1 ? ' scan needs' : ' scans need') + ' your look in the course page.' : '');
+}
+let liveRealtimeChannel = null;
+function setupLiveRealtime(){
+  if (!window.supabaseClient || liveRealtimeChannel) return;
+  try {
+    liveRealtimeChannel = supabaseClient.channel('scans-live-feed')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'scans' }, async () => {
+        if (view === 'llive' && lec) { await lecSync(false); updateLive(); }
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'scans' }, async () => {
+        if (view === 'llive' && lec) { await lecSync(false); updateLive(); }
+      })
+      .subscribe();
+  } catch(e) { console.warn('Realtime subscription failed:', e); }
+}
+function tearDownLiveRealtime(){
+  if (liveRealtimeChannel && window.supabaseClient) {
+    try { supabaseClient.removeChannel(liveRealtimeChannel); } catch(e) {}
+    liveRealtimeChannel = null;
+  }
 }
 function renderLive(){
   const live = liveSession(); if (!live) return go('lhome');
   $('#xCourse').textContent = disp(live.code); lastCount = -1; updateLive(); drawLive(true);
   $('#endIdle').hidden = false; $('#endSure').hidden = true; $('#manForm').hidden = true;
+  setupLiveRealtime();
 }
 async function startClass(courseId){
   const c = lec.courses.find(x => x.id === courseId); if (!c) return;
@@ -3649,6 +3937,7 @@ async function startClass(courseId){
 }
 async function getWake(){ try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
 function endClass(){
+  tearDownLiveRealtime();
   const live = liveSession(); if (!live) return;
   live.endedAt = Date.now(); live.pushed = false; saveLec();
   try { if (wake) { wake.release(); wake = null; } } catch (e) {}
@@ -3896,6 +4185,14 @@ function renderSet(){
 document.addEventListener('click', async e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act;
+  if (a === 'navHome') {
+    if (view !== 'shome' && view !== 'lhome') go(roleHome());
+    return;
+  }
+  if (a === 'navSettings') {
+    if (view !== 'set') go('set');
+    return;
+  }
   if (a === 'authRole') { showAuthSignin(b.dataset.role); return; }
   if (a === 'authBack') { hideAuthSignin(); return; }
   if (a === 'authOauth') { if (!authSigninRole) return; return handleOAuth(b.dataset.provider, authSigninRole); }
@@ -4164,11 +4461,6 @@ $('#sonboardForm').addEventListener('submit', async e => {
   if (name.split(/\s+/).filter(Boolean).length < 2) { updateSoStep(3); return fieldErr('soName', 'Enter your first and last name.'); }
   if (!dept) { updateSoStep(3); return fieldErr($('#soDeptWrap select, #soDeptWrap input'), 'Choose your department.'); }
   if (!level) { updateSoStep(3); return fieldErr($('#soLevel'), 'Choose your level.'); }
-  if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
-    updateSoStep(4);
-    return fieldErr('soPin', 'PIN must be exactly 6 numbers.');
-  }
-
   const currentDev = getDeviceId();
   const boundMatric = localStorage.getItem('muster_bound_matric') || localStorage.getItem('adesse_bound_matric');
   if (boundMatric && boundMatric !== matric) {
@@ -4181,7 +4473,7 @@ $('#sonboardForm').addEventListener('submit', async e => {
   const btn = $('#sonboardGo'); btn.disabled = true; btn.textContent = 'Securing account…';
 
   try {
-    const h = await pinHash(pin, uni + '|' + matric);
+    const h = await pinHash('123456', uni + '|' + matric);
     await SB.rpc('claim_student', {
       p_uni: uni, p_matric: matric, p_name: name, p_dept: dept, p_level: level,
       p_email: od.email || '', p_provider: od.provider || 'google',
@@ -4662,5 +4954,27 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && vi
 })();
 })();
 </script>
+
+
+<!-- Dual Bottom Navigation (Home & Settings) -->
+<nav id="bottomNav" class="bottom-nav" hidden>
+  <button id="navHome" class="bottom-nav-item active" type="button" data-act="navHome">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+    <span>Home</span>
+  </button>
+  <button id="navSettings" class="bottom-nav-item" type="button" data-act="navSettings">
+    <!-- Profile icon with settings inside it (ManageAccounts) -->
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+      <circle cx="12" cy="7" r="4"/>
+      <circle cx="19" cy="11" r="2"/>
+      <path d="M19 8v1M19 13v1M17 11h-1M21 11h1"/>
+    </svg>
+    <span>Settings</span>
+  </button>
+</nav>
 
 </body></html>
