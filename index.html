@@ -870,7 +870,8 @@ input:not([type="checkbox"]):not([type="radio"]), select{
               <span class="sub" id="setCutHelp">Warning threshold across courses</span>
             </div>
           </div>
-          <div class="threshold-badge"><input id="setCut" type="number" inputmode="numeric" min="1" max="100" class="stepper-input"><span>%</span></div>
+          <div class="threshold-badge" id="setCutWrap"><input id="setCut" type="number" inputmode="numeric" min="1" max="100" class="stepper-input"><span>%</span></div>
+          <span id="setCutFixed" class="threshold-badge" style="font-weight:600;padding:4px 10px;background:var(--accent)" hidden>75%</span>
         </div>
         <div class="card-divider" id="setAlertsDiv"></div>
         <div class="settings-item" id="setAlerts">
@@ -2280,13 +2281,51 @@ function rid(n){ const a = new Uint8Array(n); crypto.getRandomValues(a); return 
 function hexBytes(h){ const a = new Uint8Array(h.length / 2); for (let i = 0; i < a.length; i++) a[i] = parseInt(h.substr(i * 2, 2), 16); return a; }
 function normCourse(s){ return String(s || '').toUpperCase().replace(/[^A-Z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,12); }
 function normMatric(s){ return String(s || '').toUpperCase().replace(/\s+/g,'').replace(/[^A-Z0-9\/\-]/g,'').slice(0,24); }
+function getHardwareFingerprint(){
+  try {
+    const parts = [
+      screen.width || 0,
+      screen.height || 0,
+      screen.colorDepth || 0,
+      window.devicePixelRatio || 1,
+      navigator.hardwareConcurrency || 1,
+      navigator.maxTouchPoints || 0,
+      navigator.platform || '',
+      Intl.DateTimeFormat().resolvedOptions().timeZone || ''
+    ];
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (gl) {
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo) {
+          parts.push(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '');
+          parts.push(gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || '');
+        }
+      }
+    } catch(e) {}
+    const str = parts.join('|');
+    let h1 = 0xdeadbeef ^ 0, h2 = 0x41c6ce57 ^ 0;
+    for (let i = 0; i < str.length; i++) {
+      const ch = str.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(16, '0');
+  } catch(e) {
+    return 'fallback';
+  }
+}
 function getDeviceId(){
+  const hw = 'dev_' + getHardwareFingerprint();
   let id = localStorage.getItem('muster_device_id') || localStorage.getItem('adesse_device_id');
   if (!id) {
-    id = 'dev_' + rid(16);
+    id = hw;
     localStorage.setItem('muster_device_id', id);
   }
-  return id;
+  return id || hw;
 }
 
 async function genKeys(){
@@ -2357,13 +2396,14 @@ async function studentCheck(c, now, knownKeys){
 // Runs on the lecturer's phone whenever scans are downloaded.
 async function lecturerCheck(rec, lec, now){
   if (rec.kind === 'pin') {
+    const sess = lec.sessions.find(s => s.id === rec.sid || (rec.pin && s.pin === rec.pin));
+    if (sess) return { status:'ok', sid:sess.id, course:sess.code, reason:'' };
     const wAt = Math.floor(rec.at / WIN);
     for (const s of lec.sessions) {
       if (!s.sk || rec.at < s.startedAt - 2 * WIN || rec.at > (s.endedAt || now) + 2 * WIN) continue;
       for (const w of [wAt, wAt - 1, wAt + 1]) if (await pinFor(s.sk, w) === rec.pin) return { status:'ok', sid:s.id, course:s.code, reason:'' };
     }
-    // Also try matching by course if no sk match — keep pending rather than bad
-    return { status:'pending', reason:'Waiting for lecturer session key to verify' };
+    return { status:'bad', reason:'Invalid class pin' };
   }
   let sess = lec.sessions.find(s => s.id === rec.sid);
   if (!sess && rec.course) {
@@ -2458,14 +2498,22 @@ function attendance(lec, course, cutoff){
 // What a student should do next, in plain words.
 function advice(attended, held, cutoff){
   if (!held) return '';
-  const c = cutoff / 100;
+  const pct = Math.round((attended / held) * 100);
+  const c = (cutoff || 75) / 100;
   if (attended / held >= c) {
-    const k = Math.floor(attended / c - held + 1e-9);
-    return k <= 0 ? 'Attend every class to stay above ' + cutoff + '%' : 'You can miss ' + k + ' more and stay above ' + cutoff + '%';
+    const canMiss = Math.floor(attended / c - held + 1e-9);
+    if (canMiss > 1) return 'Attendance is good at ' + pct + '%. You can miss up to ' + canMiss + ' classes and stay above 75%.';
+    if (canMiss === 1) return 'Attendance is good at ' + pct + '%. You can miss 1 class and stay above 75%.';
+    return 'Attendance is on track at ' + pct + '%. Attend upcoming classes to maintain 75%.';
   }
-  if (c >= 1) return 'Below ' + cutoff + '%';
-  const x = Math.ceil((c * held - attended) / (1 - c) - 1e-9);
-  return 'Attend the next ' + x + ' to get back above ' + cutoff + '%';
+  if (pct < 50) {
+    return 'Attendance is critically low at ' + pct + '%. You must attend every upcoming class to recover your standing.';
+  }
+  const needed = Math.max(1, Math.min(6, Math.ceil((c * held - attended) / (1 - c) - 1e-9)));
+  if (needed <= 3) {
+    return 'Attendance is below minimum at ' + pct + '%. Attend the next ' + needed + (needed === 1 ? ' class' : ' classes') + ' consecutively to reach 75%.';
+  }
+  return 'Attendance is below minimum at ' + pct + '%. Consistent attendance in upcoming classes is required to reach 75%.';
 }
 function csvCell(v){ v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; }
 function toCSV(a, cutoff, roster){
@@ -2974,28 +3022,33 @@ async function restoreAccount(uni, matric, pin){
 }
 
 /* ---------- student: home, detail, alerts ---------- */
-const targetFor = key => (stu.targets && stu.targets[key]) || cfg.cutoff;
+const targetFor = key => (cfg.role === 'student' ? 75 : ((stu && stu.targets && stu.targets[key]) || cfg.cutoff || 75));
 function courseRows(){
   const g = new Map(); let waiting = 0;
   for (const s of stu.scans) {
     if (s.status === 'bad') continue;
-    if (!s.lid) { waiting++; continue; }
-    const k = s.lid + '|' + s.course;
-    if (!g.has(k)) g.set(k, { lid:s.lid, code:s.course, sids:new Set(), scans:[] });
-    g.get(k).sids.add(s.sid);
+    if (!s.course && !s.lid) { waiting++; continue; }
+    const cNorm = normCourse(s.course || '');
+    const k = cNorm || (s.lid + '|raw');
+    if (!g.has(k)) g.set(k, { code:s.course || cNorm, lids:new Set(), sids:new Set(), scans:[] });
+    if (s.lid) g.get(k).lids.add(s.lid);
+    if (s.sid) g.get(k).sids.add(s.sid);
     g.get(k).scans.push(s);
   }
   const rows = Array.from(g.values()).map(r => {
-    const ss = Object.values(stu.sessions).filter(x => x.lid === r.lid && normCourse(x.course) === normCourse(r.code)).sort((a, b) => b.startedAt - a.startedAt);
+    const cNorm = normCourse(r.code);
+    const ss = Object.values(stu.sessions).filter(x => normCourse(x.course) === cNorm).sort((a, b) => b.startedAt - a.startedAt);
     const knownSessionIds = new Set(ss.map(x => x.sid));
-    const extraHist = r.scans.filter(s => s.sid && !knownSessionIds.has(s.sid)).map(s => ({ sid:s.sid, at:s.at, here:true }));
-    const baseHist = ss.map(x => ({ sid:x.sid, at:x.startedAt, here:r.sids.has(x.sid) }));
+    const extraHist = r.scans.filter(s => s.sid && !knownSessionIds.has(s.sid)).map(s => ({ sid:s.sid, at:s.at, here:true, lecturer:s.lecturer || '' }));
+    const baseHist = ss.map(x => ({ sid:x.sid, at:x.startedAt, here:r.sids.has(x.sid), lecturer:x.lecturer || '' }));
     const hist = [...extraHist, ...baseHist].sort((a, b) => b.at - a.at);
     const a = r.sids.size;
     const held = Math.max(ss.length, a);
     const pct = held ? Math.min(100, Math.round(a / held * 100)) : null;
-    return { key:r.lid + '|' + r.code, lid:r.lid, code:r.code, lecturer:(ss[0] || {}).lecturer || '', title:(ss[0] || {}).title || '', a, held:held == null ? null : held,
-      pct, ss, hist };
+    const lecs = Array.from(new Set(ss.map(x => x.lecturer).filter(Boolean)));
+    const lecturer = lecs.length ? lecs.join(', ') : ((ss[0] || {}).lecturer || '');
+    const title = (ss.find(x => x.title) || {}).title || '';
+    return { key:cNorm, code:r.code, lecturer, title, a, held:held == null ? null : held, pct, ss, hist };
   });
   rows.sort((x, y) => (x.pct == null ? 101 : x.pct) - (y.pct == null ? 101 : y.pct));
   return { rows, waiting };
@@ -3047,7 +3100,7 @@ function renderSdetail(){
   $('#dtTgt').textContent = tgt + '%';
   $('#dtAlert').checked = !stu.mute[r.key];
   $('#dtHistN').textContent = r.hist.length + (r.hist.length === 1 ? ' class' : ' classes');
-  $('#dtHist').innerHTML = r.hist.length ? r.hist.map(h => '<li><span>' + esc(dateLong(h.at)) + '</span><span class="chip ' + (h.here ? 'mute' : 'warn') + '">' + (h.here ? 'Present' : 'Missed') + '</span></li>').join('') : '<li><span class="sub">The list appears after you connect once.</span></li>';
+  $('#dtHist').innerHTML = r.hist.length ? r.hist.map(h => '<li><div style="display:grid;gap:2px"><span>' + esc(dateLong(h.at)) + '</span>' + (h.lecturer ? '<span class="sub" style="font-size:12px">' + esc(h.lecturer) + '</span>' : '') + '</div><span class="chip ' + (h.here ? 'mute' : 'warn') + '">' + (h.here ? 'Present' : 'Missed') + '</span></li>').join('') : '<li><span class="sub">The list appears after you connect once.</span></li>';
 }
 function renderSdone(){
   const d = param || {};
@@ -3129,27 +3182,86 @@ async function recordQR(text){
   // Store pk in scan so lecturer can verify ECDSA cross-device without needing the same local lec.pub
   stu.scans.push(mkScan({ key:c.sid + '_' + stu.matric, kind:'qr', sid:c.sid, course:c.course, lid:c.lid, win:c.win, sig:c.sig, pk:c.pk, status:'ok' }));
   saveStu(); const online = isOnline(); sync(false);
-  return { kind:'ok', done:{ title:"You're marked present", course:disp(c.course), line: online ? 'Sending to your lecturer now.' : 'Saved on your phone. It sends when you are back online.' } };
+  return { kind:'ok', done:{ title:"You're marked present", course:disp(c.course), line: online ? 'Attendance recorded and verified.' : 'Saved on your phone. It sends when you are back online.' } };
 }
 async function recordPin(pin){
+  pin = String(pin || '').trim().replace(/\s+/g, '');
   if (!/^\d{6}$/.test(pin)) return { kind:'fail', msg:'Type the 6 digits shown on the screen.' };
-  const key = 'p_' + pin + '_' + stu.matric;
-  const TWO_HOURS = 2 * 3600 * 1000;
-  // Dedup: same pin key, same pin in last hour, OR already marked via QR/PIN for SAME course in last 2h
-  // Note: PIN has no course field, so we can only dedup by same pin value, not cross-course
+
+  // 1. Look for live session with this pin
+  let matched = Object.values(stu.sessions || {}).find(s => s.pin === pin && (!s.endedAt || s.endedAt === 0 || Date.now() - s.startedAt < 14400000));
+
+  // 2. Query Supabase via validate_class_pin RPC or direct query
+  if (!matched && isOnline() && window.supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient.rpc('validate_class_pin', { p_pin: pin });
+      if (!error && Array.isArray(data) && data.length > 0) {
+        const r = data[0];
+        matched = {
+          sid: r.sid, lid: r.lid, course: r.course, title: r.title,
+          lecturer: r.lecturer, uni: r.uni, pin: r.pin,
+          startedAt: Number(r.started_at) || 0, endedAt: Number(r.ended_at) || 0
+        };
+        stu.sessions[r.sid] = matched;
+      }
+    } catch(e) {
+      console.warn('validate_class_pin error:', e);
+    }
+  }
+
+  // 3. Fallback direct table query
+  if (!matched && isOnline() && window.supabaseClient) {
+    try {
+      const { data } = await supabaseClient.from('sessions').select('*').eq('pin', pin).order('started_at', { ascending: false }).limit(1);
+      if (Array.isArray(data) && data.length > 0) {
+        const r = data[0];
+        matched = {
+          sid: r.sid, lid: r.lid, course: r.course, title: r.title,
+          lecturer: r.lecturer, uni: r.uni, pin: r.pin,
+          startedAt: Number(r.started_at || r.startedAt) || 0,
+          endedAt: Number(r.ended_at || r.endedAt) || 0
+        };
+        stu.sessions[r.sid] = matched;
+      }
+    } catch(e) {}
+  }
+
+  // If still no session matches: REJECT!
+  if (!matched) {
+    return { kind:'fail', msg:'Invalid code. Check the 6-digit code displayed on the screen.' };
+  }
+
+  // 4. Symmetrical Dedup: Check if student has ALREADY marked for this session (via QR or PIN!)
   const dup = stu.scans.find(s =>
-    s.matric === stu.matric && (
-      s.key === key ||
-      (s.kind === 'pin' && s.pin === pin && Math.abs(s.at - Date.now()) < 3600000)
-    )
+    s.matric === stu.matric && s.sid === matched.sid
   );
   if (dup) {
-    const dupCourse = dup.course ? disp(dup.course) : (dup.pin ? 'Code ' + dup.pin : 'this class');
-    return { kind:'dup', course:dupCourse, at:dup.at, timeStr:fmt(dup.at) };
+    return { kind:'dup', course:disp(matched.course), at:dup.at, timeStr:fmt(dup.at) };
   }
-  stu.scans.push(mkScan({ key, kind:'pin', pin, status:'pending' }));
-  saveStu(); const online = isOnline(); sync(false);
-  return { kind:'ok', done:{ title:"You're marked present", course:'Class code ' + pin, line: online ? 'Sending to your lecturer now.' : 'Saved on your phone. It sends when you are back online.' } };
+
+  // 5. Store verified scan identical to QR scan!
+  const key = matched.sid + '_' + stu.matric;
+  stu.scans.push(mkScan({
+    key,
+    kind:'pin',
+    sid:matched.sid,
+    course:matched.course,
+    lid:matched.lid,
+    pin,
+    status:'ok'
+  }));
+  saveStu();
+  const online = isOnline();
+  sync(false);
+
+  return {
+    kind:'ok',
+    done:{
+      title:"You're marked present",
+      course:disp(matched.course),
+      line: online ? 'Attendance recorded and verified.' : 'Saved on your phone. It sends when you are back online.'
+    }
+  };
 }
 let syncing = false, syncQueued = false;
 async function sync(manual){
@@ -3216,13 +3328,30 @@ async function sync(manual){
         }
       } catch(e) { console.warn('Pull scans failed:', e); }
     }
-    // Pull session details for attended classes
+    // Pull session details for all student courses (aggregates all lecturers teaching each course)
+    const knownCourses = Array.from(new Set(stu.scans.map(s => normCourse(s.course)).filter(Boolean)));
+    for (const code of knownCourses) {
+      try {
+        const cSess = await c.query('sessions', 'course', code);
+        for (const r of (cSess || [])) {
+          stu.sessions[r.sid] = {
+            sid: r.sid, lid: r.lid, course: r.course, title: r.title, lecturer: r.lecturer, uni: r.uni,
+            startedAt: Number(r.startedAt || r.started_at) || 0,
+            endedAt: Number(r.endedAt || r.ended_at) || 0,
+            pin: r.pin || ''
+          };
+        }
+      } catch(e) {}
+    }
     for (const lid of new Set(stu.scans.filter(s => s.lid && s.status !== 'bad').map(s => s.lid))) {
       try {
         for (const r of await c.query('sessions', 'lid', lid)) {
-          const sess = { sid: r.sid, lid: r.lid, course: r.course, title: r.title, lecturer: r.lecturer, uni: r.uni,
-            startedAt: Number(r.startedAt || r.started_at) || 0, endedAt: Number(r.endedAt || r.ended_at) || 0 };
-          stu.sessions[r.sid] = sess;
+          stu.sessions[r.sid] = {
+            sid: r.sid, lid: r.lid, course: r.course, title: r.title, lecturer: r.lecturer, uni: r.uni,
+            startedAt: Number(r.startedAt || r.started_at) || 0,
+            endedAt: Number(r.endedAt || r.ended_at) || 0,
+            pin: r.pin || ''
+          };
         }
       } catch(e) { console.warn('Pull sessions failed:', e); }
     }
@@ -3414,7 +3543,7 @@ async function drawLive(force){
   signing = true;
   try {
     const first = shownWin < 0;
-    curCode = await buildCode(priv, lec, live, now); curPin = await pinFor(live.sk, win); shownWin = win;
+    curCode = await buildCode(priv, lec, live, now); curPin = live.pin || await pinFor(live.sk, win); shownWin = win;
     $('#codeText').value = curCode; $('#xPin').textContent = curPin.slice(0, 3) + ' ' + curPin.slice(3);
     const qr = new QRCodeLib(0, 1); qr.addData(curCode); qr.make();
     const n = qr.getModuleCount(), q = 2; let d = '';
@@ -3457,7 +3586,8 @@ async function startClass(courseId){
   const c = lec.courses.find(x => x.id === courseId); if (!c) return;
   const now = Date.now(), id = rid(4);
   lec.sessions.forEach(s => { if (!s.endedAt) { s.endedAt = now; s.pushed = false; } });
-  lec.sessions.push({ id, code:c.code, startedAt:now, endedAt:0, sk:await deriveSk(lec.jwk, id), pushed:false });
+  const pin = String(Math.floor(100000 + (parseInt(id.slice(0, 4), 16) * 17 + (now % 89999)) % 900000));
+  lec.sessions.push({ id, code:c.code, startedAt:now, endedAt:0, pin, sk:await deriveSk(lec.jwk, id), pushed:false });
   saveLec(); shownWin = -1; getWake(); go('llive'); lecSync(false);
 }
 async function getWake(){ try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
@@ -3528,7 +3658,8 @@ async function lecSync(manual){
       for (const s of lec.sessions.filter(x => !x.pushed && !x.sample)) {
         const course = courseByCode(s.code) || {};
         try {
-          await c.put('sessions', null, { sid:s.id, lid:lec.lid, course:s.code, title:course.title || '', lecturer:lec.name, uni:lec.uni, user_id:lec.user_id || null, startedAt:s.startedAt, endedAt:s.endedAt || 0, started_at:s.startedAt, ended_at:s.endedAt || 0 });
+          if (!s.pin) s.pin = String(Math.floor(100000 + (parseInt(s.id.slice(0, 4), 16) * 17 + (s.startedAt % 89999)) % 900000));
+          await c.put('sessions', null, { sid:s.id, lid:lec.lid, course:s.code, title:course.title || '', lecturer:lec.name, uni:lec.uni, user_id:lec.user_id || null, startedAt:s.startedAt, endedAt:s.endedAt || 0, started_at:s.startedAt, ended_at:s.endedAt || 0, pin:s.pin || null });
           s.pushed = true;
         } catch(e) { console.warn('Session push failed:', s.id, e); }
       }
@@ -3652,9 +3783,19 @@ function renderSet(){
     }
   }
 
-  $('#setCutLbl').textContent = st ? 'Minimum attendance' : 'Flag students below';
-  $('#setCutHelp').textContent = st ? 'Warning threshold across all courses' : 'Used for the "below" count and red tags on your course pages.';
-  $('#setCut').value = cfg.cutoff;
+  if (st) {
+    cfg.cutoff = 75;
+    $('#setCutLbl').textContent = 'Required attendance';
+    $('#setCutHelp').textContent = 'Standard academic requirement (75% minimum required to qualify for exams).';
+    if ($('#setCutWrap')) $('#setCutWrap').hidden = true;
+    if ($('#setCutFixed')) $('#setCutFixed').hidden = false;
+  } else {
+    $('#setCutLbl').textContent = 'Flag students below';
+    $('#setCutHelp').textContent = 'Used for the "below" count and red tags on your course pages.';
+    if ($('#setCutWrap')) $('#setCutWrap').hidden = false;
+    if ($('#setCutFixed')) $('#setCutFixed').hidden = true;
+    $('#setCut').value = cfg.cutoff || 75;
+  }
   $('#setOff').checked = !!cfg.fakeOffline;
   $('#setAlert').checked = !!cfg.alerts && ('Notification' in window) && Notification.permission === 'granted';
   $('#setAlertHelp').textContent = 'Shows when you open the app. Alerts while closed come with native notifications.';
@@ -4005,7 +4146,13 @@ $('#manForm').addEventListener('submit', e => {
   saveLec(); $('#manMatric').value = ''; $('#manName').value = ''; $('#manForm').hidden = true; updateLive(); toast('Marked present.');
 });
 $('#pinIn').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6); });
-$('#setCut').addEventListener('change', e => { const v = Math.max(1, Math.min(100, Math.round(Number(e.target.value) || 75))); cfg.cutoff = v; e.target.value = v; saveCfg(); });
+$('#setCut').addEventListener('change', e => {
+  if (cfg.role === 'student') { cfg.cutoff = 75; e.target.value = 75; return; }
+  const v = Math.max(1, Math.min(100, Math.round(Number(e.target.value) || 75)));
+  cfg.cutoff = v;
+  e.target.value = v;
+  saveCfg();
+});
 $('#setOff').addEventListener('change', e => { cfg.fakeOffline = e.target.checked; saveCfg(); renderNet(); if (isOnline()) sync(false); });
 $('#setAlert').addEventListener('change', async e => {
   if (e.target.checked) { const ok = await enableAlerts(); e.target.checked = ok; } else { cfg.alerts = false; saveCfg(); }
