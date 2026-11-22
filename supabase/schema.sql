@@ -1,7 +1,22 @@
 -- ==============================================================================
--- Adesse Database Schema (Supabase / PostgreSQL)
+-- Muster Database Schema (Supabase / PostgreSQL)
 -- Verified & Audited Live Production Schema
 -- ==============================================================================
+
+-- ==============================================================================
+-- Realtime: Enable postgres_changes for the scans table
+-- Run this once in your Supabase SQL editor (or it runs on schema migration)
+-- ==============================================================================
+ALTER TABLE public.scans REPLICA IDENTITY FULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime' AND tablename = 'scans'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.scans;
+  END IF;
+END $$;
 
 -- 1. University email domains for automatic lecturer verification
 CREATE TABLE IF NOT EXISTS public.university_domains (

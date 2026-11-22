@@ -3031,10 +3031,10 @@ function hideAuthSignin(){
 }
 function render(){
   document.querySelectorAll('section[id^="v-"]').forEach(s => { s.hidden = s.id !== 'v-' + view; });
-  $('#bar').hidden = view === 'auth' || view === 'sonboard' || view === 'lonboard';
-  const isRoot = view === 'shome' || view === 'lhome' || view === 'llive' || view === 'sdone';
+  $('#bar').hidden = view === 'auth' || view === 'sonboard' || view === 'lonboard' || view === 'set';
+  const isRoot = view === 'shome' || view === 'lhome' || view === 'llive' || view === 'sdone' || view === 'set';
   $('#barL').innerHTML = isRoot ? '<span class="logo">' + LOGO_HTML + '</span>' : '<button class="iconbtn" type="button" data-act="back" aria-label="Back">' + ic(I.left, 18) + '</button>';
-  $('#gear').hidden = view === 'auth' || view === 'sonboard' || view === 'lonboard';
+  $('#gear').hidden = view === 'auth' || view === 'sonboard' || view === 'lonboard' || view === 'set';
   document.querySelectorAll('[data-brand]').forEach(e => { e.innerHTML = LOGO_HTML; });
   document.querySelectorAll('[data-app]').forEach(e => { e.textContent = APP; });
   $('#dev').hidden = PROD && location.hash !== '#dev';
@@ -3331,6 +3331,10 @@ async function recordQR(text){
   // Store pk in scan so lecturer can verify ECDSA cross-device without needing the same local lec.pub
   stu.scans.push(mkScan({ key:c.sid + '_' + stu.matric, kind:'qr', sid:c.sid, course:c.course, lid:c.lid, win:c.win, sig:c.sig, pk:c.pk, status:'ok' }));
   saveStu(); const online = isOnline(); sync(false);
+  // Broadcast a lightweight "scan happened" signal so the lecturer's realtime channel wakes up instantly
+  if (online && window.supabaseClient) {
+    try { supabaseClient.channel('scans-live-feed').send({ type:'broadcast', event:'scan', payload:{} }).catch(()=>{}); } catch(e) {}
+  }
   return { kind:'ok', done:{ title:"You're marked present", course:disp(c.course), line: online ? 'Attendance recorded and verified.' : 'Saved on your phone. It sends when you are back online.' } };
 }
 async function recordPin(pin){
@@ -3399,6 +3403,10 @@ async function recordPin(pin){
   saveStu();
   const online = isOnline();
   sync(false);
+  // Broadcast a lightweight "scan happened" signal so the lecturer's realtime channel wakes up instantly
+  if (online && window.supabaseClient) {
+    try { supabaseClient.channel('scans-live-feed').send({ type:'broadcast', event:'scan', payload:{} }).catch(()=>{}); } catch(e) {}
+  }
 
   return {
     kind:'ok',
@@ -3409,7 +3417,7 @@ async function recordPin(pin){
     }
   };
 }
-let syncing = false, syncQueued = false;
+let syncing = false, syncQueued = false, lecSyncing = false, lecSyncQueued = false;
 async function sync(manual){
   if (cfg.role === 'lecturer') return lecSync(manual);
   if (!stu || !stu.matric) return;
@@ -3907,12 +3915,18 @@ function setupLiveRealtime(){
   try {
     liveRealtimeChannel = supabaseClient.channel('scans-live-feed')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'scans' }, async () => {
-        if (view === 'llive' && lec) { await lecSync(false); updateLive(); }
+        if (view === 'llive' && lec) { if (lecSyncing) { lecSyncQueued = true; } else { await lecSync(false); } }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'scans' }, async () => {
-        if (view === 'llive' && lec) { await lecSync(false); updateLive(); }
+        if (view === 'llive' && lec) { if (lecSyncing) { lecSyncQueued = true; } else { await lecSync(false); } }
       })
-      .subscribe();
+      .on('broadcast', { event: 'scan' }, async () => {
+        // Student signals scan posted; triggers immediate lecturer refresh bypassing RLS filter timing
+        if (view === 'llive' && lec) { if (lecSyncing) { lecSyncQueued = true; } else { await lecSync(false); } }
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED' && view === 'llive' && lec) { lecSync(false); }
+      });
   } catch(e) { console.warn('Realtime subscription failed:', e); }
 }
 function tearDownLiveRealtime(){
@@ -3982,11 +3996,11 @@ function renderCourse(){
   $('#kReview').innerHTML = a.review.length ? '<div class="card"><div class="row"><h2>Needs your look</h2>' + (a.review.length > 1 ? '<button class="btn sm" type="button" data-act="acceptAll">Count all</button>' : '') + '</div><ul class="rows">' + a.review.map(r => '<li><div class="who"><b>' + esc(r.name || r.matric) + '</b><span class="sub">' + esc(r.reason) + '</span></div><button class="btn sm" type="button" data-act="accept" data-key="' + esc(r.key) + '">Count</button></li>').join('') + '</ul></div>' : '';
 }
 async function lecSync(manual){
-  if (!lec || syncing) return;
+  if (!lec || lecSyncing) { if (!lec) return; if (!manual) { lecSyncQueued = true; } return; }
   if (!isOnline()) { if (manual) toast('You are offline. Showing what was last downloaded.'); return; }
   const c = cloud();
   if (!c) { if (manual) toast('Add your Supabase details in Settings, or use demo storage.'); return; }
-  syncing = true;
+  lecSyncing = true;
   try {
     try { if (!priv && lec.jwk) priv = await importPriv(lec.jwk); } catch(e) { console.warn('importPriv error:', e); }
 
@@ -4082,7 +4096,8 @@ async function lecSync(manual){
     console.warn('lecSync general error:', e);
     if (manual) toast('Could not reach the server. Try again.');
   } finally {
-    syncing = false; saveLec();
+    lecSyncing = false; saveLec();
+    if (lecSyncQueued) { lecSyncQueued = false; setTimeout(() => lecSync(false), 200); return; }
     if (view === 'llive') updateLive();
     if (view === 'lcourse') renderCourse();
     if (view === 'lhome') renderLhome();
@@ -4898,7 +4913,7 @@ setInterval(() => {
 setInterval(() => {
   if (document.hidden) return;
   if (view === 'llive') lecSync(false);
-}, 3000);
+}, 2000);
 setInterval(() => {
   if (document.hidden) return;
   if ((view === 'lhome' || view === 'lcourse') && cfg.role === 'lecturer') lecSync(false);
