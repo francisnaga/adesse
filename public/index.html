@@ -1011,19 +1011,6 @@ button:active:not(:disabled), .btn:active:not(:disabled), .oauth-btn:active:not(
           </div>
           <span style="font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; background:rgba(34,197,94,0.12); color:#16a34a">Protected</span>
         </div>
-        <div class="card-divider" style="height:1px; background:var(--border); margin-left:58px"></div>
-        <button id="roleSwap" class="settings-action-row" type="button" data-act="swap" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:none; border:none; text-align:left; cursor:pointer">
-          <div class="settings-item-left" style="display:flex; align-items:center; gap:12px">
-            <div class="settings-icon-tile" style="width:36px; height:36px; border-radius:10px; background:var(--accent); display:flex; align-items:center; justify-content:center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3l4 4-4 4"/><path d="M20 7H4"/><path d="M8 21l-4-4 4-4"/><path d="M4 17h16"/></svg>
-            </div>
-            <div class="settings-item-text">
-              <b id="roleSwapTitle" style="font-size:14.5px; display:block">Switch role</b>
-              <span class="sub" id="roleSwapSub" style="font-size:12px; color:var(--muted-foreground)">Switch between student and lecturer</span>
-            </div>
-          </div>
-          <span class="chevron-right" style="color:var(--muted-foreground); font-size:18px">›</span>
-        </button>
       </div>
     </div>
 
@@ -4258,10 +4245,6 @@ function renderSet(){
   const initials = name.split(/\s+/).filter(Boolean).map(p => p[0].toUpperCase()).slice(0, 2).join('') || (st ? 'ST' : 'LC');
   const avatarEl = $('#setUserAvatar');
   if (avatarEl) avatarEl.textContent = initials;
-
-  const roleTitleEl = $('#roleSwapTitle'), roleSubEl = $('#roleSwapSub');
-  if (roleTitleEl) roleTitleEl.textContent = lc ? 'Switch to Student' : 'Switch to Lecturer';
-  if (roleSubEl) roleSubEl.textContent = lc ? 'Use ' + APP + ' as a student for attendance' : 'Use ' + APP + ' as a lecturer to host classes';
   
   if (st) {
     $('#setUserTitle').textContent = (stu && stu.name) ? stu.name : 'Student Account';
