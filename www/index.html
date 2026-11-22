@@ -4439,12 +4439,16 @@ $('#loUni').addEventListener('change', () => { $('#loUniOtherWrap').hidden = $('
 /* Student onboarding form (post-OAuth: step-validated & device-locked) */
 $('#soBackBtn').addEventListener('click', () => { updateSoStep(soStep - 1); });
 $('#loBackBtn').addEventListener('click', () => { updateLoStep(loStep - 1); });
-$('#soPinToggle').addEventListener('click', () => {
-  const pinInput = $('#soPin');
-  const isPass = pinInput.type === 'password';
-  pinInput.type = isPass ? 'text' : 'password';
-  $('#soPinToggle').textContent = isPass ? 'Hide' : 'Show';
-});
+const soPinTog = $('#soPinToggle');
+if (soPinTog) {
+  soPinTog.addEventListener('click', () => {
+    const pinInput = $('#soPin');
+    if (!pinInput) return;
+    const isPass = pinInput.type === 'password';
+    pinInput.type = isPass ? 'text' : 'password';
+    soPinTog.textContent = isPass ? 'Hide' : 'Show';
+  });
+}
 
 $('#sonboardForm').addEventListener('submit', async e => {
   e.preventDefault(); clearErrs(e.target);
