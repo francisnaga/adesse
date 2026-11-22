@@ -732,8 +732,23 @@ input:not([type="checkbox"]):not([type="radio"]), select{
 
   <!-- NEW COURSE -->
   <section id="v-lcnew" class="screen" hidden>
-    <div><h1>Add a course</h1><p class="muted">You can paste a class list on the course page afterwards.</p></div>
+    <div>
+      <h1>Add a course</h1>
+      <p class="muted">Join an existing course at your university or create a new one.</p>
+    </div>
+
+    <!-- Institutional Courses Available to Join -->
+    <div id="instCoursesWrap" class="card" style="display:none; gap:10px">
+      <div class="row">
+        <h2>Courses at <span id="instUniName">your university</span></h2>
+        <span class="sub" id="instCoursesCount"></span>
+      </div>
+      <p class="fine">If another lecturer already created your course, join it below so your classes and attendance share the same course.</p>
+      <ul id="instCoursesList" class="rows" style="max-height:260px; overflow-y:auto; gap:8px"></ul>
+    </div>
+
     <form id="cnewForm" class="card" autocomplete="off">
+      <div class="row"><h2>Or create a course</h2></div>
       <div class="field"><label for="cCode">Course code</label><input id="cCode" autocapitalize="characters" placeholder="e.g. MEE 301"></div>
       <div class="field"><label for="cTitle">Title (optional)</label><input id="cTitle" placeholder="e.g. Marine Engines"></div>
       <div class="field"><label for="cDeptSel">Who takes it? Department</label><div id="cDeptWrap"></div></div>
@@ -777,6 +792,7 @@ input:not([type="checkbox"]):not([type="radio"]), select{
   <!-- COURSE DETAIL (lecturer) -->
   <section id="v-lcourse" class="screen" hidden>
     <div><h1 id="kCode"></h1><p id="kTitle" class="sub"></p></div>
+    <div id="kStaff" class="sub" style="margin-top:-10px; font-size:13px"></div>
     <button id="kStart" class="btn primary lg" type="button" data-act="startCourse">Start class</button>
     <div class="stats">
       <div class="stat"><b id="kHeld">0</b><span>classes held</span></div>
@@ -797,9 +813,10 @@ input:not([type="checkbox"]):not([type="radio"]), select{
       <ul id="kRows" class="rows"></ul>
       <p id="kFoot" class="fine"></p>
     </div>
-    <div class="row">
+    <div class="row" style="flex-wrap:wrap; gap:8px">
       <button class="btn sm" type="button" data-act="csv">Download list</button>
       <button class="btn sm" type="button" data-act="lpull">Refresh</button>
+      <button class="btn sm danger" type="button" id="btnOptOutCourse" data-act="optOutCourse" style="margin-left:auto">Opt out of course</button>
     </div>
   </section>
 
@@ -3188,10 +3205,24 @@ async function recordPin(pin){
   pin = String(pin || '').trim().replace(/\s+/g, '');
   if (!/^\d{6}$/.test(pin)) return { kind:'fail', msg:'Type the 6 digits shown on the screen.' };
 
-  // 1. Look for live session with this pin
-  let matched = Object.values(stu.sessions || {}).find(s => s.pin === pin && (!s.endedAt || s.endedAt === 0 || Date.now() - s.startedAt < 14400000));
+  let matched = null;
+  const now = Date.now(), curWin = Math.floor(now / WIN);
 
-  // 2. Query Supabase via validate_class_pin RPC or direct query
+  // 1. Check local session cache if available with rolling pin check
+  for (const s of Object.values(stu.sessions || {})) {
+    if (s.endedAt && s.endedAt > 0 && (now - s.endedAt > 120000)) continue;
+    if (now - s.startedAt > 21600000) continue;
+    if (s.sk) {
+      for (const w of [curWin, curWin - 1, curWin + 1]) {
+        if (await pinFor(s.sk, w) === pin) { matched = s; break; }
+      }
+    } else if (s.pin === pin) {
+      matched = s;
+    }
+    if (matched) break;
+  }
+
+  // 2. Query Supabase via validate_class_pin RPC (validates rolling 15s window + grace period)
   if (!matched && isOnline() && window.supabaseClient) {
     try {
       const { data, error } = await supabaseClient.rpc('validate_class_pin', { p_pin: pin });
@@ -3209,26 +3240,9 @@ async function recordPin(pin){
     }
   }
 
-  // 3. Fallback direct table query
-  if (!matched && isOnline() && window.supabaseClient) {
-    try {
-      const { data } = await supabaseClient.from('sessions').select('*').eq('pin', pin).order('started_at', { ascending: false }).limit(1);
-      if (Array.isArray(data) && data.length > 0) {
-        const r = data[0];
-        matched = {
-          sid: r.sid, lid: r.lid, course: r.course, title: r.title,
-          lecturer: r.lecturer, uni: r.uni, pin: r.pin,
-          startedAt: Number(r.started_at || r.startedAt) || 0,
-          endedAt: Number(r.ended_at || r.endedAt) || 0
-        };
-        stu.sessions[r.sid] = matched;
-      }
-    } catch(e) {}
-  }
-
   // If still no session matches: REJECT!
   if (!matched) {
-    return { kind:'fail', msg:'Invalid code. Check the 6-digit code displayed on the screen.' };
+    return { kind:'fail', msg:'Invalid or expired code. Enter the current 6-digit code shown on the screen.' };
   }
 
   // 4. Symmetrical Dedup: Check if student has ALREADY marked for this session (via QR or PIN!)
@@ -3506,6 +3520,46 @@ function renderLhome(){
 function renderLcnew(){
   if (!$('#cLevel').children.length) levelChips('cLevel', true);
   renderCourseDeptChips();
+  loadInstitutionalCourses();
+}
+
+async function loadInstitutionalCourses(){
+  const wrap = $('#instCoursesWrap');
+  const list = $('#instCoursesList');
+  const uniSpan = $('#instUniName');
+  const countSpan = $('#instCoursesCount');
+  if (!wrap || !list || !lec) return;
+  uniSpan.textContent = lec.uni || 'your university';
+  if (!isOnline() || !window.supabaseClient) {
+    wrap.style.display = 'none';
+    return;
+  }
+  try {
+    const { data, error } = await supabaseClient.rpc('get_institutional_courses', { p_uni: lec.uni });
+    if (error || !Array.isArray(data) || !data.length) {
+      wrap.style.display = 'none';
+      return;
+    }
+    const myCodes = new Set(lec.courses.map(c => normCourse(c.code)));
+    const unjoined = data.filter(c => !myCodes.has(normCourse(c.code)));
+    if (!unjoined.length) {
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = 'grid';
+    countSpan.textContent = unjoined.length + ' available';
+    list.innerHTML = unjoined.map(c => {
+      const staff = (c.lecturers || []).map(l => l.name).filter(Boolean).join(', ') || 'Staff';
+      return '<li class="row" style="padding:10px 0; border-bottom:1px solid var(--border); align-items:center">' +
+        '<div style="min-width:0; flex:1"><b>' + esc(disp(c.code)) + '</b>' + (c.title ? ' <span class="sub">· ' + esc(c.title) + '</span>' : '') +
+        '<span class="sub blk" style="font-size:12px; margin-top:2px">Taught by: ' + esc(staff) + '</span></div>' +
+        '<button class="btn sm" type="button" data-act="joinCourse" data-cid="' + esc(c.id) + '" data-code="' + esc(c.code) + '" data-title="' + esc(c.title || '') + '" data-depts="' + esc(c.depts || '') + '" data-level="' + esc(c.level || '') + '">Join course</button>' +
+        '</li>';
+    }).join('');
+  } catch(e) {
+    console.warn('loadInstitutionalCourses error:', e);
+    wrap.style.display = 'none';
+  }
 }
 
 function renderCourseDeptChips(){
@@ -3543,7 +3597,10 @@ async function drawLive(force){
   signing = true;
   try {
     const first = shownWin < 0;
-    curCode = await buildCode(priv, lec, live, now); curPin = live.pin || await pinFor(live.sk, win); shownWin = win;
+    if (!live.sk && lec.jwk) { try { live.sk = await deriveSk(lec.jwk, live.id); } catch(e){} }
+    curCode = await buildCode(priv, lec, live, now);
+    curPin = live.sk ? await pinFor(live.sk, win) : (live.pin || '000000');
+    shownWin = win;
     $('#codeText').value = curCode; $('#xPin').textContent = curPin.slice(0, 3) + ' ' + curPin.slice(3);
     const qr = new QRCodeLib(0, 1); qr.addData(curCode); qr.make();
     const n = qr.getModuleCount(), q = 2; let d = '';
@@ -3586,8 +3643,8 @@ async function startClass(courseId){
   const c = lec.courses.find(x => x.id === courseId); if (!c) return;
   const now = Date.now(), id = rid(4);
   lec.sessions.forEach(s => { if (!s.endedAt) { s.endedAt = now; s.pushed = false; } });
-  const pin = String(Math.floor(100000 + (parseInt(id.slice(0, 4), 16) * 17 + (now % 89999)) % 900000));
-  lec.sessions.push({ id, code:c.code, startedAt:now, endedAt:0, pin, sk:await deriveSk(lec.jwk, id), pushed:false });
+  const sk = lec.jwk ? await deriveSk(lec.jwk, id) : rid(16);
+  lec.sessions.push({ id, code:c.code, startedAt:now, endedAt:0, sk, pushed:false });
   saveLec(); shownWin = -1; getWake(); go('llive'); lecSync(false);
 }
 async function getWake(){ try { if (navigator.wakeLock) wake = await navigator.wakeLock.request('screen'); } catch (e) {} }
@@ -3605,6 +3662,24 @@ function renderCourse(){
     ? (c.depts.includes('ALL_ENG') ? 'All Engineering' : c.depts.includes('ALL') ? 'All departments' : c.depts.map(d => d.replace(/ Engineering$/, '')).join(', '))
     : (c.dept || 'All departments');
   $('#kTitle').textContent = [c.title, deptsLabel, c.level ? c.level + ' level' : ''].filter(Boolean).join(' · ');
+
+  // Teaching team & co-lecturers
+  const staffWrap = $('#kStaff');
+  if (staffWrap) {
+    staffWrap.textContent = 'Lecturer: ' + (lec.name || 'You');
+    if (isOnline() && window.supabaseClient) {
+      supabaseClient.rpc('get_institutional_courses', { p_uni: lec.uni }).then(({ data }) => {
+        if (Array.isArray(data)) {
+          const match = data.find(x => normCourse(x.code) === normCourse(c.code));
+          if (match && Array.isArray(match.lecturers) && match.lecturers.length) {
+            const names = match.lecturers.map(l => (l.lid === lec.lid ? l.name + ' (You)' : l.name));
+            staffWrap.textContent = 'Teaching team: ' + names.join(', ');
+          }
+        }
+      }).catch(() => {});
+    }
+  }
+
   $('#kHeld').textContent = a.total; $('#kStud').textContent = a.rows.length; $('#kLow').textContent = low; $('#kLowLbl').textContent = 'below ' + cfg.cutoff + '%';
   $('#kStart').hidden = !!liveSession();
   $('#kRows').innerHTML = a.rows.length ? a.rows.map(r =>
@@ -3658,8 +3733,8 @@ async function lecSync(manual){
       for (const s of lec.sessions.filter(x => !x.pushed && !x.sample)) {
         const course = courseByCode(s.code) || {};
         try {
-          if (!s.pin) s.pin = String(Math.floor(100000 + (parseInt(s.id.slice(0, 4), 16) * 17 + (s.startedAt % 89999)) % 900000));
-          await c.put('sessions', null, { sid:s.id, lid:lec.lid, course:s.code, title:course.title || '', lecturer:lec.name, uni:lec.uni, user_id:lec.user_id || null, startedAt:s.startedAt, endedAt:s.endedAt || 0, started_at:s.startedAt, ended_at:s.endedAt || 0, pin:s.pin || null });
+          if (!s.sk && lec.jwk) { try { s.sk = await deriveSk(lec.jwk, s.id); } catch(e){} }
+          await c.put('sessions', null, { sid:s.id, lid:lec.lid, course:s.code, title:course.title || '', lecturer:lec.name, uni:lec.uni, user_id:lec.user_id || null, startedAt:s.startedAt, endedAt:s.endedAt || 0, started_at:s.startedAt, ended_at:s.endedAt || 0, pin:s.pin || null, sk:s.sk || null });
           s.pushed = true;
         } catch(e) { console.warn('Session push failed:', s.id, e); }
       }
@@ -3954,6 +4029,50 @@ document.addEventListener('click', async e => {
   if (a === 'clearPhone') return doClear();
   if (a === 'deleteAcct') return doDelete();
   if (a === 'cnew') return go('lcnew');
+  if (a === 'joinCourse') {
+    const cid = b.dataset.cid;
+    const code = normCourse(b.dataset.code || '');
+    const title = b.dataset.title || '';
+    const depts = (b.dataset.depts || 'ALL_ENG').split(',');
+    const level = b.dataset.level || '300';
+    if (!lec.courses.some(c => normCourse(c.code) === code)) {
+      lec.courses.push({ id: cid || rid(3), code, title, depts, level });
+      saveLec();
+    }
+    if (isOnline() && window.supabaseClient) {
+      try {
+        await supabaseClient.rpc('join_course', { p_course_id: cid, p_lid: lec.lid, p_name: lec.name });
+      } catch(e) { console.warn('join_course error:', e); }
+    }
+    lecSync(false);
+    toast('Joined ' + disp(code) + ' teaching team.');
+    const matched = lec.courses.find(c => normCourse(c.code) === code);
+    go('lcourse', matched ? matched.id : null);
+    return;
+  }
+  if (a === 'optOutCourse') {
+    const c = lec.courses.find(x => x.id === param);
+    if (!c) return;
+    const ok = await dialog({
+      title: 'Opt out of ' + disp(c.code) + '?',
+      body: '<p>You will no longer see this course on your home screen.</p><p>Other lecturers will continue teaching it, and all past class sessions and attendance are preserved.</p>',
+      yes: 'Opt out',
+      no: 'Stay',
+      danger: true
+    });
+    if (ok !== 'yes') return;
+    if (isOnline() && window.supabaseClient) {
+      try {
+        await supabaseClient.rpc('leave_course', { p_course_id: c.id, p_lid: lec.lid });
+      } catch(e) { console.warn('leave_course error:', e); }
+    }
+    lec.courses = lec.courses.filter(x => x.id !== c.id);
+    saveLec();
+    lecSync(false);
+    toast('Opted out of ' + disp(c.code) + '.');
+    go('lhome');
+    return;
+  }
   if (a === 'start') return startClass(b.dataset.id);
   if (a === 'startCourse') return startClass(param);
   if (a === 'open') return go('lcourse', b.dataset.id);
@@ -4130,13 +4249,40 @@ $('#lonboardForm').addEventListener('submit', async e => {
     console.warn('Lecturer onboard error:', e);
   }
 });
-$('#cnewForm').addEventListener('submit', e => {
+$('#cnewForm').addEventListener('submit', async e => {
   e.preventDefault();
   const code = normCourse($('#cCode').value); if (code.length < 3) return toast('Enter the course code, like MEE 301.');
-  if (lec.courses.some(c => c.code === code)) return toast('You already have ' + disp(code) + '.');
+  if (lec.courses.some(c => normCourse(c.code) === code)) return toast('You already have ' + disp(code) + '.');
   const depts = chosen.cDepts ? Array.from(chosen.cDepts) : ['ALL_ENG'];
-  lec.courses.push({ id:rid(3), code, title:$('#cTitle').value.trim(), dept:'', depts, level:chosen.cLevel });
-  saveLec(); $('#cCode').value = ''; $('#cTitle').value = ''; chosen.cLevel = ''; chosen.cDepts = new Set(['ALL_ENG']); $('#cLevel').innerHTML = ''; $('#cDeptWrap').innerHTML = ''; go('lhome');
+  const title = $('#cTitle').value.trim();
+  const level = chosen.cLevel || '300';
+  let courseId = rid(3);
+
+  if (isOnline() && window.supabaseClient) {
+    try {
+      const { data, error } = await supabaseClient.rpc('create_or_join_course', {
+        p_uni: lec.uni,
+        p_code: code,
+        p_title: title,
+        p_depts: depts.join(','),
+        p_level: level,
+        p_lid: lec.lid,
+        p_name: lec.name
+      });
+      if (!error && data && data.id) {
+        courseId = data.id;
+      }
+    } catch(err) {
+      console.warn('create_or_join_course error:', err);
+    }
+  }
+
+  lec.courses.push({ id: courseId, code, title, depts, level });
+  saveLec();
+  $('#cCode').value = ''; $('#cTitle').value = ''; chosen.cLevel = ''; chosen.cDepts = new Set(['ALL_ENG']); $('#cLevel').innerHTML = ''; $('#cDeptWrap').innerHTML = '';
+  lecSync(false);
+  toast('Course saved.');
+  go('lhome');
 });
 $('#manForm').addEventListener('submit', e => {
   e.preventDefault();
@@ -4329,6 +4475,24 @@ async function handleAuthSession(user, forcedRole){
   window._oauthData = { email, userId: user.id, provider, fullName };
 
   if (targetRole === 'lecturer') {
+    // Prevent students from abusing the lecturer role: check if registered as a student
+    try {
+      let stuRows = await SB.query('students', 'user_id', user.id);
+      if (!stuRows || !stuRows.length) stuRows = await SB.query('students', 'email', email);
+      if (stuRows && stuRows.length > 0) {
+        await dialog({
+          title: 'Student Account Detected',
+          body: '<p>This account is registered to student <b>' + esc(stuRows[0].name) + ' (' + esc(stuRows[0].matric) + ')</b>.</p><p>Student accounts cannot host classes or manage university courses.</p>',
+          yes: 'Understood',
+          danger: true
+        });
+        if (supabaseClient) supabaseClient.auth.signOut().catch(() => {});
+        hideAuthSignin();
+        go('auth');
+        return;
+      }
+    } catch(e) {}
+
     cfg.role = 'lecturer'; cfg.oauthRole = 'lecturer'; saveCfg();
     try {
       let rows = await SB.query('lecturers', 'user_id', user.id);
@@ -4357,6 +4521,21 @@ async function handleAuthSession(user, forcedRole){
     } catch (e) { console.warn('Lecturer lookup failed:', e); }
     go('lonboard');
   } else {
+    // Check if account is already registered as a lecturer
+    try {
+      let lecRows = await SB.query('lecturers', 'user_id', user.id);
+      if (!lecRows || !lecRows.length) lecRows = await SB.query('lecturers', 'email', email);
+      if (lecRows && lecRows.length > 0) {
+        await dialog({
+          title: 'Lecturer Account Detected',
+          body: '<p>This account is registered to lecturer <b>' + esc(lecRows[0].name) + '</b>.</p><p>Please use the Lecturer Sign In option to manage your classes.</p>',
+          yes: 'Sign in as Lecturer'
+        });
+        showAuthSignin('lecturer');
+        return;
+      }
+    } catch(e) {}
+
     cfg.role = 'student'; cfg.oauthRole = 'student'; saveCfg();
     try {
       let rows = await SB.query('students', 'user_id', user.id);
