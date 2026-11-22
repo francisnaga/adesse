@@ -115,6 +115,8 @@ CREATE TABLE IF NOT EXISTS public.sessions (
   title text,
   lecturer text,
   uni text NOT NULL,
+  pin text,
+  sk text,
   started_at bigint NOT NULL,
   ended_at bigint,
   startedAt bigint,
@@ -161,6 +163,7 @@ CREATE TABLE IF NOT EXISTS public.scans (
   win bigint,
   sig text,
   pin text,
+  pk text,
   at bigint NOT NULL,
   day text NOT NULL,
   status text,
@@ -168,7 +171,31 @@ CREATE TABLE IF NOT EXISTS public.scans (
 );
 ALTER TABLE public.scans ENABLE ROW LEVEL SECURITY;
 
--- 9. Matriculation disputes table
+-- 9. Courses table (for institutional multi-lecturer co-teaching)
+CREATE TABLE IF NOT EXISTS public.courses (
+  id text PRIMARY KEY,
+  uni text NOT NULL,
+  code text NOT NULL,
+  title text,
+  depts text,
+  level text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT courses_uni_code_key UNIQUE (uni, code)
+);
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+
+-- 10. Course Lecturers junction table
+CREATE TABLE IF NOT EXISTS public.course_lecturers (
+  course_id text NOT NULL REFERENCES public.courses (id) ON DELETE CASCADE,
+  lid text NOT NULL,
+  name text NOT NULL,
+  user_id uuid DEFAULT auth.uid() REFERENCES auth.users (id) ON DELETE CASCADE,
+  joined_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (course_id, lid)
+);
+ALTER TABLE public.course_lecturers ENABLE ROW LEVEL SECURITY;
+
+-- 11. Matriculation disputes table
 CREATE TABLE IF NOT EXISTS public.matric_disputes (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id uuid NOT NULL REFERENCES auth.users (id) ON DELETE CASCADE,
@@ -252,6 +279,19 @@ CREATE POLICY disputes_own ON public.matric_disputes FOR ALL TO authenticated US
 
 DROP POLICY IF EXISTS lecstate_all ON public.lecstate;
 CREATE POLICY lecstate_all ON public.lecstate FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+-- Courses & Course Lecturers (Institutional Multi-Lecturer Collaboration)
+DROP POLICY IF EXISTS courses_read ON public.courses;
+CREATE POLICY courses_read ON public.courses FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS courses_write ON public.courses;
+CREATE POLICY courses_write ON public.courses FOR ALL TO authenticated USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS course_lecturers_read ON public.course_lecturers;
+CREATE POLICY course_lecturers_read ON public.course_lecturers FOR SELECT TO authenticated USING (true);
+
+DROP POLICY IF EXISTS course_lecturers_write ON public.course_lecturers;
+CREATE POLICY course_lecturers_write ON public.course_lecturers FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- ==============================================================================
 -- RPC Functions
@@ -485,7 +525,7 @@ BEGIN
 
   INSERT INTO public.scans (
     key, user_id, uni, matric, name, dept, level, did,
-    kind, sid, course, lid, win, sig, pin, at, day, status, reason
+    kind, sid, course, lid, win, sig, pin, pk, at, day, status, reason
   ) VALUES (
     k,
     user_id_val,
@@ -502,6 +542,7 @@ BEGIN
     (p_scan->>'win')::bigint,
     p_scan->>'sig',
     p_scan->>'pin',
+    p_scan->>'pk',
     (p_scan->>'at')::bigint,
     p_scan->>'day',
     coalesce(p_scan->>'status', 'ok'),
@@ -512,7 +553,8 @@ BEGIN
     reason = coalesce(EXCLUDED.reason, scans.reason),
     lid = coalesce(EXCLUDED.lid, scans.lid),
     sid = coalesce(EXCLUDED.sid, scans.sid),
-    course = coalesce(EXCLUDED.course, scans.course);
+    course = coalesce(EXCLUDED.course, scans.course),
+    pk = coalesce(EXCLUDED.pk, scans.pk);
 
   RETURN jsonb_build_object('success', true, 'key', k);
 END;
@@ -528,4 +570,137 @@ AS $$
   SELECT * FROM public.scans
   WHERE (lid = p_lid)
      OR (lid IS NULL AND kind = 'pin' AND day >= to_char(now() - interval '1 day', 'YYYY-MM-DD'));
+$$;
+
+-- Canonical RPC to fetch active session sids for a lecturer (avoids ghost/orphan sessions)
+CREATE OR REPLACE FUNCTION public.get_session_sids(p_lid text)
+RETURNS TABLE (sid text)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT s.sid FROM public.sessions s WHERE s.lid = trim(p_lid);
+$$;
+
+-- Canonical RPC to validate rolling or static class PIN
+CREATE OR REPLACE FUNCTION public.validate_class_pin(p_pin text)
+RETURNS SETOF public.sessions
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+AS $$
+  SELECT * FROM public.sessions
+  WHERE pin = trim(p_pin)
+    AND (
+      ended_at = 0 
+      OR ended_at IS NULL 
+      OR ended_at > (extract(epoch from now()) * 1000 - 7200000)
+    )
+  ORDER BY started_at DESC
+  LIMIT 1;
+$$;
+
+-- Canonical RPC: create or join a course (ensures shared course code across co-lecturers)
+CREATE OR REPLACE FUNCTION public.create_or_join_course(
+  p_uni text,
+  p_code text,
+  p_title text,
+  p_depts text,
+  p_level text,
+  p_lid text,
+  p_name text
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  norm_code text := upper(regexp_replace(trim(p_code), '\s+', '', 'g'));
+  c_id text;
+BEGIN
+  -- Look for existing course in this university
+  SELECT id INTO c_id FROM public.courses 
+  WHERE uni = trim(p_uni) AND upper(regexp_replace(code, '\s+', '', 'g')) = norm_code;
+  
+  IF c_id IS NULL THEN
+    c_id := lower(substr(md5(random()::text || clock_timestamp()::text), 1, 8));
+    INSERT INTO public.courses (id, uni, code, title, depts, level)
+    VALUES (c_id, trim(p_uni), norm_code, trim(p_title), trim(p_depts), trim(p_level));
+  END IF;
+
+  -- Add current lecturer to teaching team
+  INSERT INTO public.course_lecturers (course_id, lid, name, user_id)
+  VALUES (c_id, trim(p_lid), trim(p_name), auth.uid())
+  ON CONFLICT (course_id, lid) DO UPDATE SET name = EXCLUDED.name;
+
+  RETURN jsonb_build_object('id', c_id, 'code', norm_code, 'success', true);
+END;
+$$;
+
+-- Canonical RPC: get institutional courses with all co-lecturers
+CREATE OR REPLACE FUNCTION public.get_institutional_courses(p_uni text)
+RETURNS jsonb
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+AS $$
+DECLARE
+  result jsonb;
+BEGIN
+  SELECT coalesce(jsonb_agg(
+    jsonb_build_object(
+      'id', c.id,
+      'uni', c.uni,
+      'code', c.code,
+      'title', c.title,
+      'depts', c.depts,
+      'level', c.level,
+      'lecturers', (
+        SELECT coalesce(jsonb_agg(jsonb_build_object('lid', cl.lid, 'name', cl.name)), '[]'::jsonb)
+        FROM public.course_lecturers cl
+        WHERE cl.course_id = c.id
+      )
+    ) ORDER BY c.code
+  ), '[]'::jsonb) INTO result
+  FROM public.courses c
+  WHERE c.uni = trim(p_uni);
+
+  RETURN result;
+END;
+$$;
+
+-- Canonical RPC: join an existing course teaching team
+CREATE OR REPLACE FUNCTION public.join_course(
+  p_course_id text,
+  p_lid text,
+  p_name text
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  INSERT INTO public.course_lecturers (course_id, lid, name, user_id)
+  VALUES (trim(p_course_id), trim(p_lid), trim(p_name), auth.uid())
+  ON CONFLICT (course_id, lid) DO UPDATE SET name = EXCLUDED.name;
+
+  RETURN jsonb_build_object('success', true);
+END;
+$$;
+
+-- Canonical RPC: opt out of a course teaching team
+CREATE OR REPLACE FUNCTION public.leave_course(
+  p_course_id text,
+  p_lid text
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  DELETE FROM public.course_lecturers
+  WHERE course_id = trim(p_course_id) AND lid = trim(p_lid);
+
+  RETURN jsonb_build_object('success', true);
+END;
 $$;
